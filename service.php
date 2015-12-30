@@ -40,7 +40,7 @@ class Pizarra extends Service
 		{
 			// add the user to the database if he/she does not exist
 			$res = $connection->deepQuery("SELECT email, penalized_until FROM __pizarra_users WHERE email = '$email'");
-			if(count($res) == 0) $this->newuserFromEmail($email);
+			if(count($res) == 0) $this->newUserFromEmail($email);
 
 			// do not post if the user is penalized
 			if(count($res)>0 && time() < strtotime($res[0]->penalized_until))
@@ -241,7 +241,7 @@ class Pizarra extends Service
 	 * @param String, email
 	 * @return String, user
 	 * */
-	private function newuserFromEmail($email)
+	private function newUserFromEmail($email)
 	{
 		$user = explode("@", $email)[0]; // get only the name part
 		$user = preg_replace('/[^A-Za-z0-9]/', '', $user); // remove special chars
@@ -250,7 +250,7 @@ class Pizarra extends Service
 		$connection = new Connection();
 
 		// check if the user already exist and a number after if it exist
-		$res = $connection->deepQuery("SELECT user FROM __pizarra_users WHERE user LIKE '$user%' ORDER BY user DESC LIMIT 1");
+		$res = $connection->deepQuery("SELECT user FROM __pizarra_users WHERE user LIKE '$user%'");
 		if(count($res) > 0) $user = $user . count($res);
 
 		// save the new user
