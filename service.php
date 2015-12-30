@@ -152,7 +152,7 @@ class Pizarra extends Service
 		// highlight hash tags
 		for ($i=0; $i<count($pizarra); $i++)
 		{ 
-			$pizarra[$i]['text'] = $this->fixSentenceCase($pizarra[$i]['text']);
+			$pizarra[$i]['text'] = ucfirst(strtolower($pizarra[$i]['text'])); // fix case
 			$pizarra[$i]['text'] = $this->highlightHashTags($pizarra[$i]['text']);
 		}
 
@@ -270,31 +270,5 @@ class Pizarra extends Service
 		$new_date = new DateTime($time);
 		$new_date->setTimeZone(new DateTimeZone('America/New_York'));
 		return $new_date->format("Y-m-d H:i:s");
-	}
-
-	/**
-	 * Fix the case of the sentense to look properly
-	 *
-	 * @author taken from the internet, updated by salvipascual
-	 * */
-	private function fixSentenceCase($str){
-		$cap = true;
-		$ret = '';
-	
-		for($x = 0; $x < strlen($str); $x++)
-		{
-			$letter = strtolower(substr($str, $x, 1));
-			if($letter == "." || $letter == "!" || $letter == "?")
-		{
-			$cap = true;
-		}
-		elseif($letter != " " && $cap == true)
-		{
-			$letter = strtoupper($letter);
-			$cap = false;
-		}
-			$ret .= $letter;
-		}
-		return $ret;
 	}
 }
