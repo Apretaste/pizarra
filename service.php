@@ -62,7 +62,8 @@ class Pizarra extends Service
 			$user = $res[0]->user;
 
 			// post in tweeter
-			$res = $twitter->post("statuses/update", array("status"=>".@$user $text"));
+			$res = $twitter->post("statuses/update", array("status"=>"$user~> $text"));
+//			print_r($res); exit; // check errors posting in twitter
 
 			// create the response
 			$response = new Response();
