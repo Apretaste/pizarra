@@ -87,6 +87,10 @@ class Pizarra extends Service
 			// do not show heycuba as name
 			$name = ($tweet->user->name == "HeyCuba!") ? "Apretaste" : $tweet->user->name;
 
+			$dateInEST = new DateTime($tweet->created_at);
+			$dateInEST->setTimeZone(new DateTimeZone('America/New_York'));
+			$dateInEST = $dateInEST->format("Y-m-d H:i:s");
+			
 			$tweets[] = array(
 				"id" => "",
 				"email" => "",
@@ -95,7 +99,7 @@ class Pizarra extends Service
 				"gender" => "",
 				"picture" => "",
 				"text" => $text,
-				"inserted" => $this->GmtTimeToLocalTime($tweet->created_at),
+				"inserted" => $dateInEST,
 				"likes" => "",
 				"source" => "twitter"
 			);
@@ -214,7 +218,7 @@ class Pizarra extends Service
 		// create the response
 		$response = new Response();
 		$responseContent = array("message" => 'Hemos agregado un coraz&oacute;n al post, lo cual adem&aacute;s se reflejar&aacute; en la reputaci&oacute;n de quien lo escribi&oacute;. &iexcl;Gracias por compartir su opini&oacute;n!');
-		$response->setResponseSubject("Gracias por el reporte");
+		$response->setResponseSubject("Gracias por el hacer like");
 		$response->createFromTemplate("message.tpl", $responseContent);
 		return $response;
 	}
@@ -256,20 +260,5 @@ class Pizarra extends Service
 
 		// save the new user
 		$connection->deepQuery("INSERT INTO __pizarra_users (email,user) VALUES ('$email','$user')");
-	}
-
-	/**
-	 * Convert from UTC to local time
-	 * 
-	 * @author stackoverflow
-	 * @param String datetime
-	 * @return String datetime
-	 * */
-	private function GmtTimeToLocalTime($time)
-	{
-		date_default_timezone_set('UTC');
-		$new_date = new DateTime($time);
-		$new_date->setTimeZone(new DateTimeZone('America/New_York'));
-		return $new_date->format("Y-m-d H:i:s");
 	}
 }
