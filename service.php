@@ -188,8 +188,8 @@ class Pizarra extends Service
 		$email = $request->query;
 		$sql = 
 			"START TRANSACTION;
-			UPDATE __pizarra_users SET reports=reports+1 WHERE email = '$email' AND penalized_until < CURRENT_TIMESTAMP;
-			UPDATE __pizarra_users SET penalized_until = NOW() + INTERVAL 3 DAY, reports = 0 WHERE email = '$email' AND reports > 4;
+			UPDATE __pizarra_users SET reports=reports+1 WHERE email='$email' AND penalized_until < CURRENT_TIMESTAMP;
+			UPDATE __pizarra_users SET penalized_until=NOW() + INTERVAL 3 DAY, reports=0 WHERE email='$email' AND reports > 4;
 			COMMIT;";
 		$connection = new Connection();
 		$connection->deepQuery($sql);
@@ -201,7 +201,7 @@ class Pizarra extends Service
 		$response->createFromTemplate("message.tpl", $responseContent);
 		return $response;
 	}
-	
+
 	/**
 	 * Function executed when a user likes a note
 	 *
@@ -213,7 +213,7 @@ class Pizarra extends Service
 		// add one to the likes for that post
 		$id = $request->query;
 		$connection = new Connection();
-		$res = $connection->deepQuery("UPDATE __pizarra_notes SET likes=likes+1 WHERE id=$id");
+		$res = $connection->deepQuery("UPDATE __pizarra_notes SET likes=likes+1 WHERE id='$id'");
 
 		// create the response
 		$response = new Response();
