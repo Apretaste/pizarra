@@ -6,10 +6,10 @@ use Abraham\TwitterOAuth\TwitterOAuth;
 class Pizarra extends Service
 {
 	// some very secret keys that I should not put in this slides
-	private $KEY = "fBAjPSxevxomufUKi55Ppm1mU";
-	private $KEY_SECRET = "19Eq98kSkHejFl1PNJREL723q8shAp8vltQlPpUsEovdZ2UB2O";
-	private $TOKEN = "4247250736-g7UbSlqkxxy1L5pJoAPimgtbuPo2RelwkihJrHf";
-	private $TOKEN_SECRET = "wguacd2XwTWlppVlz3aGrTkFleJBDiOai7wzX2LV5Czm7";
+	private $KEY = "nXbz7LXFcKSemSb9v2pUh5XWV";
+	private $KEY_SECRET = "kjSF6NOppBgR3UsP4u9KjwavrLUFGOcWEeFKmcWCZQyLLpOWCm";
+	private $TOKEN = "4247250736-LgRlKf0MgOLQZY6VnaZTJUKTuDU7q0GefcEPYyB";
+	private $TOKEN_SECRET = "WXpiTky2v9RVlnJnrwSYlX2BOmJqv8W3Sfb1Ve61RrWa3";
 
 	/**
 	 * Function executed when the service is called
@@ -63,7 +63,7 @@ class Pizarra extends Service
 
 			// post in tweeter
 			$res = $twitter->post("statuses/update", array("status"=>"$user~> $text"));
-//			print_r($res); exit; // check errors posting in twitter
+			print_r($res); exit; // check errors posting in twitter
 
 			// create the response
 			$response = new Response();
