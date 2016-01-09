@@ -1,6 +1,6 @@
 <service>
 	<serviceName>pizarra</serviceName>
-	<serviceDescription>Conecta miles de Cubanos entre ellos y con el mundo, y nos permite dejar un trazo de tiza en esta gran pizarra global.</serviceDescription>
+	<serviceDescription>Conecta miles de Cubanos entre ellos y con el mundo, y nos permite dejar un trazo de tiza en esta gran pizarra global</serviceDescription>
 	<creatorEmail>salvi.pascual@gmail.com</creatorEmail>
 	<serviceCategory>social</serviceCategory>
 	<serviceUsage>

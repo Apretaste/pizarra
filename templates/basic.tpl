@@ -12,7 +12,7 @@
 
 <table width="100%">
 	<tr>
-		<td><h1>&Uacute;ltimas 100 notas</h1></td>
+		<td><h1>&Uacute;ltimas 50 notas</h1></td>
 		<td align="right">
 			{button href="PIZARRA reemplace este texto por su nota" body="Escriba una nota que no exeda los 130 caracteres en el asunto y envie este email" caption="&#10010; Nueva nota"}
 		</td>

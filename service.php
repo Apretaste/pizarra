@@ -63,7 +63,6 @@ class Pizarra extends Service
 
 			// post in tweeter
 			$res = $twitter->post("statuses/update", array("status"=>"$user~> $text"));
-			print_r($res); exit; // check errors posting in twitter
 
 			// create the response
 			$response = new Response();
@@ -73,8 +72,8 @@ class Pizarra extends Service
 			return $response;
 		}
 
-		// get the latest 100 tweets
-		$listOfTweets = $twitter->get("search/tweets", array("q"=>"#heycuba", "count"=>"100"));
+		// get the latest 50 tweets
+		$listOfTweets = $twitter->get("search/tweets", array("q"=>"#heycuba", "count"=>"50"));
 
 		// format the array of tweets
 		$tweets = array();
@@ -105,7 +104,7 @@ class Pizarra extends Service
 			);
 		}
 
-		// get the last 100 records from the db
+		// get the last 50 records from the db
 		$listOfNotes = $connection->deepQuery(
 			"SELECT A.*, C.user, B.first_name, B.last_name, B.province, B.picture, B.gender
 			FROM __pizarra_notes A
@@ -114,7 +113,7 @@ class Pizarra extends Service
 			LEFT JOIN __pizarra_users C
 			ON A.email = C.email
 			ORDER BY inserted DESC 
-			LIMIT 100");
+			LIMIT 50");
 
 		// format the array of notes
 		$notes = array();
@@ -151,8 +150,8 @@ class Pizarra extends Service
 			return $a['inserted'] < $b['inserted'];
 		});
 
-		// get only the first 100 posts
-		$pizarra = array_slice($pizarra, 0, 100);
+		// get only the first 50 posts
+		$pizarra = array_slice($pizarra, 0, 50);
 
 		// highlight hash tags
 		for ($i=0; $i<count($pizarra); $i++)
@@ -171,7 +170,7 @@ class Pizarra extends Service
 
 		// create the response
 		$response = new Response();
-		$response->setResponseSubject("Ultimas 100 notas");
+		$response->setResponseSubject("Ultimas 50 notas");
 		$response->createFromTemplate("basic.tpl", $responseContent);
 		return $response;
 	}
