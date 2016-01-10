@@ -61,10 +61,14 @@ class Pizarra extends Service
 
 			// search for mentions and alert the user mentioned 
 			$mentions = $this->findUsersMentionedOnText($request->query);
+			$usersMentioned = "";
 			foreach ($mentions as $mention)
 			{
 				// do not allow self-mentioning
 				if($mention[0] == $user) continue;
+
+				// save the list of users mentioned
+				$usersMentioned .= "@".$mention[0].", ";
 
 				// email the user mentioned
 				$responseContent = array("message" => "El usuario <b>@$user</b> le ha mencionado en una nota escrita en la pizarra. La nota se lee a continuaci&oacute;n:<br/><br/><br/>{$request->query}");
@@ -76,11 +80,13 @@ class Pizarra extends Service
 			}
 
 			// post in tweeter
+			$text = trim(str_replace(" @", " ", $text), "@"); // remove @usernames for twitter
 			$twitter->post("statuses/update", array("status"=>"$user~> $text"));
 
 			// create the response
 			$response = new Response();
-			$responseContent = array("message" => "Hemos escrito su nota en la pizarra. Usted es ahora parte de la conversaci&oacute;n.");
+			$textMentioned = empty($usersMentioned) ? "" : "<br/><br/>Hemos compartido esta nota con " . rtrim($usersMentioned, ", ");
+			$responseContent = array("message" => "Hemos escrito su nota en la pizarra. Usted es ahora parte de la conversaci&oacute;n. $textMentioned");
 			$response->setResponseSubject("Su nota se ha escrito en la pizarra");
 			$response->createFromTemplate("message.tpl", $responseContent);
 			$responses[] = $response;
