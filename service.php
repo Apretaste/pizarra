@@ -5,7 +5,6 @@ use Abraham\TwitterOAuth\TwitterOAuth;
 
 class Pizarra extends Service
 {
-	// some very secret keys that I should not put in this slides
 	private $KEY = "nXbz7LXFcKSemSb9v2pUh5XWV";
 	private $KEY_SECRET = "kjSF6NOppBgR3UsP4u9KjwavrLUFGOcWEeFKmcWCZQyLLpOWCm";
 	private $TOKEN = "4247250736-LgRlKf0MgOLQZY6VnaZTJUKTuDU7q0GefcEPYyB";
@@ -38,38 +37,54 @@ class Pizarra extends Service
 		$email = $request->email;
 		if( ! empty($request->query))
 		{
-			// add the user to the database if he/she does not exist
-			$res = $connection->deepQuery("SELECT email, penalized_until FROM __pizarra_users WHERE email = '$email'");
-			if(count($res) == 0) $this->newUserFromEmail($email);
+			$responses = array();
 
 			// do not post if the user is penalized
+			$res = $connection->deepQuery("SELECT email, penalized_until FROM _pizarra_users WHERE email = '$email'");
 			if(count($res)>0 && time() < strtotime($res[0]->penalized_until))
 			{
 				$date = date("d/m/Y h:i:s A", strtotime($res[0]->penalized_until));
 				$response = new Response();
 				$response->setResponseSubject("Usted esta penalizado");
-				$response->createFromText("Una cantidad significativa de usuarios han reportado sus notas como de mal gusto u ofensivas, y hemos derogado temporalmente su privilegio de publicar.</p><p>Usted esta penalizado hasta el <b>$date</b>. Sentimos las molestias, y de coraz&oacute;n le agradecemos su entendimiento y futura cooperaci&oacute;n manteniendo limpia la pizarra. Si cree que esta medida fue tomada por error, por favor escr&iacute;bamos a soporte@apretaste.com</p>");
+				$response->createFromText("Una cantidad significativa de usuarios han reportado sus notas como de mal gusto u ofensivas, y hemos derogado temporalmente su privilegio de publicar.</p><p>Usted esta penalizado hasta el <b>$date</b>. De coraz&oacute;n le agradecemos su entendimiento y futura cooperaci&oacute;n manteniendo limpia la pizarra. Si cree que esta medida fue tomada por error, por favor escr&iacute;bamos a soporte@apretaste.com</p>");
 				return $response;
 			}
 
 			// save note to the database
 			$text = substr($request->query, 0, 130);
 			$text = $connection->escape($text);
-			$connection->deepQuery("INSERT INTO __pizarra_notes (email, text) VALUES ('$email', '$text')");
+			$connection->deepQuery("INSERT INTO _pizarra_notes (email, text) VALUES ('$email', '$text')");
 
 			// get the user from the database
-			$res = $connection->deepQuery("SELECT user FROM __pizarra_users WHERE email = '$email'");
-			$user = $res[0]->user;
+			$res = $connection->deepQuery("SELECT username FROM person WHERE email='$email'");
+			$user = $res[0]->username;
+
+			// search for mentions and alert the user mentioned 
+			$mentions = $this->findUsersMentionedOnText($request->query);
+			foreach ($mentions as $mention)
+			{
+				// do not allow self-mentioning
+				if($mention[0] == $user) continue;
+
+				// email the user mentioned
+				$responseContent = array("message" => "El usuario <b>@$user</b> le ha mencionado en una nota escrita en la pizarra. La nota se lee a continuaci&oacute;n:<br/><br/><br/>{$request->query}");
+				$response = new Response();
+				$response->setResponseEmail($mention[1]); // email the user mentioned
+				$response->setResponseSubject("Han mencionado su nombre en la pizarra");
+				$response->createFromTemplate("message.tpl", $responseContent);
+				$responses[] = $response;
+			}
 
 			// post in tweeter
-			$res = $twitter->post("statuses/update", array("status"=>"$user~> $text"));
+			$twitter->post("statuses/update", array("status"=>"$user~> $text"));
 
 			// create the response
 			$response = new Response();
 			$responseContent = array("message" => "Hemos escrito su nota en la pizarra. Usted es ahora parte de la conversaci&oacute;n.");
 			$response->setResponseSubject("Su nota se ha escrito en la pizarra");
 			$response->createFromTemplate("message.tpl", $responseContent);
-			return $response;
+			$responses[] = $response;
+			return $responses;
 		}
 
 		// get the latest 50 tweets
@@ -89,7 +104,7 @@ class Pizarra extends Service
 			$dateInEST = new DateTime($tweet->created_at);
 			$dateInEST->setTimeZone(new DateTimeZone('America/New_York'));
 			$dateInEST = $dateInEST->format("Y-m-d H:i:s");
-			
+
 			$tweets[] = array(
 				"id" => "",
 				"email" => "",
@@ -106,12 +121,10 @@ class Pizarra extends Service
 
 		// get the last 50 records from the db
 		$listOfNotes = $connection->deepQuery(
-			"SELECT A.*, C.user, B.first_name, B.last_name, B.province, B.picture, B.gender
-			FROM __pizarra_notes A
+			"SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender
+			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.email = B.email
-			LEFT JOIN __pizarra_users C
-			ON A.email = C.email
 			ORDER BY inserted DESC 
 			LIMIT 50");
 
@@ -131,7 +144,7 @@ class Pizarra extends Service
 			$notes[] = array(
 				"id" => $note->id,
 				"email" => $note->email,
-				"name" => $note->user,
+				"name" => $note->username,
 				"location" => $location,
 				"gender" => $note->gender,
 				"picture" => $note->picture,
@@ -183,19 +196,23 @@ class Pizarra extends Service
 	 * */
 	public function _reportar(Request $request)
 	{
+		// get the email
+		$connection = new Connection();
+		$username = trim(strtolower(str_replace("@", "", $request->query)));
+		$email = $connection->deepQuery("SELECT email FROM person WHERE username = '$username'");
+		$email = empty($email) ? "" : $email = $email[0]->email;
+
 		// add one to the reports counter, or set up a penalization for 3 days if the counter gets to 5
-		$email = $request->query;
 		$sql = 
 			"START TRANSACTION;
-			UPDATE __pizarra_users SET reports=reports+1 WHERE email='$email' AND penalized_until < CURRENT_TIMESTAMP;
-			UPDATE __pizarra_users SET penalized_until=NOW() + INTERVAL 3 DAY, reports=0 WHERE email='$email' AND reports > 4;
+			UPDATE _pizarra_users SET reports=reports+1 WHERE email='$email' AND penalized_until < CURRENT_TIMESTAMP;
+			UPDATE _pizarra_users SET penalized_until=NOW() + INTERVAL 3 DAY, reports=0 WHERE email='$email' AND reports > 4;
 			COMMIT;";
-		$connection = new Connection();
 		$connection->deepQuery($sql);
 
 		// create the response
 		$response = new Response();
-		$responseContent = array("message" => 'Gracias por reportarnos este usuario. Vamos a revisar sus notas, y en caso ser ofensivas o de mal gusto tomaremos una desici&oacute;n.</p><p>Sea tolerante. Muchos usuarios escriben sobre su credo, orientaci&oacute;n sexual, pensamiento pol&iacute;tico, diferencia racial o cultural, lo cual no significa que sus notas sean de mal gusto solo porque otros no est&eacute;n de acuerdo.');
+		$responseContent = array("message" => "Gracias por reportarnos a @$username. Vamos a revisar sus notas, y en caso ser ofensivas o de mal gusto tomaremos medidas.</p><p>Sea tolerante. Muchos usuarios escriben sobre su credo, orientaci&oacute;n sexual, pensamiento pol&iacute;tico, diferencia racial o cultural, lo cual no significa que sus notas sean de mal gusto solo porque otros no est&eacute;n de acuerdo.");
 		$response->setResponseSubject("Gracias por el reporte");
 		$response->createFromTemplate("message.tpl", $responseContent);
 		return $response;
@@ -212,7 +229,7 @@ class Pizarra extends Service
 		// add one to the likes for that post
 		$id = $request->query;
 		$connection = new Connection();
-		$res = $connection->deepQuery("UPDATE __pizarra_notes SET likes=likes+1 WHERE id='$id'");
+		$res = $connection->deepQuery("UPDATE _pizarra_notes SET likes=likes+1 WHERE id='$id'");
 
 		// create the response
 		$response = new Response();
@@ -239,25 +256,33 @@ class Pizarra extends Service
 	}
 
 	/**
-	 * Creates a new user from the email and save it to the database
+	 * Find all mentions on a text
 	 * 
-	 * @author salvipascual
-	 * @param String, email
-	 * @return String, user
+	 * @param String $text
+	 * @return Array, [[username,email],[username,email]...]
 	 * */
-	private function newUserFromEmail($email)
+	private function findUsersMentionedOnText($text)
 	{
-		$user = explode("@", $email)[0]; // get only the name part
-		$user = preg_replace('/[^A-Za-z0-9]/', '', $user); // remove special chars
-		$user = substr($user, 0, 5); // get the first 5 chars
+		// find all users mentioned
+		preg_match_all('/@\w*/', $text, $matches);
 
-		$connection = new Connection();
+		$return = array();
+		if( ! empty($matches[0]))
+		{
+			// get string of possible matches
+			$usernames = "'".implode("','", $matches[0])."'";
+			$usernames = str_replace("@", "", $usernames);
 
-		// check if the user already exist and a number after if it exist
-		$res = $connection->deepQuery("SELECT user FROM __pizarra_users WHERE user LIKE '$user%'");
-		if(count($res) > 0) $user = $user . count($res);
+			// check real matches agains the database
+			$connection = new Connection();
+			$users = $connection->deepQuery("SELECT email,username FROM person WHERE username in ($usernames)");
 
-		// save the new user
-		$connection->deepQuery("INSERT INTO __pizarra_users (email,user) VALUES ('$email','$user')");
+			// format the return
+			foreach($users as $user)
+			{
+				$return[] = array($user->username, $user->email);
+			}
+		}
+		return $return;
 	}
 }

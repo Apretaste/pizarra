@@ -13,7 +13,7 @@
 <table width="100%">
 	<tr>
 		<td><h1>&Uacute;ltimas 50 notas</h1></td>
-		<td align="right">
+		<td align="right" valign="top">
 			{button href="PIZARRA reemplace este texto por su nota" body="Escriba una nota que no exeda los 130 caracteres en el asunto y envie este email" caption="&#10010; Nueva nota"}
 		</td>
 	</tr>
@@ -52,7 +52,7 @@
 					{link href="PIZARRA LIKE {$note['id']}" caption="&hearts; Me gusta" body="Envie este email tal como esta para expresar gusto por este post de este usuario"}
 					[<font color="red">{$note['likes']}&hearts;</font>]
 					{separator}
-					{link href="PIZARRA REPORTAR {$note['email']}" caption="Reportar" body="Envie este email para reportar este usuario como grosero o de mal gusto. Sea tolerante. Muchos usuarios escriben sobre su credo, orientacion sexual, pensamiento politico, diferencia racial o cultural, lo cual no significa que sus notas sean de mal gusto solo porque otros no esten de acuerdo."}
+					{link href="PIZARRA REPORTAR @{$note['name']}" caption="Reportar" body="Envie este email para reportar a @{$note['name']} como grosero o de mal gusto. Sea tolerante. Muchos usuarios escriben sobre su credo, orientacion sexual, pensamiento politico, diferencia racial o cultural, lo cual no significa que sus notas sean de mal gusto solo porque otros no esten de acuerdo."}
 				{/if}
 			</small>
 			{space5}
