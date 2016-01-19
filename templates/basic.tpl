@@ -8,8 +8,6 @@
 </table>
 {/if}
 
-{space10}
-
 <table width="100%">
 	<tr>
 		<td><h1>&Uacute;ltimas 50 notas</h1></td>
@@ -19,8 +17,6 @@
 	</tr>
 </table>
 
-{space10}
-
 <table width="100%">
 {foreach from=$notes item=note}
 	<tr {if $note@iteration is even}bgcolor="#F2F2F2"{/if}>
@@ -29,7 +25,7 @@
 			<font color="gray">
 				<small>
 					{if $note['source'] eq "apretaste"}
-						{link href="PERFIL {$note['email']}" caption="@{$note['name']}"},
+						{link href="PERFIL @{$note['name']}" caption="@{$note['name']}"},
 						{if $note['gender'] eq "M"}<font color="#4863A0">Var&oacute;n</font>,{/if}
 						{if $note['gender'] eq "F"}<font color=#F778A1>Mujer</font>,{/if}
 						{if $note['picture'] eq 1}[foto],{/if}
@@ -49,8 +45,10 @@
 			<br/>
 			<small>
 				{if $email neq $note['email'] and $note['source'] eq "apretaste"}
-					{link href="PIZARRA LIKE {$note['id']}" caption="&hearts; Me gusta" body="Envie este email tal como esta para expresar gusto por este post de este usuario"}
-					[<font color="red">{$note['likes']}&hearts;</font>]
+					{link href="PIZARRA LIKE {$note['id']}" caption="&#x2764; Me gusta" body="Envie este email tal como esta para expresar gusto por este post de este usuario"}
+					[<font color="red">{$note['likes']}&#x2764;</font>]
+					{separator}
+					{link href="NOTA @{$note['name']} Reemplace este texto por su nota" caption="&#x2605; Charlar" body="Escriba en el asunto la nota que le llegara a @{$note['name']} y envie este email."}
 					{separator}
 					{link href="PIZARRA REPORTAR @{$note['name']}" caption="Reportar" body="Envie este email para reportar a @{$note['name']} como grosero o de mal gusto. Sea tolerante. Muchos usuarios escriben sobre su credo, orientacion sexual, pensamiento politico, diferencia racial o cultural, lo cual no significa que sus notas sean de mal gusto solo porque otros no esten de acuerdo."}
 				{/if}
