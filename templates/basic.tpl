@@ -45,8 +45,8 @@
 			<br/>
 			<small>
 				{if $email neq $note['email'] and $note['source'] eq "apretaste"}
-					{link href="PIZARRA LIKE {$note['id']}" caption="&#x2764; Me gusta" body="Envie este email tal como esta para expresar gusto por este post de este usuario"}
-					[<font color="red">{$note['likes']}&#x2764;</font>]
+					{link href="PIZARRA LIKE {$note['id']}" caption="&hearts; Me gusta" body="Envie este email tal como esta para expresar gusto por este post de este usuario"}
+					[<font color="red">{$note['likes']}&hearts;</font>]
 					{separator}
 					{link href="NOTA @{$note['name']} Reemplace este texto por su nota" caption="&#x2605; Charlar" body="Escriba en el asunto la nota que le llegara a @{$note['name']} y envie este email."}
 					{separator}
