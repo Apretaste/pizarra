@@ -2,7 +2,7 @@
 <table width="100%">
 	<tr>
 		<td align="center" bgcolor="#F6CED8">
-			<p><small>Para usar pizarra al m&aacute;ximo, {link href="PERFIL EDITAR" body="{$editProfileText}" caption="complete su perfil"}.</small></p>
+			<p><small>Para usar pizarra al m&aacute;ximo, {link href="PERFIL EDITAR" caption="complete su perfil"}.</small></p>
 		</td>
 	</tr>
 </table>

@@ -182,7 +182,6 @@ class Pizarra extends Service
 		// create variables for the template
 		$responseContent = array(
 			"email" => $email,
-			"editProfileText" => $this->utils->createProfileEditableText($email),
 			"isProfileIncomplete" => $this->utils->getProfileCompletion($email) < 70,
 			"notes" => $pizarra
 		);
