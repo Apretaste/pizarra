@@ -199,11 +199,40 @@ class Pizarra extends Service
 	 * @param Request
 	 * @return Response
 	 * */
-	public function _notas(Request $request)
+	public function _buscar(Request $request)
 	{
-		// get the username
-		$username = trim($request->query);
-		$username = str_replace("@", "", $username);
+		// do not work if the search comes in blank
+		$query = trim($request->query);
+		if(empty($query))
+		{
+			$response = new Response();
+			$response->createFromText("Por favor escriba un @username, un #hashtag o un texto a buscar.");
+			return $response;
+		}
+
+		// prepare to search for a text
+		// @TODO make it work with levestein type algorithm 
+		$where = "A.text like '%$query%'";
+		$subjet = "Notas con el texto \"$query\"";
+
+		// get the number of words passed
+		$numberOfWords = count(explode(" ", $query));
+
+		// check if the query is a username 
+		if($numberOfWords == 1 && strlen($query) > 2 && $query[0] == "@")
+		{
+			$username = str_replace("@", "", $query);
+			$where = "B.username = '$username' OR A.text like '%$username%'";
+			$subjet = "Notas de $query";
+		}
+
+		// check if the query is a hashtag 
+		if($numberOfWords == 1 && strlen($query) > 2 && ($query[0] == "*" || $query[0] == "#"))
+		{
+			$hashtag = str_replace("*", "#", $query);
+			$where = "A.text like '% $hashtag%'";
+			$subjet = "Veces que $hashtag es mencionado";
+		}
 
 		// get the last 50 records from the db
 		$connection = new Connection();
@@ -212,15 +241,15 @@ class Pizarra extends Service
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.email = B.email
-			WHERE B.username = '$username'
+			WHERE $where
 			ORDER BY inserted DESC 
 			LIMIT 50");
 
-		// do not work if the note is in blank
+		// display message if the response is blank
 		if(empty($listOfNotes))
 		{
 			$response = new Response();
-			$response->createFromText("Debe escribir un @username v&aacute;lido despu&eacute;s de la palabra NOTAS.");
+			$response->createFromText("No se encontraron notas para el @username, #hashtag o texto que usted busc&oacute;.");
 			return $response;
 		}
 
@@ -259,14 +288,15 @@ class Pizarra extends Service
 		}
 
 		$content = array(
-			"username"=> $username, 
+			"header" => $subjet,
+			"username"=> $query, 
 			"email"=> $request->email, 
 			"notes" => $notes
 		);
 
 		// create the response
 		$response = new Response();
-		$response->setResponseSubject("Notas escritas por @$username");
+		$response->setResponseSubject($subjet);
 		$response->createFromTemplate("notas.tpl", $content);
 		return $response;
 	}

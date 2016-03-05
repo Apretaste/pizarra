@@ -1,6 +1,6 @@
 <table width="100%">
 	<tr>
-		<td><h1>&Uacute;ltimas 50 notas para @{$username}</h1></td>
+		<td><h1>{$header}</h1></td>
 	</tr>
 </table>
 
