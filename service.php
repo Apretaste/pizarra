@@ -194,6 +194,84 @@ class Pizarra extends Service
 	}
 
 	/**
+	 * Get the last 50 messages sent by a user
+	 *
+	 * @param Request
+	 * @return Response
+	 * */
+	public function _notas(Request $request)
+	{
+		// get the username
+		$username = trim($request->query);
+		$username = str_replace("@", "", $username);
+
+		// get the last 50 records from the db
+		$connection = new Connection();
+		$listOfNotes = $connection->deepQuery(
+			"SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender
+			FROM _pizarra_notes A
+			LEFT JOIN person B
+			ON A.email = B.email
+			WHERE B.username = '$username'
+			ORDER BY inserted DESC 
+			LIMIT 50");
+
+		// do not work if the note is in blank
+		if(empty($listOfNotes))
+		{
+			$response = new Response();
+			$response->createFromText("Debe escribir un @username v&aacute;lido despu&eacute;s de la palabra NOTAS.");
+			return $response;
+		}
+
+		// format the array of notes
+		$notes = array();
+		foreach ($listOfNotes as $note)
+		{
+			// get the name 
+			$name = trim("{$note->first_name} {$note->last_name}");
+			if(empty($name)) $name = $note->email;
+
+			// get the location
+			if(empty($note->province)) $location = "Cuba";
+			else $location = ucwords(strtolower(str_replace("_", " ", $note->province)));
+
+			// add the text to the array
+			$notes[] = array(
+				"id" => $note->id,
+				"email" => $note->email,
+				"name" => $note->username,
+				"location" => $location,
+				"gender" => $note->gender,
+				"picture" => $note->picture,
+				"text" => $note->text,
+				"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)), // mysql server timezone must be in America/New_York 
+				"likes" => $note->likes,
+				"source" => "apretaste"
+			);
+		}
+
+		// highlight hash tags
+		for ($i=0; $i<count($notes); $i++)
+		{
+			$notes[$i]['text'] = ucfirst(strtolower($notes[$i]['text'])); // fix case
+			$notes[$i]['text'] = $this->highlightHashTags($notes[$i]['text']);
+		}
+
+		$content = array(
+			"username"=> $username, 
+			"email"=> $request->email, 
+			"notes" => $notes
+		);
+
+		// create the response
+		$response = new Response();
+		$response->setResponseSubject("Notas escritas por @$username");
+		$response->createFromTemplate("notas.tpl", $content);
+		return $response;
+	}
+
+	/**
 	 * Function executed when a user reports another user
 	 *
 	 * @param Request
