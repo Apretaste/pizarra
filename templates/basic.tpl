@@ -51,6 +51,8 @@
 					{link href="NOTA @{$note['name']} Reemplace este texto por su nota" caption="&#x2605; Charlar" body="Escriba en el asunto la nota que le llegara a @{$note['name']} y envie este email."}
 					{separator}
 					{link href="PIZARRA REPORTAR @{$note['name']}" caption="Reportar" body="Envie este email para reportar a @{$note['name']} como grosero o de mal gusto. Sea tolerante. Muchos usuarios escriben sobre su credo, orientacion sexual, pensamiento politico, diferencia racial o cultural, lo cual no significa que sus notas sean de mal gusto solo porque otros no esten de acuerdo."}
+					{separator}
+					{link href="PIZARRA BLOQUEAR @{$note['name']}" caption="Bloquear" body="Envie este email para bloquear a @{$note['name']} en tu Pizarra."}
 				{/if}
 			</small>
 			{space5}

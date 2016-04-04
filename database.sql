@@ -100,6 +100,22 @@ CREATE TABLE IF NOT EXISTS `_pizarra_users` (
   `penalized_until` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'If the user had been reported X times, will be penalized til this date'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+
+CREATE TABLE IF NOT EXISTS _pizarra_locks (
+  `email` varchar(50) NOT NULL,
+  `user_locked` varchar(50) NOT NULL,
+  `inserted` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (email, user_locked)
+);
+
+CREATE TABLE IF NOT EXISTS _pizarra_follow (
+  `email` varchar(50) NOT NULL,
+  `user_followed` varchar(50) NOT NULL,
+  `inserted` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (email, user_followed)
+);
+
+
 --
 -- Indexes for dumped tables
 --
