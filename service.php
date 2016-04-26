@@ -79,27 +79,17 @@ class Pizarra extends Service
 
 		// get the last 50 records from the db
 		$listOfNotes = $connection->deepQuery("
-			SELECT * FROM (
-				SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender
-				FROM _pizarra_notes A
-				LEFT JOIN person B
-				ON A.email = B.email
-				WHERE NOT EXISTS (SELECT * FROM _pizarra_block WHERE _pizarra_block.email = '{$request->email}' AND _pizarra_block.blocked = B.email)
-				AND EXISTS (SELECT * FROM _pizarra_follow WHERE _pizarra_follow.email = '{$request->email}' AND _pizarra_follow.followed = B.email)
-				LIMIT 30
-
-				UNION
-
-				SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender
-				FROM _pizarra_notes A
-				LEFT JOIN person B
-				ON A.email = B.email
-				WHERE NOT EXISTS (SELECT * FROM _pizarra_block WHERE _pizarra_block.email = '{$request->email}' AND _pizarra_block.blocked = B.email)
-				AND NOT EXISTS (SELECT * FROM _pizarra_follow WHERE _pizarra_follow.email = '{$request->email}' AND _pizarra_follow.followed = B.email)
-			) as subq
-			ORDER BY inserted DESC 
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender,
+				DATEDIFF(inserted,CURRENT_DATE)+5 as days,
+				(SELECT COUNT(email) FROM _pizarra_follow WHERE email='{$request->email}' AND followed=A.email)*5 AS friend,
+				(SELECT COUNT(email) FROM _pizarra_follow WHERE followed=A.email) AS popular
+			FROM _pizarra_notes A
+			LEFT JOIN person B
+			ON A.email = B.email
+			WHERE A.email NOT IN (SELECT blocked FROM _pizarra_block WHERE email='{$request->email}')
+			ORDER BY A.likes+days+friend+popular DESC
 			LIMIT 50");
-		
+
 		// format the array of notes
 		$notes = array();
 		foreach ($listOfNotes as $note)
@@ -121,14 +111,10 @@ class Pizarra extends Service
 				"picture" => $note->picture,
 				"text" => $note->text,
 				"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)), // mysql timezone must be America/New_York
-				"likes" => $note->likes
+				"likes" => $note->likes,
+				"friend" => $note->friend > 0
 			);
 		}
-
-		// sort the final array by post date
-		usort($notes, function  ($a, $b) {
-			return $a['inserted'] < $b['inserted'];
-		});
 
 		// highlight hash tags
 		for ($i = 0; $i < count($notes); $i ++)
