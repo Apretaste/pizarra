@@ -27,9 +27,9 @@
 					<font color="orange">{if $note['friend']}&#8619;{/if}</font>
 					{link href="PERFIL @{$note['name']}" caption="@{$note['name']}"},
 					{$note['location']},
+					{if $note['gender'] eq "M"}<font color="#4863A0">M</font>{/if}
+					{if $note['gender'] eq "F"}<font color=#F778A1>F</font>{/if}
 					{if $note['picture'] eq 1}[foto]{/if}
-					{if $note['gender'] eq "M"}<font color="#4863A0"><big>&male;</big></font>{/if}
-					{if $note['gender'] eq "F"}<font color=#F778A1><big>&female;</big></font>{/if}
 					{separator}
 					<font color="gray">{$note['inserted']|date_format:"%e/%m %I:%M %p"}</font>
 				</small>
