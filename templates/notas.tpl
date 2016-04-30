@@ -11,35 +11,18 @@
 			{space5}
 			<font color="gray">
 				<small>
-					{if $note['source'] eq "apretaste"}
-						{link href="PERFIL @{$note['name']}" caption="@{$note['name']}"},
-						{if $note['gender'] eq "M"}<font color="#4863A0">Var&oacute;n</font>,{/if}
-						{if $note['gender'] eq "F"}<font color=#F778A1>Mujer</font>,{/if}
-						{if $note['picture'] eq 1}[foto],{/if}
-						{$note['location']}
-					{/if}
-		
-					{if $note['source'] eq "twitter"}
-						{$note['name']}, {$note['location']}
-					{/if}
-
+					{link href="PERFIL @{$note['name']}" caption="@{$note['name']}"},
+					{if $note['gender'] eq "M"}<font color="#4863A0">M</font>,{/if}
+					{if $note['gender'] eq "F"}<font color=#F778A1>F</font>,{/if}
+					{if $note['picture'] eq 1}[foto],{/if}
+					{$note['location']},
+					<font color="red">{$note['likes']}&hearts;</font>
 					{separator}
-					{$note['inserted']|date_format:"%e/%m %I:%M %p"}
+					{$note['inserted']|date_format:"%e/%m %l:%M %p"}
 				</small>
 			</font>
 			<br/>
-			<big><big>{$note['text']}</big></big>
-			<br/>
-			<small>
-				{if $email neq $note['email'] and $note['source'] eq "apretaste"}
-					{link href="PIZARRA LIKE {$note['id']}" caption="&hearts; Me gusta" body="Envie este email tal como esta para expresar gusto por este post de este usuario"}
-					[<font color="red">{$note['likes']}&hearts;</font>]
-					{separator}
-					{link href="NOTA @{$note['name']} Reemplace este texto por su nota" caption="&#x2605; Charlar" body="Escriba en el asunto la nota que le llegara a @{$note['name']} y envie este email."}
-					{separator}
-					{link href="PIZARRA REPORTAR @{$note['name']}" caption="Reportar" body="Envie este email para reportar a @{$note['name']} como grosero o de mal gusto. Sea tolerante. Muchos usuarios escriben sobre su credo, orientacion sexual, pensamiento politico, diferencia racial o cultural, lo cual no significa que sus notas sean de mal gusto solo porque otros no esten de acuerdo."}
-				{/if}
-			</small>
+			<big><big>{$note['text']|replace_url}</big></big>
 			{space5}
 		</td>
 	</tr>
