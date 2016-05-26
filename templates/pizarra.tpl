@@ -17,6 +17,16 @@
 	</tr>
 </table>
 
+{if $lastnote !== false}
+<table width="100%">
+	<tr>
+		<td align="justify" valign="top">
+			Su &uacute;ltima nota se public&oacute; correctamente en {$lastnote->inserted|date_format:"%e/%m %I:%M %p"}. Sus notas no se muestran a usted mismo para ahorrarle cr&eacute;dito. Para ver sus notas haga clic {link href="PIZARRA BUSCAR @{$username}" caption="aqu&iacute;"}.
+		</td>
+	</tr>
+</table>
+{/if}
+
 <table width="100%">
 {foreach from=$notes item=note}
 	<tr {if $note@iteration is even}bgcolor="#F2F2F2"{/if}>

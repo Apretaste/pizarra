@@ -84,8 +84,8 @@ class Pizarra extends Service
 				FROM _pizarra_notes A
 				LEFT JOIN person B
 				ON A.email = B.email
-				WHERE NOT EXISTS (SELECT * FROM _pizarra_block WHERE _pizarra_block.email = '{$request->email}' AND _pizarra_block.blocked = B.email)
-				AND EXISTS (SELECT * FROM _pizarra_follow WHERE _pizarra_follow.email = '{$request->email}' AND _pizarra_follow.followed = B.email)
+				WHERE NOT EXISTS (SELECT * FROM _pizarra_block WHERE _pizarra_block.email = '{$email}' AND _pizarra_block.blocked = B.email)
+				AND EXISTS (SELECT * FROM _pizarra_follow WHERE _pizarra_follow.email = '{$email}' AND _pizarra_follow.followed = B.email)
 				LIMIT 30
 
 				UNION
@@ -94,8 +94,8 @@ class Pizarra extends Service
 				FROM _pizarra_notes A
 				LEFT JOIN person B
 				ON A.email = B.email
-				WHERE NOT EXISTS (SELECT * FROM _pizarra_block WHERE _pizarra_block.email = '{$request->email}' AND _pizarra_block.blocked = B.email)
-				AND NOT EXISTS (SELECT * FROM _pizarra_follow WHERE _pizarra_follow.email = '{$request->email}' AND _pizarra_follow.followed = B.email)
+				WHERE NOT EXISTS (SELECT * FROM _pizarra_block WHERE _pizarra_block.email = '{$email}' AND _pizarra_block.blocked = B.email)
+				AND NOT EXISTS (SELECT * FROM _pizarra_follow WHERE _pizarra_follow.email = '{$email}' AND _pizarra_follow.followed = B.email)
 			) as subq
 			ORDER BY inserted DESC 
 			LIMIT 50");
@@ -121,7 +121,9 @@ class Pizarra extends Service
 				"picture" => $note->picture,
 				"text" => $note->text,
 				"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)), // mysql timezone must be America/New_York
-				"likes" => $note->likes
+				"likes" => $note->likes,
+				'source' => $note->source,
+				'email' => $note->email
 			);
 		}
 
@@ -141,11 +143,20 @@ class Pizarra extends Service
 		$username = $connection->deepQuery("SELECT username FROM person WHERE email='$email'");
 		$username = $username[0]->username;
 
+		// get last note
+		$lastnote = $connection->deepQuery("SELECT * FROM _pizarra_notes WHERE email = '$email' ORDER BY inserted DESC LIMIT 1 OFFSET 0;");
+		
+		if ( ! isset($lastnote[0])) 
+			$lastnote = false;
+		else 
+			$lastnote = $lastnote[0];
+		
 		// create variables for the template
 		$responseContent = array(
 			"username" => $username,
 			"isProfileIncomplete" => $this->utils->getProfileCompletion($email) < 70,
-			"notes" => $notes
+			"notes" => $notes,
+			"lastnote" => $lastnote
 		);
 
 		// create the response
@@ -173,7 +184,13 @@ class Pizarra extends Service
 			$response->createFromText("Por favor escriba un @username, un #hashtag o un texto a buscar.");
 			return $response;
 		}
-
+		
+		$connection = new Connection();
+		
+		// get the username from the email
+		$usern = $connection->deepQuery("SELECT username FROM person WHERE email='{$request->email}'");
+		$usern = $usern[0]->username;
+		
 		// prepare to search for a text
 		// @TODO make it work with levestein type algorithm
 		$where = "A.text like '%$query%'";
@@ -187,7 +204,11 @@ class Pizarra extends Service
 		{
 			$username = str_replace("@", "", $query);
 			$where = "B.username = '$username' OR A.text like '%$username%'";
-			$subject = "Notas de $query";
+			
+			if (strcasecmp($username, $usern) === 0)
+				$subject = 'Mis notas en pizarra';
+			else 
+				$subject = "Notas de $query";
 		}
 
 		// check if the query is a hashtag
@@ -199,7 +220,7 @@ class Pizarra extends Service
 		}
 
 		// get the last 50 records from the db
-		$connection = new Connection();
+		
 		$listOfNotes = $connection->deepQuery(
 			"SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender
 			FROM _pizarra_notes A
@@ -238,7 +259,9 @@ class Pizarra extends Service
 				"picture" => $note->picture,
 				"text" => $note->text,
 				"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)), // mysql server timezone must be in America/New_York
-				"likes" => $note->likes
+				"likes" => $note->likes,
+				'source' => $note->source,
+				'email' => $note->email
 			);
 		}
 

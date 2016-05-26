@@ -46,9 +46,9 @@ CREATE TABLE IF NOT EXISTS _pizarra_locks (
 
 CREATE TABLE IF NOT EXISTS _pizarra_follow (
   `email` varchar(50) NOT NULL,
-  `user_followed` varchar(50) NOT NULL,
+  `followed` varchar(50) NOT NULL,
   `inserted` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (email, user_followed)
+  PRIMARY KEY (email, followed)
 );
 
 
