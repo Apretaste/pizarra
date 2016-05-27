@@ -35,7 +35,8 @@ class Pizarra extends Service
 		// post whatever the user types
 		if ( ! empty($request->query))
 		{
-			$responses = array();
+			// do not post notes without real information like empty mentions
+			if(strlen($request->query) < 16) return new Response();
 
 			// save note to the database
 			$text = substr($request->query, 0, 130);
@@ -78,8 +79,8 @@ class Pizarra extends Service
 		}
 
 		// get the last 50 records from the db
-		$listOfNotes = $connection->deepQuery("
-			SELECT * FROM (
+		/**
+		 SELECT * FROM (
 				SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender
 				FROM _pizarra_notes A
 				LEFT JOIN person B
@@ -98,12 +99,44 @@ class Pizarra extends Service
 				AND NOT EXISTS (SELECT * FROM _pizarra_follow WHERE _pizarra_follow.email = '{$email}' AND _pizarra_follow.followed = B.email)
 			) as subq
 			ORDER BY inserted DESC 
-			LIMIT 50");
+			LIMIT 50
+		 */
+		$listOfNotes = $connection->deepQuery("
+			SELECT 
+				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender,
+				A.likes*0.5 as loved,
+				DATEDIFF(inserted,CURRENT_DATE)+7 as days,
+				(SELECT COUNT(email) FROM _pizarra_follow WHERE email='{$request->email}' AND followed=A.email)*3 AS friend,
+				(SELECT COUNT(email) FROM _pizarra_follow WHERE followed=A.email) AS popular,
+				RAND() as luck
+			FROM _pizarra_notes A
+			LEFT JOIN person B
+			ON A.email = B.email
+			WHERE A.email NOT IN (SELECT blocked FROM _pizarra_block WHERE email='{$request->email}')
+			AND A.email <> '{$request->email}'
+			ORDER BY inserted DESC
+			LIMIT 300");
+
+		// sort results by weigh. Too complex and slow in MySQL
+		function cmp($a, $b) {
+			$one = $a->loved + $a->days + $a->friend + $a->popular + $a->luck;
+			$two = $b->loved + $b->days + $b->friend + $b->popular + $b->luck;
+			if ($one == $two) return 0;
+			return ($one > $two) ? -1 : 1;
+		}
 		
+		usort($listOfNotes, "cmp");
+
 		// format the array of notes
+		$emails = array();
 		$notes = array();
 		foreach ($listOfNotes as $note)
 		{
+			// only accept the first 5 notes per person
+			if( ! isset($emails[$note->email])) $emails[$note->email] = 1;
+			elseif($emails[$note->email] < 3) $emails[$note->email]++;
+			else continue;
+
 			// get the name
 			$name = trim("{$note->first_name} {$note->last_name}");
 			if (empty($name)) $name = $note->email;
@@ -123,14 +156,13 @@ class Pizarra extends Service
 				"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)), // mysql timezone must be America/New_York
 				"likes" => $note->likes,
 				'source' => $note->source,
-				'email' => $note->email
+				'email' => $note->email,
+				"friend" => $note->friend > 0
 			);
-		}
 
-		// sort the final array by post date
-		usort($notes, function  ($a, $b) {
-			return $a['inserted'] < $b['inserted'];
-		});
+			// only parse the first 50 notes
+			if(count($notes) > 50) break;
+		}
 
 		// highlight hash tags
 		for ($i = 0; $i < count($notes); $i ++)
@@ -139,9 +171,10 @@ class Pizarra extends Service
 			$notes[$i]['text'] = $this->highlightHashTags($notes[$i]['text']);
 		}
 
-		// get the username from the email
-		$username = $connection->deepQuery("SELECT username FROM person WHERE email='$email'");
-		$username = $username[0]->username;
+		// get the likes, follows and blocks
+		$likes = $connection->deepQuery("SELECT SUM(likes) as likes FROM _pizarra_notes WHERE email='$email'")[0]->likes;
+		$follows = $connection->deepQuery("SELECT COUNT(*) as follows FROM _pizarra_follow WHERE followed='$email'")[0]->follows;
+		$blocks = $connection->deepQuery("SELECT COUNT(*) as blocks FROM _pizarra_block WHERE blocked='$email'")[0]->blocks;
 
 		// get last note
 		$lastnote = $connection->deepQuery("SELECT * FROM _pizarra_notes WHERE email = '$email' ORDER BY inserted DESC LIMIT 1 OFFSET 0;");
@@ -153,7 +186,9 @@ class Pizarra extends Service
 		
 		// create variables for the template
 		$responseContent = array(
-			"username" => $username,
+			"likes" => $likes,
+			"follows" => $follows,
+			"blocks" => $blocks,
 			"isProfileIncomplete" => $this->utils->getProfileCompletion($email) < 70,
 			"notes" => $notes,
 			"lastnote" => $lastnote
@@ -194,7 +229,7 @@ class Pizarra extends Service
 		// prepare to search for a text
 		// @TODO make it work with levestein type algorithm
 		$where = "A.text like '%$query%'";
-		$subject = "Notas con el texto \"$query\"";
+		$subject = 'Notas con el texto "'.$query.'"';
 
 		// get the number of words passed
 		$numberOfWords = count(explode(" ", $query));
@@ -203,12 +238,17 @@ class Pizarra extends Service
 		if ($numberOfWords == 1 && strlen($query) > 2 && $query[0] == "@")
 		{
 			$username = str_replace("@", "", $query);
-			$where = "B.username = '$username' OR A.text like '%$username%'";
+
+			// $where = "B.username = '$username' OR A.text like '%$username%'";
 			
 			if (strcasecmp($username, $usern) === 0)
 				$subject = 'Mis notas en pizarra';
 			else 
 				$subject = "Notas de $query";
+
+			$where = "B.username = '$username'";
+			$subject = "Notas de $query";
+
 		}
 
 		// check if the query is a hashtag
@@ -220,14 +260,14 @@ class Pizarra extends Service
 		}
 
 		// get the last 50 records from the db
-		
-		$listOfNotes = $connection->deepQuery(
-			"SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender
+		$connection = new Connection();
+		$listOfNotes = $connection->deepQuery("
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.email = B.email
 			WHERE $where
-			ORDER BY inserted DESC 
+			ORDER BY inserted DESC
 			LIMIT 50");
 
 		// display message if the response is blank
@@ -274,11 +314,9 @@ class Pizarra extends Service
 
 		$content = array(
 			"header" => $subject,
-			"username" => $query,
-			"email" => $request->email,
 			"notes" => $notes
 		);
-		
+
 		// create the response
 		$response = new Response();
 		$response->setResponseSubject($subject);
@@ -288,7 +326,7 @@ class Pizarra extends Service
 
 	/**
 	 * A user blocks all posts from another user
-	 * 
+	 *
 	 * @author salvipascual
 	 * @param Request
 	 * @return Response
@@ -370,7 +408,7 @@ class Pizarra extends Service
 	 * Highlight words with a #hashtag
 	 *
 	 * @author salvipascual
-	 * @param String $text			
+	 * @param String $text
 	 * @return String
 	 */
 	private function highlightHashTags ($text)
@@ -382,9 +420,9 @@ class Pizarra extends Service
 
 	/**
 	 * Find all mentions on a text
-	 * 
+	 *
 	 * @author salvipascual
-	 * @param String $text			
+	 * @param String $text
 	 * @return Array, [[username,email],[username,email]...]
 	 */
 	private function findUsersMentionedOnText ($text)
@@ -397,16 +435,16 @@ class Pizarra extends Service
 			// get string of possible matches
 			$usernames = "'" . implode("','", $matches[0]) . "'";
 			$usernames = str_replace("@", "", $usernames);
-			
+				
 			// check real matches agains the database
 			$connection = new Connection();
 			$users = $connection->deepQuery("SELECT email,username FROM person WHERE username in ($usernames)");
-			
+				
 			// format the return
 			foreach ($users as $user) {
 				$return[] = array(
-					$user->username,
-					$user->email
+						$user->username,
+						$user->email
 				);
 			}
 		}
