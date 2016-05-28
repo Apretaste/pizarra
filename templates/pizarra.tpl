@@ -22,7 +22,6 @@
 	</tr>
 </table>
 
-<<<<<<< HEAD
 {if $lastnote !== false}
 <table width="100%">
 	<tr>
@@ -32,9 +31,7 @@
 	</tr>
 </table>
 {/if}
-=======
 {space5}
->>>>>>> 86c7ba06e3afae18f83896ddde6afe74cf78c0b3
 
 <table width="100%">
 {foreach from=$notes item=note}
