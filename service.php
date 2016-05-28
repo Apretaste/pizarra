@@ -31,7 +31,11 @@ class Pizarra extends Service
 		// connect to the database
 		$connection = new Connection();
 		$email = $request->email;
-
+		
+		// get the user from the database
+		$res = $connection->deepQuery("SELECT username FROM person WHERE email='$email'");
+		$user = $res[0]->username;
+		
 		// post whatever the user types
 		if ( ! empty($request->query))
 		{
@@ -42,10 +46,6 @@ class Pizarra extends Service
 			$text = substr($request->query, 0, 130);
 			$text = $connection->escape($text);
 			$connection->deepQuery("INSERT INTO _pizarra_notes (email, text) VALUES ('$email', '$text')");
-
-			// get the user from the database
-			$res = $connection->deepQuery("SELECT username FROM person WHERE email='$email'");
-			$user = $res[0]->username;
 
 			// search for mentions and alert the user mentioned
 			$mentions = $this->findUsersMentionedOnText($request->query);
@@ -191,7 +191,8 @@ class Pizarra extends Service
 			"blocks" => $blocks,
 			"isProfileIncomplete" => $this->utils->getProfileCompletion($email) < 70,
 			"notes" => $notes,
-			"lastnote" => $lastnote
+			"lastnote" => $lastnote,
+			"username" => $user
 		);
 
 		// create the response
