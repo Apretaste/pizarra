@@ -242,14 +242,12 @@ class Pizarra extends Service
 
 			// $where = "B.username = '$username' OR A.text like '%$username%'";
 			
-			if (strcasecmp($username, $usern) === 0)
+			if (strcasecmp(trim($username), trim($usern)) === 0)
 				$subject = 'Mis notas en pizarra';
 			else 
 				$subject = "Notas de $query";
 
 			$where = "B.username = '$username'";
-			$subject = "Notas de $query";
-
 		}
 
 		// check if the query is a hashtag
