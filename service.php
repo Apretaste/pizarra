@@ -34,7 +34,10 @@ class Pizarra extends Service
 		
 		// get the user from the database
 		$res = $connection->deepQuery("SELECT username FROM person WHERE email='$email'");
-		$user = $res[0]->username;
+		
+		$user = null;
+		if (isset($res[0]))
+			$user = $res[0]->username;
 		
 		// post whatever the user types
 		if ( ! empty($request->query))
