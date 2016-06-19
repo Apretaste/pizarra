@@ -109,13 +109,16 @@ class Pizarra extends Service
 				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender,
 				A.likes*0.5 as loved,
 				DATEDIFF(inserted,CURRENT_DATE)+7 as days,
+				-- (SELECT COUNT(user1) FROM relations WHERE user1='{$request->email}' AND user2 = A.email AND type = 'follow' AND confirmed = true)*3 AS friend,
+				-- (SELECT COUNT(user1) FROM relations WHERE user2 = A.email AND type = 'follow' AND confirmed = true)*3 AS popular,
 				(SELECT COUNT(email) FROM _pizarra_follow WHERE email='{$request->email}' AND followed=A.email)*3 AS friend,
 				(SELECT COUNT(email) FROM _pizarra_follow WHERE followed=A.email) AS popular,
 				RAND() as luck
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.email = B.email
-			WHERE A.email NOT IN (SELECT blocked FROM _pizarra_block WHERE email='{$request->email}')
+			WHERE A.email NOT IN (SELECT blocked FROM _pizarra_block WHERE email = '{$request->email}')
+			AND A.email NOT IN (SELECT relations.user2 FROM relations WHERE relations.user1 = '{$request->email}' AND relations.type = 'blocked' AND relations.confirmed = true)
 			AND A.email <> '{$request->email}'
 			ORDER BY inserted DESC
 			LIMIT 300");
@@ -346,7 +349,10 @@ class Pizarra extends Service
 		{
 			$person = $request->email;
 			$friend = $email[0]->email;
+			
+			// @TODO: Drop _pizarra_block table and related code?
 			$connection->deepQuery("INSERT IGNORE INTO _pizarra_block (email, blocked) VALUES ('$person','$friend')");
+			$connection->deepQuery("INSERT IGNORE INTO relations (user1,user2,type, confirmed) VALUES ('$person','$friend','blocked',true);");
 		}
 
 		// do not send any response
@@ -396,7 +402,12 @@ class Pizarra extends Service
 			// delete if exists
 			if(count($res) > 0) $sql = "DELETE FROM _pizarra_follow WHERE email='$person' AND followed='$friend'";
 			// insert if does not exist
-			else $sql = "INSERT INTO _pizarra_follow (email, followed) VALUES ('$person','$friend');";
+			else 
+			{
+				// @TODO: Drop _pizarra_follow table and related code?
+				$sql = "INSERT INTO _pizarra_follow (email, followed) VALUES ('$person','$friend');";
+				$sql .= "INSERT INTO relations (user1,user2,type,confirmed) VALUES ('$person','$friend','follow',true);";
+			}
 
 			// commit the query
 			$connection->deepQuery($sql);
