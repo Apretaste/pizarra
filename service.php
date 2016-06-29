@@ -233,36 +233,64 @@ class Pizarra extends Service
 		$usern = $connection->deepQuery("SELECT username FROM person WHERE email='{$request->email}'");
 		$usern = $usern[0]->username;
 		
-		// prepare to search for a text
-		// @TODO make it work with levestein type algorithm
-		$where = "A.text like '%$query%'";
-		$subject = 'Notas con el texto "'.$query.'"';
-
-		// get the number of words passed
-		$numberOfWords = count(explode(" ", $query));
-
-		// check if the query is a username
-		if ($numberOfWords == 1 && strlen($query) > 2 && $query[0] == "@")
+		// check if the query is a date
+		if (substr(strtolower($query),0,5)=='fecha')
 		{
-			$username = str_replace("@", "", $query);
-
-			// $where = "B.username = '$username' OR A.text like '%$username%'";
+			$query = trim(substr($query,5));
 			
-			if (strcasecmp(trim($username), trim($usern)) === 0)
-				$subject = 'Mis notas en pizarra';
-			else 
-				$subject = "Notas de $query";
-
-			$where = "B.username = '$username'";
+			// by default
+			$where = " TRUE ";
+			$subject = "Ultimas 50 notas en Pizarra";
+			
+			// getting the date
+			if ($query != '')
+			{
+				$valid_formats = array('YmdHis', 'Y-m-d H:i:s', 'Ymd', 'Y-m-d', 'd/m/Y H:i:s', 'd/m/Y', 'd-m-Y H:i:s', 'd-m-Y');
+				foreach($valid_formats as $vf)
+				{
+					$date = date_create_from_format($vf, $query);
+					if ($date !== false){
+						$where = " A.inserted >= '".$date->format('Y-m-d H:i:s')."' ";
+						$subject = "Ultimas notas a partir de ".$date->format('d/m/Y'). " a las ".$date->format('H:i:s'). 'hrs';
+						break;
+					}
+				}
+			}
 		}
-
-		// check if the query is a hashtag
-		if ($numberOfWords == 1 && strlen($query) > 2 && ($query[0] == "*" || $query[0] == "#"))
+		else 
 		{
-			$hashtag = str_replace("*", "#", $query);
-			$where = "A.text like '% $hashtag%'";
-			$subject = "Veces que $hashtag es mencionado";
+			// prepare to search for a text
+			// @TODO make it work with levestein type algorithm
+			$where = "A.text like '%$query%'";
+			$subject = 'Notas con el texto "'.$query.'"';
+	
+			// get the number of words passed
+			$numberOfWords = count(explode(" ", $query));
+	
+			// check if the query is a username
+			if ($numberOfWords == 1 && strlen($query) > 2 && $query[0] == "@")
+			{
+				$username = str_replace("@", "", $query);
+	
+				// $where = "B.username = '$username' OR A.text like '%$username%'";
+				
+				if (strcasecmp(trim($username), trim($usern)) === 0)
+					$subject = 'Mis notas en pizarra';
+				else 
+					$subject = "Notas de $query";
+	
+				$where = "B.username = '$username'";
+			}
+			
+			// check if the query is a hashtag
+			if ($numberOfWords == 1 && strlen($query) > 2 && ($query[0] == "*" || $query[0] == "#"))
+			{
+				$hashtag = str_replace("*", "#", $query);
+				$where = "A.text like '% $hashtag%'";
+				$subject = "Veces que $hashtag es mencionado";
+			}
 		}
+		
 
 		// get the last 50 records from the db
 		$connection = new Connection();
