@@ -104,6 +104,10 @@ class Pizarra extends Service
 			ORDER BY inserted DESC 
 			LIMIT 50
 		 */
+		/*
+		 -- (SELECT COUNT(email) FROM _pizarra_follow WHERE email='{$request->email}' AND followed=A.email)*3 AS friend,
+				-- (SELECT COUNT(email) FROM _pizarra_follow WHERE followed=A.email) AS popular,
+		 */
 		$listOfNotes = $connection->deepQuery("
 			SELECT 
 				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender,
@@ -111,8 +115,6 @@ class Pizarra extends Service
 				DATEDIFF(inserted,CURRENT_DATE)+7 as days,
 				(SELECT COUNT(user1) FROM relations WHERE user1='{$request->email}' AND user2 = A.email AND type = 'follow') * 3 AS friend,
 				(SELECT COUNT(user1) FROM relations WHERE user2 = A.email AND type = 'follow' AND)*3 AS popular,
-				-- (SELECT COUNT(email) FROM _pizarra_follow WHERE email='{$request->email}' AND followed=A.email)*3 AS friend,
-				-- (SELECT COUNT(email) FROM _pizarra_follow WHERE followed=A.email) AS popular,
 				RAND() as luck
 			FROM _pizarra_notes A
 			LEFT JOIN person B
