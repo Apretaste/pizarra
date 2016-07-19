@@ -114,7 +114,7 @@ class Pizarra extends Service
 				A.likes*0.5 as loved,
 				DATEDIFF(inserted,CURRENT_DATE)+7 as days,
 				(SELECT COUNT(user1) FROM relations WHERE user1='{$request->email}' AND user2 = A.email AND type = 'follow') * 3 AS friend,
-				(SELECT COUNT(user1) FROM relations WHERE user2 = A.email AND type = 'follow' AND)*3 AS popular,
+				(SELECT COUNT(user1) FROM relations WHERE user2 = A.email AND type = 'follow')*3 AS popular,
 				RAND() as luck
 			FROM _pizarra_notes A
 			LEFT JOIN person B
