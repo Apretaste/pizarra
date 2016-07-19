@@ -109,16 +109,17 @@ class Pizarra extends Service
 				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender,
 				A.likes*0.5 as loved,
 				DATEDIFF(inserted,CURRENT_DATE)+7 as days,
-				-- (SELECT COUNT(user1) FROM relations WHERE user1='{$request->email}' AND user2 = A.email AND type = 'follow' AND confirmed = true)*3 AS friend,
-				-- (SELECT COUNT(user1) FROM relations WHERE user2 = A.email AND type = 'follow' AND confirmed = true)*3 AS popular,
-				(SELECT COUNT(email) FROM _pizarra_follow WHERE email='{$request->email}' AND followed=A.email)*3 AS friend,
-				(SELECT COUNT(email) FROM _pizarra_follow WHERE followed=A.email) AS popular,
+				(SELECT COUNT(user1) FROM relations WHERE user1='{$request->email}' AND user2 = A.email AND type = 'follow') * 3 AS friend,
+				(SELECT COUNT(user1) FROM relations WHERE user2 = A.email AND type = 'follow' AND)*3 AS popular,
+				-- (SELECT COUNT(email) FROM _pizarra_follow WHERE email='{$request->email}' AND followed=A.email)*3 AS friend,
+				-- (SELECT COUNT(email) FROM _pizarra_follow WHERE followed=A.email) AS popular,
 				RAND() as luck
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.email = B.email
-			WHERE A.email NOT IN (SELECT blocked FROM _pizarra_block WHERE email = '{$request->email}')
-			AND A.email NOT IN (SELECT relations.user2 FROM relations WHERE relations.user1 = '{$request->email}' AND relations.type = 'blocked' AND relations.confirmed = true)
+			WHERE A.email NOT IN (SELECT user2 FROM relations WHERE user1 = '{$request->email}' and type = 'blocked')
+			-- (SELECT blocked FROM _pizarra_block WHERE email = '{$request->email}')
+			AND A.email NOT IN (SELECT relations.user2 FROM relations WHERE relations.user1 = '{$request->email}' AND relations.type = 'blocked')
 			AND A.email <> '{$request->email}'
 			ORDER BY inserted DESC
 			LIMIT 300");
@@ -179,8 +180,12 @@ class Pizarra extends Service
 
 		// get the likes, follows and blocks
 		$likes = $connection->deepQuery("SELECT SUM(likes) as likes FROM _pizarra_notes WHERE email='$email'")[0]->likes;
-		$follows = $connection->deepQuery("SELECT COUNT(*) as follows FROM _pizarra_follow WHERE followed='$email'")[0]->follows;
-		$blocks = $connection->deepQuery("SELECT COUNT(*) as blocks FROM _pizarra_block WHERE blocked='$email'")[0]->blocks;
+		
+		$follows = $connection->deepQuery("SELECT COUNT(*) as follows FROM relations WHERE user2='$email'")[0]->follows;
+		//$follows = $connection->deepQuery("SELECT COUNT(*) as follows FROM _pizarra_follow WHERE followed='$email'")[0]->follows;
+		
+		$blocks = $connection->deepQuery("SELECT COUNT(*) as blocks FROM relations WHERE user2='$email'")[0]->blocks;
+		//$blocks = $connection->deepQuery("SELECT COUNT(*) as blocks FROM _pizarra_block WHERE blocked='$email'")[0]->blocks;
 
 		// get last note
 		$lastnote = $connection->deepQuery("SELECT * FROM _pizarra_notes WHERE email = '$email' ORDER BY inserted DESC LIMIT 1 OFFSET 0;");
@@ -379,8 +384,8 @@ class Pizarra extends Service
 			$friend = $email[0]->email;
 			
 			// @TODO: Drop _pizarra_block table and related code?
-			$connection->deepQuery("INSERT IGNORE INTO _pizarra_block (email, blocked) VALUES ('$person','$friend')");
-			$connection->deepQuery("INSERT IGNORE INTO relations (user1,user2,type, confirmed) VALUES ('$person','$friend','blocked',true);");
+			//$connection->deepQuery("INSERT IGNORE INTO _pizarra_block (email, blocked) VALUES ('$person','$friend')");
+			$connection->deepQuery("INSERT IGNORE INTO relations (user1,user2,type, confirmed) VALUES ('$person','$friend','blocked',1);");
 		}
 
 		// do not send any response
@@ -425,16 +430,17 @@ class Pizarra extends Service
 			// check if the person is already following
 			$person = $request->email;
 			$friend = $email[0]->email;
-			$res = $connection->deepQuery("SELECT * FROM _pizarra_follow WHERE email='$person' AND followed='$friend'");
-
+			//$res = $connection->deepQuery("SELECT * FROM _pizarra_follow WHERE email='$person' AND followed='$friend'");
+			$res = $connection->deepQuery("SELECT * FROM relations WHERE user1='$person' AND user2='$friend'");
+				
 			// delete if exists
-			if(count($res) > 0) $sql = "DELETE FROM _pizarra_follow WHERE email='$person' AND followed='$friend'";
+			if(count($res) > 0) $sql = "DELETE FROM relations WHERE user1='$person' AND user2='$friend'";
 			// insert if does not exist
 			else 
 			{
 				// @TODO: Drop _pizarra_follow table and related code?
-				$sql = "INSERT INTO _pizarra_follow (email, followed) VALUES ('$person','$friend');";
-				$sql .= "INSERT INTO relations (user1,user2,type,confirmed) VALUES ('$person','$friend','follow',true);";
+				//$sql = "INSERT INTO _pizarra_follow (email, followed) VALUES ('$person','$friend');";
+				$sql = "INSERT INTO relations (user1,user2,type,confirmed) VALUES ('$person','$friend','follow',1);";
 			}
 
 			// commit the query
