@@ -45,6 +45,19 @@ class Pizarra extends Service
 			// do not post notes without real information like empty mentions
 			if(strlen($request->query) < 16) return new Response();
 
+			// emails in text
+			$emailsMentioned = $this->getAddressFrom($request->query);
+			if (is_array($emailsMentioned))
+			{
+				foreach($emailsMentioned as  $em){
+					$person = $this->utils->getPerson($em);
+					if ($person !== false)
+					{
+						$request->query = str_replace($em, '@'.$person->username, $request->query);
+					}
+				}
+			}
+			
 			// save note to the database
 			$text = substr($request->query, 0, 130);
 			$text = $connection->escape($text);
@@ -154,6 +167,9 @@ class Pizarra extends Service
 			if (empty($note->province)) $location = "Cuba";
 			else $location = ucwords(strtolower(str_replace("_", " ", $note->province)));
 
+			// highlight usernames and link it to NOTA
+			$note->text = $this->hightlightUsernames($note->text, $user);
+			
 			// add the text to the array
 			$notes[] = array(
 				"id" => $note->id,
@@ -330,6 +346,9 @@ class Pizarra extends Service
 			if (empty($note->province)) $location = "Cuba";
 			else $location = ucwords(strtolower(str_replace("_", " ", $note->province)));
 
+			// highlight usernames and link it to NOTA
+			$note->text = $this->hightlightUsernames($note->text, $usern);
+			
 			// add the text to the array
 			$notes[] = array(
 				"id" => $note->id,
@@ -499,5 +518,99 @@ class Pizarra extends Service
 		}
 
 		return $return;
+	}
+	
+	/*
+	 * Extract email addresses from the text
+	 *
+	 * @author kuma
+	 * @version 1.0
+	 * @param string $text
+	 * @return array
+	 */
+	private function getAddressFrom($text)
+	{
+		$chars = '1234567890abcdefghijklmnopqrstuvwxyz._-@ ';
+		$text = strtolower($text);
+	
+		// Cleanning the text
+		for ($i = 0; $i < 256; $i ++)
+		{
+			if (stripos($chars, chr($i)) === false)
+			{
+				$text = str_replace(chr($i), ' ', $text);
+			}
+		}
+	
+		$text = trim(str_replace(array(
+			". ",
+			" .",
+			"- ",
+			"_ "
+		), " ", " $text "));
+	
+		// extract all phrases from text
+		$words = explode(' ', $text);
+	
+		// checking each phrase
+		$addresses = array();
+		foreach ($words as $w)
+		{
+			if (trim($w) === '')
+				continue;
+	
+				if ($this->checkAddress($w) === true && strpos($w, '@') !== false)
+					$addresses[] = $w;
+		}
+	
+		return $addresses;
+	}
+	
+	/**
+	 * Check if a string is an email address
+	 *
+	 * @author kuma
+	 * @version 1.0
+	 * @param string $email
+	 * @return boolean
+	 */
+	private function checkAddress($email)
+	{
+		$regex = '/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/';
+	
+		if (preg_match($regex, $email))
+			return true;
+	
+		return false;
+	}
+	
+	/**
+	 * Search usernames mentioned on text and replace it with link to NOTA
+	 *
+	 * @param string $text
+	 * @return mixed
+	 */
+	function hightlightUsernames($text, $current_user){
+		
+		// TODO: if exists 2 mentions @foo and @fooo, this method dont work
+		
+		// highlight usernames and link it to NOTA
+		$mentions = $this->findUsersMentionedOnText($text);
+		
+		if (is_array($mentions))
+		{
+			foreach($mentions as $mention)
+			{
+				// do not allow self-mentioning
+				if ($mention[0] == $current_user) continue;
+					
+				$validEmailAddress = $this->utils->getValidEmailAddress();
+				
+				$generatedLink = '<a href="mailto:'.$validEmailAddress.'?subject=NOTA @' . $mention[0].' hola amigo, vi que te mencionaron en PIZARRA y te escribo esta nota&body=Envie+el+correo+tal+y+como+esta,+ya+esta+preparado+para+usted">@' . $mention[0] . '</a>';
+					
+				$text = str_replace('@'.$mention[0], $generatedLink, $text);
+			}
+		}
+		return $text;
 	}
 }
