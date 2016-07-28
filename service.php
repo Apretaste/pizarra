@@ -461,7 +461,7 @@ class Pizarra extends Service
 			{
 				// @TODO: Drop _pizarra_follow table and related code?
 				//$sql = "INSERT INTO _pizarra_follow (email, followed) VALUES ('$person','$friend');";
-				$sql = "INSERT INTO IGNORE relations (user1,user2,type,confirmed) VALUES ('$person','$friend','follow',1);";
+				$sql = "INSERT IGNORE INTO relations (user1,user2,type,confirmed) VALUES ('$person','$friend','follow',1);";
 			}
 
 			// commit the query
