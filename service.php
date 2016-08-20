@@ -81,6 +81,9 @@ class Pizarra extends Service
 				$response->setResponseSubject("Han mencionado su nombre en la pizarra");
 				$response->createFromTemplate("message.tpl", $responseContent);
 				$responses[] = $response;
+				
+				// generate a notification
+				$this->utils->addNotification($mention[1], 'pizarra', $responseContent['message'], 'PIZARRA BUSCAR @'.$user, 'IMPORTANT');
 			}
 
 			// post in tweeter
@@ -90,6 +93,9 @@ class Pizarra extends Service
 				$twitter->post("statuses/update", array("status" => "$user~> $text"));
 			} catch (Exception $e) {}
 
+			// save a notificaction
+			$this->utils->addNotification($request->email, 'pizarra', 'Su nota ha sido publicada en Pizarra', 'PIZARRA');
+			
 			// do not return any response when posting
 			return new Response();
 		}
@@ -426,6 +432,15 @@ class Pizarra extends Service
 		$connection = new Connection();
 		$connection->deepQuery("UPDATE _pizarra_notes SET likes=likes+1 WHERE id='{$request->query}'");
 
+		// Generate a notification
+		$note = $connection->deepQuery("SELECT * FROM _pizarra_notes WHERE id='{$request->query}'");
+		if (isset($note[0])) {
+			$email = $note[0]->email;
+			$person = $connection->deepQuery("SELECT * FROM person WHERE email = '{$request->email}';");
+			$person = $person[0];
+			$this->utils->addNotification($request->email, 'pizarra like', 'A @'.$person->username.' le gusta tu nota <b>"'.substr($note[0]->text,0,30).'"</b> en Pizarra.', "PERFIL @{$person->username}");
+		}
+
 		// do not send any response
 		return new Response();
 	}
@@ -462,6 +477,8 @@ class Pizarra extends Service
 				// @TODO: Drop _pizarra_follow table and related code?
 				//$sql = "INSERT INTO _pizarra_follow (email, followed) VALUES ('$person','$friend');";
 				$sql = "INSERT IGNORE INTO relations (user1,user2,type,confirmed) VALUES ('$person','$friend','follow',1);";
+				$un = $this->utils->getPerson($person)->username;
+				$this->utils->addNotification($friend, 'pizarra seguir', 'Ahora @'. $un. ' te sigue en Pizarra', 'PERFIL @'.$un);		
 			}
 
 			// commit the query
