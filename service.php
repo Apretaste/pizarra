@@ -83,7 +83,7 @@ class Pizarra extends Service
 				$responses[] = $response;
 				
 				// generate a notification
-				$this->utils->addNotification($mention[1], 'pizarra', $responseContent['message'], 'PIZARRA BUSCAR @'.$user, 'IMPORTANT');
+				$this->utils->addNotification($mention[1], 'pizarra', "<b>@$user</b> le ha mencionado en Pizarra.<br/>&nbsp;&nbsp;- {$request->query}", 'PIZARRA BUSCAR @'.$user, 'IMPORTANT');
 			}
 
 			// post in tweeter
