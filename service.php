@@ -33,7 +33,7 @@ class Pizarra extends Service
 		$email = $request->email;
 		
 		// get the user from the database
-		$res = $connection->deepQuery("SELECT username FROM person WHERE email='$email'");
+		$res = $connection->deepQuery("SELECT username FROM person WHERE email = '$email'");
 		
 		$user = null;
 		if (isset($res[0]))
@@ -109,7 +109,7 @@ class Pizarra extends Service
 				(SELECT COUNT(user1) FROM relations WHERE user1='{$request->email}' AND user2 = A.email AND type = 'follow') * 3 AS friend,
 				(SELECT COUNT(user1) FROM relations WHERE user2 = A.email AND type = 'follow') * 3 AS popular,
 				RAND() as luck,
-				(SELECT count(*) FROM _pizarra_seen_notes WHERE _pizarra_seen_notes.email = '{$request->email}' AND _pizarra_seen_notes.note = A.id) * 3 as seen
+				(SELECT count(email) FROM _pizarra_seen_notes WHERE _pizarra_seen_notes.email = '{$request->email}' AND _pizarra_seen_notes.note = A.id) * 3 as seen
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.email = B.email
@@ -181,8 +181,8 @@ class Pizarra extends Service
 
 		// get the likes, follows and blocks
 		$likes = $connection->deepQuery("SELECT SUM(likes) as likes FROM _pizarra_notes WHERE email='$email'")[0]->likes;
-		$follows = $connection->deepQuery("SELECT COUNT(*) as follows FROM relations WHERE user2='$email'")[0]->follows;
-		$blocks = $connection->deepQuery("SELECT COUNT(*) as blocks FROM relations WHERE user2='$email'")[0]->blocks;
+		$follows = $connection->deepQuery("SELECT COUNT(id) as follows FROM relations WHERE user2='$email'")[0]->follows;
+		$blocks = $connection->deepQuery("SELECT COUNT(id) as blocks FROM relations WHERE user2='$email'")[0]->blocks;
 
 		// get last note
 		$lastnote = $connection->deepQuery("SELECT * FROM _pizarra_notes WHERE email = '$email' ORDER BY inserted DESC LIMIT 1 OFFSET 0;");
