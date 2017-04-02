@@ -200,7 +200,8 @@ class Pizarra extends Service
 			"isProfileIncomplete" => $this->utils->getProfileCompletion($email) < 70,
 			"notes" => $notes,
 			"lastnote" => $lastnote,
-			"username" => $user
+			"username" => $user,
+            "profile" => $this->utils->getPerson($email)
 		);
 
 		// create the response
