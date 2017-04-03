@@ -162,7 +162,8 @@ class Pizarra extends Service
 				"likes" => $note->likes,
 				'source' => $note->source,
 				'email' => $note->email,
-				"friend" => $note->friend > 0
+				"friend" => $note->friend > 0,
+				"profile" => $this->utils->getPerson($note->email)
 			);
 
 			// check as seen
@@ -336,11 +337,13 @@ class Pizarra extends Service
 				"location" => $location,
 				"gender" => $note->gender,
 				"picture" => $note->picture,
+				"profile" => $this->utils->getPerson($note->email),
 				"text" => $note->text,
 				"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)), // mysql server timezone must be in America/New_York
 				"likes" => $note->likes,
 				'source' => $note->source,
-				'email' => $note->email
+				'email' => $note->email,
+				
 			);
 		}
 
