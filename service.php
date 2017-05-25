@@ -19,6 +19,7 @@ class Pizarra extends Service
 	 */
 	public function _main (Request $request)
 	{
+		
 		if ($request->query == "reemplace este texto por su nota")
 		{
 			$response = new Response();
@@ -61,6 +62,7 @@ class Pizarra extends Service
 			// save note to the database
 			$text = substr($request->query, 0, 130);
 			$text = $connection->escape($text);
+			
 			$connection->deepQuery("INSERT INTO _pizarra_notes (email, text) VALUES ('$email', '$text')");
 
 			// search for mentions and alert the user mentioned
@@ -115,7 +117,7 @@ class Pizarra extends Service
 			ON A.email = B.email
 			WHERE A.email NOT IN (SELECT user2 FROM relations WHERE user1 = '{$request->email}' and type = 'blocked')
 			AND A.email NOT IN (SELECT relations.user2 FROM relations WHERE relations.user1 = '{$request->email}' AND relations.type = 'blocked')
-			AND A.email <> '{$request->email}'
+			-- AND A.email <> '{$request->email}'
 			ORDER BY inserted DESC
 			LIMIT 300");
 
@@ -394,6 +396,32 @@ class Pizarra extends Service
 	}
 
 	/**
+	 * A user blocks all posts from another user
+	 *
+	 * @author salvipascual
+	 * @param Request
+	 * @return Response
+	 */
+	public function _desbloquear (Request $request)
+	{
+		$connection = new Connection();
+
+		// get the email from the username
+		$username = trim(strtolower(str_replace("@", "", $request->query)));
+		$email = $connection->deepQuery("SELECT email FROM person WHERE username = '$username'");
+
+		if(count($email) > 0)
+		{
+			$person = $request->email;
+			$friend = $email[0]->email;
+			$connection->deepQuery("DELETE FROM relations WHERE user1 = '$person' AND user2 = '$friend' AND type = 'blocked' AND confirmed = 1;");
+		}
+
+		// do not send any response
+		return new Response();
+	}
+	
+	/**
 	 * The user likes a note
 	 *
 	 * @author salvipascual
@@ -419,6 +447,23 @@ class Pizarra extends Service
 		return new Response();
 	}
 
+	/**
+	 * The user unlikes a note
+	 *
+	 * @author kuma
+	 * @param Request
+	 * @return Response
+	 */
+	public function _unlike (Request $request)
+	{
+		// add one to the likes for that post
+		$connection = new Connection();
+		$connection->deepQuery("UPDATE _pizarra_notes SET likes = likes - 1 WHERE id='{$request->query}'");
+
+		// do not send any response
+		return new Response();
+	}
+	
 	/**
 	 * The user follows or unfollows another user
 	 *
