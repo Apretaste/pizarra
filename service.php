@@ -14,6 +14,7 @@ class Pizarra extends Service
 		if ($request->query == "reemplace este texto por su nota")
 		{
 			$response = new Response();
+			$response->setEmailLayout('pizarra.tpl');
 			$responseContent = array("message" => 'Para que podamos escribir su nota, &iexcl;Usted primero debe escribirla!</p><p>Por favor presione el bot&oacute;n m&oacute;s abajo y reemplace en el asunto del email donde dice <b>"reemplace este texto por su nota"</b> con el texto a escribir e intente nuevamente.');
 			$response->setResponseSubject("No nos ha enviado ninguna nota!");
 			$response->createFromTemplate("message.tpl", $responseContent);
@@ -26,8 +27,7 @@ class Pizarra extends Service
 		$res = $connection->deepQuery("SELECT username FROM person WHERE email = '$email'");
 
 		$user = null;
-		if (isset($res[0]))
-			$user = $res[0]->username;
+		if (isset($res[0])) $user = $res[0]->username;
 
 		// post whatever the user types
 		if ( ! empty($request->query))
@@ -67,6 +67,7 @@ class Pizarra extends Service
 				// email the user mentioned
 				$responseContent = array("message" => "El usuario <b>@$user</b> le ha mencionado en una nota escrita en la pizarra. La nota se lee a continuaci&oacute;n:<br/><br/><br/>{$request->query}");
 				$response = new Response();
+				$response->setEmailLayout('pizarra.tpl');
 				$response->setResponseEmail($mention[1]); // email the user mentioned
 				$response->setResponseSubject("Han mencionado su nombre en la pizarra");
 				$response->createFromTemplate("message.tpl", $responseContent);
@@ -170,11 +171,8 @@ class Pizarra extends Service
 
 		// get last note
 		$lastnote = $connection->deepQuery("SELECT * FROM _pizarra_notes WHERE email = '$email' ORDER BY inserted DESC LIMIT 1 OFFSET 0;");
-
-		if ( ! isset($lastnote[0]))
-			$lastnote = false;
-		else
-			$lastnote = $lastnote[0];
+		if ( ! isset($lastnote[0])) $lastnote = false;
+		else $lastnote = $lastnote[0];
 
 		// create variables for the template
 		$responseContent = array(
@@ -185,11 +183,12 @@ class Pizarra extends Service
 			"notes" => $notes,
 			"lastnote" => $lastnote,
 			"username" => $user,
-            "profile" => $this->utils->getPerson($email)
+			"profile" => $this->utils->getPerson($email)
 		);
 
 		// create the response
 		$response = new Response();
+		$response->setEmailLayout('pizarra.tpl');
 		$response->setResponseSubject("Ultimas 50 notas");
 		$response->createFromTemplate("pizarra.tpl", $responseContent);
 		return $response;
@@ -210,6 +209,7 @@ class Pizarra extends Service
 		if (empty($query))
 		{
 			$response = new Response();
+			$response->setEmailLayout('pizarra.tpl');
 			$response->createFromText("Por favor escriba un @username, un #hashtag o un texto a buscar.");
 			return $response;
 		}
@@ -294,6 +294,7 @@ class Pizarra extends Service
 		if (empty($listOfNotes))
 		{
 			$response = new Response();
+			$response->setEmailLayout('pizarra.tpl');
 			$response->createFromText("No se encontraron notas para el @username, #hashtag o texto que usted busc&oacute;.");
 			return $response;
 		}
@@ -344,6 +345,7 @@ class Pizarra extends Service
 
 		// create the response
 		$response = new Response();
+		$response->setEmailLayout('pizarra.tpl');
 		$response->setResponseSubject($subject);
 		$response->createFromTemplate("notas.tpl", $content);
 		return $response;
