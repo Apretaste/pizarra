@@ -31,7 +31,7 @@
 				font-family: Arial;
 			}
 			h1{
-				color: #5DBB48;
+				color: #9E100A;
 				text-transform: uppercase;
 				font-size: 22px;
 				font-weight: normal;
