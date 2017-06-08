@@ -538,7 +538,10 @@ class Pizarra extends Service
 			// get string of possible matches
 			$usernames = "'" . implode("','", $matches[0]) . "'";
 			$usernames = str_replace("@", "", $usernames);
-				
+			$usernames = str_replace(",'',", ",", $usernames);
+			$usernames = str_replace(",''", "", $usernames);
+            $usernames = str_replace("'',", "", $usernames);
+
 			// check real matches agains the database
 			$connection = new Connection();
 			$users = $connection->deepQuery("SELECT email,username FROM person WHERE username in ($usernames)");
