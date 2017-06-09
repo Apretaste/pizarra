@@ -1,16 +1,7 @@
 <?php
 
-// include the Twitter library
-use Abraham\TwitterOAuth\TwitterOAuth;
-include_once "../vendor/abraham/twitteroauth/autoload.php";
-
 class Pizarra extends Service
 {
-	private $KEY = "nXbz7LXFcKSemSb9v2pUh5XWV";
-	private $KEY_SECRET = "kjSF6NOppBgR3UsP4u9KjwavrLUFGOcWEeFKmcWCZQyLLpOWCm";
-	private $TOKEN = "4247250736-LgRlKf0MgOLQZY6VnaZTJUKTuDU7q0GefcEPYyB";
-	private $TOKEN_SECRET = "WXpiTky2v9RVlnJnrwSYlX2BOmJqv8W3Sfb1Ve61RrWa3";
-
 	/**
 	 * To list lastest notes or post a new note
 	 *
@@ -19,27 +10,25 @@ class Pizarra extends Service
 	 */
 	public function _main (Request $request)
 	{
-		
+		// do not allow default text to be posted
 		if ($request->query == "reemplace este texto por su nota")
 		{
 			$response = new Response();
+			$response->setEmailLayout('pizarra.tpl');
 			$responseContent = array("message" => 'Para que podamos escribir su nota, &iexcl;Usted primero debe escribirla!</p><p>Por favor presione el bot&oacute;n m&oacute;s abajo y reemplace en el asunto del email donde dice <b>"reemplace este texto por su nota"</b> con el texto a escribir e intente nuevamente.');
 			$response->setResponseSubject("No nos ha enviado ninguna nota!");
 			$response->createFromTemplate("message.tpl", $responseContent);
 			return $response;
 		}
 
-		// connect to the database
+		// get the user from the database
 		$connection = new Connection();
 		$email = $request->email;
-		
-		// get the user from the database
 		$res = $connection->deepQuery("SELECT username FROM person WHERE email = '$email'");
-		
+
 		$user = null;
-		if (isset($res[0]))
-			$user = $res[0]->username;
-		
+		if (isset($res[0])) $user = $res[0]->username;
+
 		// post whatever the user types
 		if ( ! empty($request->query))
 		{
@@ -58,11 +47,10 @@ class Pizarra extends Service
 					}
 				}
 			}
-			
+
 			// save note to the database
 			$text = substr($request->query, 0, 130);
 			$text = $connection->escape($text);
-			
 			$connection->deepQuery("INSERT INTO _pizarra_notes (email, text) VALUES ('$email', '$text')");
 
 			// search for mentions and alert the user mentioned
@@ -79,32 +67,26 @@ class Pizarra extends Service
 				// email the user mentioned
 				$responseContent = array("message" => "El usuario <b>@$user</b> le ha mencionado en una nota escrita en la pizarra. La nota se lee a continuaci&oacute;n:<br/><br/><br/>{$request->query}");
 				$response = new Response();
+				$response->setEmailLayout('pizarra.tpl');
 				$response->setResponseEmail($mention[1]); // email the user mentioned
 				$response->setResponseSubject("Han mencionado su nombre en la pizarra");
 				$response->createFromTemplate("message.tpl", $responseContent);
 				$responses[] = $response;
-				
+
 				// generate a notification
 				$this->utils->addNotification($mention[1], 'pizarra', "<b>@$user</b> le ha mencionado en Pizarra.<br/>&gt;{$request->query}", 'PIZARRA BUSCAR @'.$user, 'IMPORTANT');
 			}
 
-			// post in tweeter
-			$text = trim(str_replace(" @", " ", $text), "@"); // remove @usernames for twitter
-			$twitter = new TwitterOAuth($this->KEY, $this->KEY_SECRET, $this->TOKEN, $this->TOKEN_SECRET);
-			try {
-				$twitter->post("statuses/update", array("status" => "$user~> $text"));
-			} catch (Exception $e) {}
-
 			// save a notificaction
 			$this->utils->addNotification($request->email, 'pizarra', 'Su nota ha sido publicada en Pizarra', 'PIZARRA');
-			
+
 			// do not return any response when posting
 			return new Response();
 		}
 
 		// get the last 50 records from the db
 		$listOfNotes = $connection->deepQuery("
-			SELECT 
+			SELECT
 				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender,
 				A.likes*0.5 as loved,
 				DATEDIFF(inserted,CURRENT_DATE)+7 as days,
@@ -128,7 +110,7 @@ class Pizarra extends Service
 			if ($one == $two) return 0;
 			return ($one > $two) ? -1 : 1;
 		}
-		
+
 		usort($listOfNotes, "cmp");
 
 		// format the array of notes
@@ -151,7 +133,7 @@ class Pizarra extends Service
 
 			// highlight usernames and link it to NOTA
 			$note->text = $this->hightlightUsernames($note->text, $user);
-			
+
 			// add the text to the array
 			$notes[] = array(
 				"id" => $note->id,
@@ -170,7 +152,7 @@ class Pizarra extends Service
 
 			// check as seen
 			$connection->deepQuery("INSERT IGNORE INTO _pizarra_seen_notes (note, email) VALUES ('{$note->id}', '{$request->email}');");
-			
+
 			// only parse the first 50 notes
 			if(count($notes) > 50) break;
 		}
@@ -189,12 +171,9 @@ class Pizarra extends Service
 
 		// get last note
 		$lastnote = $connection->deepQuery("SELECT * FROM _pizarra_notes WHERE email = '$email' ORDER BY inserted DESC LIMIT 1 OFFSET 0;");
-		
-		if ( ! isset($lastnote[0])) 
-			$lastnote = false;
-		else 
-			$lastnote = $lastnote[0];
-		
+		if ( ! isset($lastnote[0])) $lastnote = false;
+		else $lastnote = $lastnote[0];
+
 		// create variables for the template
 		$responseContent = array(
 			"likes" => $likes,
@@ -204,11 +183,12 @@ class Pizarra extends Service
 			"notes" => $notes,
 			"lastnote" => $lastnote,
 			"username" => $user,
-            "profile" => $this->utils->getPerson($email)
+			"profile" => $this->utils->getPerson($email)
 		);
 
 		// create the response
 		$response = new Response();
+		$response->setEmailLayout('pizarra.tpl');
 		$response->setResponseSubject("Ultimas 50 notas");
 		$response->createFromTemplate("pizarra.tpl", $responseContent);
 		return $response;
@@ -229,25 +209,26 @@ class Pizarra extends Service
 		if (empty($query))
 		{
 			$response = new Response();
+			$response->setEmailLayout('pizarra.tpl');
 			$response->createFromText("Por favor escriba un @username, un #hashtag o un texto a buscar.");
 			return $response;
 		}
-		
+
 		$connection = new Connection();
-		
+
 		// get the username from the email
 		$usern = $connection->deepQuery("SELECT username FROM person WHERE email='{$request->email}'");
 		$usern = $usern[0]->username;
-		
+
 		// check if the query is a date
 		if (substr(strtolower($query),0,5)=='fecha')
 		{
 			$query = trim(substr($query,5));
-			
+
 			// by default
 			$where = " TRUE ";
 			$subject = "Ultimas 50 notas en Pizarra";
-			
+
 			// getting the date
 			if ($query != '')
 			{
@@ -263,31 +244,31 @@ class Pizarra extends Service
 				}
 			}
 		}
-		else 
+		else
 		{
 			// prepare to search for a text
 			// @TODO make it work with levestein type algorithm
 			$where = "A.text like '%$query%'";
 			$subject = 'Notas con el texto "'.$query.'"';
-	
+
 			// get the number of words passed
 			$numberOfWords = count(explode(" ", $query));
-	
+
 			// check if the query is a username
 			if ($numberOfWords == 1 && strlen($query) > 2 && $query[0] == "@")
 			{
 				$username = str_replace("@", "", $query);
-	
+
 				// $where = "B.username = '$username' OR A.text like '%$username%'";
-				
+
 				if (strcasecmp(trim($username), trim($usern)) === 0)
 					$subject = 'Mis notas en pizarra';
-				else 
+				else
 					$subject = "Notas de $query";
-	
+
 				$where = "B.username = '$username'";
 			}
-			
+
 			// check if the query is a hashtag
 			if ($numberOfWords == 1 && strlen($query) > 2 && ($query[0] == "*" || $query[0] == "#"))
 			{
@@ -296,7 +277,7 @@ class Pizarra extends Service
 				$subject = "Veces que $hashtag es mencionado";
 			}
 		}
-		
+
 
 		// get the last 50 records from the db
 		$connection = new Connection();
@@ -313,6 +294,7 @@ class Pizarra extends Service
 		if (empty($listOfNotes))
 		{
 			$response = new Response();
+			$response->setEmailLayout('pizarra.tpl');
 			$response->createFromText("No se encontraron notas para el @username, #hashtag o texto que usted busc&oacute;.");
 			return $response;
 		}
@@ -331,7 +313,7 @@ class Pizarra extends Service
 
 			// highlight usernames and link it to NOTA
 			$note->text = $this->hightlightUsernames($note->text, $usern);
-			
+
 			// add the text to the array
 			$notes[] = array(
 				"id" => $note->id,
@@ -345,7 +327,7 @@ class Pizarra extends Service
 				"likes" => $note->likes,
 				'source' => $note->source,
 				'email' => $note->email,
-				
+
 			);
 		}
 
@@ -363,6 +345,7 @@ class Pizarra extends Service
 
 		// create the response
 		$response = new Response();
+		$response->setEmailLayout('pizarra.tpl');
 		$response->setResponseSubject($subject);
 		$response->createFromTemplate("notas.tpl", $content);
 		return $response;
@@ -420,7 +403,7 @@ class Pizarra extends Service
 		// do not send any response
 		return new Response();
 	}
-	
+
 	/**
 	 * The user likes a note
 	 *
@@ -463,7 +446,7 @@ class Pizarra extends Service
 		// do not send any response
 		return new Response();
 	}
-	
+
 	/**
 	 * The user follows or unfollows another user
 	 *
@@ -486,17 +469,17 @@ class Pizarra extends Service
 			$person = $request->email;
 			$friend = $email[0]->email;
 			$res = $connection->deepQuery("SELECT * FROM relations WHERE user1='$person' AND user2='$friend'");
-				
+
 			// delete if exists
-			if(count($res) > 0) 
+			if(count($res) > 0)
 			{
 				$sql = "DELETE FROM relations WHERE user1='$person' AND user2='$friend'";
 			}
-			else // insert if does not exist 
+			else // insert if does not exist
 			{
 				$sql = "INSERT IGNORE INTO relations (user1,user2,type,confirmed) VALUES ('$person','$friend','follow',1);";
 				$un = $this->utils->getPerson($person)->username;
-				$this->utils->addNotification($friend, 'pizarra seguir', 'Ahora @'. $un. ' te sigue en Pizarra', 'PERFIL @'.$un);		
+				$this->utils->addNotification($friend, 'pizarra seguir', 'Ahora @'. $un. ' te sigue en Pizarra', 'PERFIL @'.$un);
 			}
 
 			// commit the query
@@ -545,7 +528,7 @@ class Pizarra extends Service
 			// check real matches agains the database
 			$connection = new Connection();
 			$users = $connection->deepQuery("SELECT email,username FROM person WHERE username in ($usernames)");
-				
+
 			// format the return
 			foreach ($users as $user) {
 				$return[] = array(
@@ -557,7 +540,7 @@ class Pizarra extends Service
 
 		return $return;
 	}
-	
+
 	/*
 	 * Extract email addresses from the text
 	 *
@@ -570,7 +553,7 @@ class Pizarra extends Service
 	{
 		$chars = '1234567890abcdefghijklmnopqrstuvwxyz._-@ ';
 		$text = strtolower($text);
-	
+
 		// Cleanning the text
 		for ($i = 0; $i < 256; $i ++)
 		{
@@ -579,31 +562,31 @@ class Pizarra extends Service
 				$text = str_replace(chr($i), ' ', $text);
 			}
 		}
-	
+
 		$text = trim(str_replace(array(
 			". ",
 			" .",
 			"- ",
 			"_ "
 		), " ", " $text "));
-	
+
 		// extract all phrases from text
 		$words = explode(' ', $text);
-	
+
 		// checking each phrase
 		$addresses = array();
 		foreach ($words as $w)
 		{
 			if (trim($w) === '')
 				continue;
-	
+
 				if ($this->checkAddress($w) === true && strpos($w, '@') !== false)
 					$addresses[] = $w;
 		}
-	
+
 		return $addresses;
 	}
-	
+
 	/**
 	 * Check if a string is an email address
 	 *
@@ -615,13 +598,13 @@ class Pizarra extends Service
 	private function checkAddress($email)
 	{
 		$regex = '/^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9-]+(\.[a-z0-9-]+)*(\.[a-z]{2,3})$/';
-	
+
 		if (preg_match($regex, $email))
 			return true;
-	
+
 		return false;
 	}
-	
+
 	/**
 	 * Search usernames mentioned on text and replace it with link to NOTA
 	 *
@@ -629,23 +612,23 @@ class Pizarra extends Service
 	 * @return mixed
 	 */
 	function hightlightUsernames($text, $current_user){
-		
+
 		// TODO: if exists 2 mentions @foo and @fooo, this method dont work
-		
+
 		// highlight usernames and link it to NOTA
 		$mentions = $this->findUsersMentionedOnText($text);
-		
+
 		if (is_array($mentions))
 		{
 			foreach($mentions as $mention)
 			{
 				// do not allow self-mentioning
 				if ($mention[0] == $current_user) continue;
-					
+
 				$validEmailAddress = $this->utils->getValidEmailAddress();
-				
+
 				$generatedLink = '<a href="mailto:'.$validEmailAddress.'?subject=NOTA @' . $mention[0].' hola amigo, vi que te mencionaron en PIZARRA y te escribo esta nota&body=Envie+el+correo+tal+y+como+esta,+ya+esta+preparado+para+usted">@' . $mention[0] . '</a>';
-					
+
 				$text = str_replace('@'.$mention[0], $generatedLink, $text);
 			}
 		}

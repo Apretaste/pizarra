@@ -12,7 +12,7 @@
 <table width="100%">
 	<tr>
 		<td>
-			<big><big><b>&Uacute;ltimas 50 notas</b></big></big><br/>
+			<h1>&Uacute;ltimas 50 notas</h1>
 			Usted tiene: <font color="red">{$likes} &hearts;</font> {separator} <font color="orange">{$follows} &#8619;</font> {separator} {$blocks} &#10006;
 		</td>
 		<td align="right" valign="top">
@@ -68,9 +68,3 @@
 	</tr>
 {/foreach}
 </table>
-
-{space30}
-
-<center>
-	<p><small>&iquest;Extra&ntilde;as a tus amigos? {link href="INVITAR su@amigo.cu" caption="Inv&iacute;talos" body="Cambie en el asunto su@amigo.cu por el email de la persona a invitar. Puede agregar varios emails, separados por espacios o comas"} y gana tickets para {link href="RIFA" caption="nuestra rifa"}.</small></p>
-</center>
