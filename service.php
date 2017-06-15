@@ -141,7 +141,7 @@ class Pizarra extends Service
 				"location" => $location,
 				"gender" => $note->gender,
 				"picture" => $note->picture,
-				"text" => $note->text,
+				"text" => utf8_encode($note->text),
 				"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)), // mysql timezone must be America/New_York
 				"likes" => $note->likes,
 				'source' => $note->source,
@@ -322,7 +322,7 @@ class Pizarra extends Service
 				"gender" => $note->gender,
 				"picture" => $note->picture,
 				"profile" => $this->utils->getPerson($note->email),
-				"text" => $note->text,
+				"text" => utf8_encode($note->text),
 				"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)), // mysql server timezone must be in America/New_York
 				"likes" => $note->likes,
 				'source' => $note->source,
