@@ -97,9 +97,8 @@ class Pizarra extends Service
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.email = B.email
-			WHERE A.email NOT IN (SELECT user2 FROM relations WHERE user1 = '{$request->email}' and type = 'blocked')
-			AND A.email NOT IN (SELECT relations.user2 FROM relations WHERE relations.user1 = '{$request->email}' AND relations.type = 'blocked')
-			-- AND A.email <> '{$request->email}'
+			WHERE A.email NOT IN (SELECT relations.user2 FROM relations WHERE relations.user1 = '{$request->email}' AND relations.type = 'blocked')
+			--AND A.email <> '{$request->email}'
 			ORDER BY inserted DESC
 			LIMIT 300");
 
