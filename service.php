@@ -66,17 +66,16 @@ class Pizarra extends Service
 			// add the text to the array
 			$notes[] = array(
 				"id" => $note->id,
-				"name" => $note->username,
+				"username" => $note->username,
 				"location" => $location,
 				"gender" => $note->gender,
-				"picture" => $note->picture,
+				"picture" => empty($note->picture) ? "" : "{$note->picture}.jpg",
 				"text" => utf8_encode($note->text),
 				"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)),
 				"likes" => $note->likes,
 				'source' => $note->source,
 				'email' => $note->email,
 				"friend" => $note->friend > 0,
-				"profile" => $profile
 			);
 
 			// check the note as seen by the user
@@ -232,17 +231,13 @@ class Pizarra extends Service
 			// add the text to the array
 			$notes[] = array(
 				"id" => $note->id,
-				"name" => $note->username,
+				"username" => $note->username,
 				"location" => $location,
 				"gender" => $note->gender,
-				"picture" => $note->picture,
-				"profile" => $this->utils->getPerson($note->email),
+				"picture" => empty($note->picture) ? "" : "{$note->picture}.jpg",
 				"text" => utf8_encode($note->text),
-				"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)), // mysql server timezone must be in America/New_York
-				"likes" => $note->likes,
-				'source' => $note->source,
-				'email' => $note->email,
-
+				"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)),
+				"likes" => $note->likes
 			);
 		}
 
@@ -252,16 +247,11 @@ class Pizarra extends Service
 			$notes[$i]['text'] = $this->highlightHashTags($notes[$i]['text']);
 		}
 
-		$content = array(
-			"header" => $subject,
-			"notes" => $notes
-		);
-
 		// create the response
 		$response = new Response();
 		$response->setEmailLayout('pizarra.tpl');
 		$response->setResponseSubject($subject);
-		$response->createFromTemplate("notas.tpl", $content);
+		$response->createFromTemplate("notas.tpl", array("header" => $subject, "notes" => $notes));
 		return $response;
 	}
 

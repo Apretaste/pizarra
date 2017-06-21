@@ -32,11 +32,11 @@
 			<font color="gray">
 				<small>
 					<font color="orange">{if $note['friend']}&#8619;{/if}</font>
-					{link href="PERFIL @{$note['name']}" caption="@{$note['name']}"},
+					{link href="PERFIL @{$note['username']}" caption="@{$note['username']}"},
 					{$note['location']},
 					{if $note['gender'] eq "M"}<font color="#4863A0">M</font>{/if}
 					{if $note['gender'] eq "F"}<font color=#F778A1>F</font>{/if}
-					{if $note['picture'] eq 1}[foto]{/if}
+					{if $note['picture']}[foto]{/if}
 					{separator}
 					<font color="gray">{$note['inserted']|date_format:"%e/%m %l:%M %p"}</font>
 				</small>
@@ -48,11 +48,11 @@
 				{link href="PIZARRA LIKE {$note['id']}" caption="&hearts; Like" body="Envie este email tal como esta para expresar gusto por este post de este usuario"}
 				[<font color="red">{$note['likes']}&hearts;</font>]
 				{separator}
-				{link href="NOTA @{$note['name']} Reemplace este texto por su nota" caption="&#x2605; Chat" body="Escriba en el asunto la nota que le llegara a @{$note['name']} y envie este email."}
+				{link href="NOTA @{$note['username']} Reemplace este texto por su nota" caption="&#x2605; Chat" body="Escriba en el asunto la nota que le llegara a @{$note['username']} y envie este email."}
 				{separator}
-				{link href="PIZARRA SEGUIR @{$note['name']}" caption="{if $note['friend']}&#10006; Parar{else}&#8619; Seguir{/if}" body="Siga a @{$note['name']} y vea sus notas arriba en la pizarra"}
+				{link href="PIZARRA SEGUIR @{$note['username']}" caption="{if $note['friend']}&#10006; Parar{else}&#8619; Seguir{/if}" body="Siga a @{$note['username']} y vea sus notas arriba en la pizarra"}
 				{separator}
-				{link href="PIZARRA BLOQUEAR @{$note['name']}" caption="&#10006; Quitar" body="Envie este email para bloquear a @{$note['name']} en tu Pizarra."}
+				{link href="PIZARRA BLOQUEAR @{$note['username']}" caption="&#10006; Quitar" body="Envie este email para bloquear a @{$note['username']} en tu Pizarra."}
 			</small>
 			{space5}
 		</td>

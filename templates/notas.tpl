@@ -11,10 +11,10 @@
 			{space5}
 			<font color="gray">
 				<small>
-					{link href="PERFIL @{$note['name']}" caption="@{$note['name']}"},
+					{link href="PERFIL @{$note['username']}" caption="@{$note['username']}"},
 					{if $note['gender'] eq "M"}<font color="#4863A0">M</font>,{/if}
 					{if $note['gender'] eq "F"}<font color=#F778A1>F</font>,{/if}
-					{if $note['picture'] eq 1}[foto],{/if}
+					{if $note['picture']}[foto],{/if}
 					{$note['location']},
 					<font color="red">{$note['likes']}&hearts;</font>
 					{separator}
