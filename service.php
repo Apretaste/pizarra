@@ -24,7 +24,6 @@ class Pizarra extends Service
 				A.likes*0.5 as loved,
 				DATEDIFF(inserted,CURRENT_DATE)+7 as days,
 				(SELECT COUNT(user1) FROM relations WHERE user1='{$request->email}' AND user2 = A.email AND type = 'follow') * 3 AS friend,
-				(SELECT COUNT(user1) FROM relations WHERE user2 = A.email AND type = 'follow') * 3 AS popular,
 				RAND() as luck,
 				(SELECT count(email) FROM _pizarra_seen_notes WHERE _pizarra_seen_notes.email = '{$request->email}' AND _pizarra_seen_notes.note = A.id) * 3 as seen
 			FROM _pizarra_notes A
@@ -36,8 +35,8 @@ class Pizarra extends Service
 
 		// sort results by weight. Too complex and slow in MySQL
 		usort($listOfNotes, function($a, $b) {
-			$one = $a->loved + $a->days + $a->friend + $a->popular + $a->luck - $a->seen;
-			$two = $b->loved + $b->days + $b->friend + $b->popular + $b->luck - $b->seen;
+			$one = $a->loved + $a->days + $a->friend + $a->luck - $a->seen;
+			$two = $b->loved + $b->days + $b->friend + $b->luck - $b->seen;
 			if ($one == $two) return 0;
 			return ($one > $two) ? -1 : 1;
 		});
