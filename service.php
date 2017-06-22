@@ -320,13 +320,22 @@ class Pizarra extends Service
 		$connection = new Connection();
 		$connection->deepQuery("UPDATE _pizarra_notes SET likes = likes + 1 WHERE id='{$request->query}'");
 
-		// Generate a notification
-		$note = $connection->deepQuery("SELECT * FROM _pizarra_notes WHERE id='{$request->query}'");
-		if (isset($note[0])) {
-			$email = $note[0]->email;
-			$person = $connection->deepQuery("SELECT * FROM person WHERE email = '{$request->email}';");
-			$person = $person[0];
-			$this->utils->addNotification($request->email, 'pizarra like', 'A @'.$person->username.' le gusta tu nota <b>"'.substr($note[0]->text,0,30).'"</b> en Pizarra.', "PERFIL @{$person->username}");
+		// pull the note liked
+		$note = $connection->deepQuery("SELECT email, `text` FROM _pizarra_notes WHERE id='{$request->query}'");
+
+		// generate a notification
+		if ($note)
+		{
+			$yourUsername = $this->utils->getUsernameFromEmail($request->email);
+			$creatorEmail = $note[0]->email;
+			$text = $note[0]->text;
+
+			// send web notification for web users
+			$pushNotification = new PushNotification();
+			$appid = $pushNotification->getAppId($creatorEmail, "pizarra");
+			if($appid) $pushNotification->pizarraHeartNote($appid, $yourUsername, $text);
+			// OR generate a notification via email
+			else $this->utils->addNotification($creatorEmail, 'pizarra like', "A @$yourUsername le gusto tu nota <b>$text</b> en Pizarra.", "PERFIL @$yourUsername");
 		}
 
 		// do not send any response
@@ -428,7 +437,7 @@ class Pizarra extends Service
 			$usernames = str_replace(",''", "", $usernames);
 			$usernames = str_replace("'',", "", $usernames);
 
-			// check real matches agains the database
+			// check real matches against the database
 			$connection = new Connection();
 			$users = $connection->deepQuery("SELECT email,username FROM person WHERE username in ($usernames)");
 
@@ -516,8 +525,11 @@ class Pizarra extends Service
 		$usersMentioned = "";
 		foreach ($mentions as $mention)
 		{
+			$mentionedUsername = $mention[0];
+			$mentionedEmail = $mention[1];
+
 			// do not allow self-mentioning
-			if ($mention[0] == $profile->username) continue;
+			if ($mentionedUsername == $profile->username) continue;
 
 			// save the list of users mentioned
 			$usersMentioned .= "@" . $mention[0] . ", ";
@@ -526,13 +538,17 @@ class Pizarra extends Service
 			$responseContent = array("message" => "El usuario <b>@{$profile->username}</b> le ha mencionado en una nota escrita en la pizarra. La nota se lee a continuaci&oacute;n:<br/><br/><br/>{$text}");
 			$response = new Response();
 			$response->setEmailLayout('pizarra.tpl');
-			$response->setResponseEmail($mention[1]); // email the user mentioned
+			$response->setResponseEmail($mentionedEmail);
 			$response->setResponseSubject("Han mencionado su nombre en la pizarra");
 			$response->createFromTemplate("message.tpl", $responseContent);
 			$responses[] = $response;
 
-			// generate a notification
-			$this->utils->addNotification($mention[1], 'pizarra', "<b>@{$profile->username}</b> le ha mencionado en Pizarra.<br/>&gt;{$text}", "PIZARRA BUSCAR @{$profile->username}", 'IMPORTANT');
+			// send web notification for web users
+			$pushNotification = new PushNotification();
+			$appid = $pushNotification->getAppId($mentionedEmail, "pizarra");
+			if($appid) $pushNotification->pizarraUserMentioned($appid, $profile->username);
+			// OR generate a notification via email
+			else $this->utils->addNotification($mentionedEmail, 'pizarra', "<b>@{$profile->username}</b> le ha mencionado en Pizarra.<br/>&gt;{$text}", "PIZARRA BUSCAR @{$profile->username}", 'IMPORTANT');
 		}
 
 		// save a notificaction
