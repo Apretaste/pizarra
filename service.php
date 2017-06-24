@@ -510,7 +510,7 @@ class Pizarra extends Service
 		{
 			foreach ($matches[0] as $e) {
 				$shortUrl = $this->utils->shortenUrl($e);
-				$text = str_replace($e, $shortUrl, $text);
+				if($shortUrl) $text = str_replace($e, $shortUrl, $text);
 			}
 		}
 
