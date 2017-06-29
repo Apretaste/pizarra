@@ -18,7 +18,7 @@ class Pizarra extends Service
 
 		// else get the last 50 records from the db
 		$connection = new Connection();
-		$listOfNotes = $connection->deepQuery("
+		$listOfNotes = $connection->query("
 			SELECT
 				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender,
 				A.likes*0.5 as loved,
@@ -78,7 +78,7 @@ class Pizarra extends Service
 			);
 
 			// check the note as seen by the user
-			$connection->deepQuery("INSERT IGNORE INTO _pizarra_seen_notes (note, email) VALUES ('{$note->id}', '{$request->email}');");
+			$connection->query("INSERT IGNORE INTO _pizarra_seen_notes (note, email) VALUES ('{$note->id}', '{$request->email}');");
 
 			// only parse the first 50 notes
 			if(count($notes) > 50) break;
@@ -91,9 +91,9 @@ class Pizarra extends Service
 		}
 
 		// get the likes, follows and blocks
-		$likes = $connection->deepQuery("SELECT SUM(likes) as likes FROM _pizarra_notes WHERE email='{$request->email}'")[0]->likes;
-		$follows = $connection->deepQuery("SELECT COUNT(id) as follows FROM relations WHERE user2='{$request->email}'")[0]->follows;
-		$blocks = $connection->deepQuery("SELECT COUNT(id) as blocks FROM relations WHERE user2='{$request->email}'")[0]->blocks;
+		$likes = $connection->query("SELECT SUM(likes) as likes FROM _pizarra_notes WHERE email='{$request->email}'")[0]->likes;
+		$follows = $connection->query("SELECT COUNT(id) as follows FROM relations WHERE user2='{$request->email}'")[0]->follows;
+		$blocks = $connection->query("SELECT COUNT(id) as blocks FROM relations WHERE user2='{$request->email}'")[0]->blocks;
 
 		// create variables for the template
 		$responseContent = array(
@@ -137,7 +137,7 @@ class Pizarra extends Service
 		$connection = new Connection();
 
 		// get the username from the email
-		$usern = $connection->deepQuery("SELECT username FROM person WHERE email='{$request->email}'");
+		$usern = $connection->query("SELECT username FROM person WHERE email='{$request->email}'");
 		$usern = $usern[0]->username;
 
 		// check if the query is a date
@@ -194,7 +194,7 @@ class Pizarra extends Service
 
 		// get the last 50 records from the db
 		$connection = new Connection();
-		$listOfNotes = $connection->deepQuery("
+		$listOfNotes = $connection->query("
 			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender
 			FROM _pizarra_notes A
 			LEFT JOIN person B
@@ -267,14 +267,14 @@ class Pizarra extends Service
 
 		// get the email from the username
 		$username = trim(strtolower(str_replace("@", "", $request->query)));
-		$email = $connection->deepQuery("SELECT email FROM person WHERE username = '$username'");
+		$email = $connection->query("SELECT email FROM person WHERE username = '$username'");
 
 		// add one to the likes for that post
 		if(count($email) > 0)
 		{
 			$person = $request->email;
 			$friend = $email[0]->email;
-			$connection->deepQuery("INSERT IGNORE INTO relations (user1,user2,type, confirmed) VALUES ('$person','$friend','blocked',1);");
+			$connection->query("INSERT IGNORE INTO relations (user1,user2,type, confirmed) VALUES ('$person','$friend','blocked',1);");
 		}
 
 		// do not send any response
@@ -294,13 +294,13 @@ class Pizarra extends Service
 
 		// get the email from the username
 		$username = trim(strtolower(str_replace("@", "", $request->query)));
-		$email = $connection->deepQuery("SELECT email FROM person WHERE username = '$username'");
+		$email = $connection->query("SELECT email FROM person WHERE username = '$username'");
 
 		if(count($email) > 0)
 		{
 			$person = $request->email;
 			$friend = $email[0]->email;
-			$connection->deepQuery("DELETE FROM relations WHERE user1 = '$person' AND user2 = '$friend' AND type = 'blocked' AND confirmed = 1;");
+			$connection->query("DELETE FROM relations WHERE user1 = '$person' AND user2 = '$friend' AND type = 'blocked' AND confirmed = 1;");
 		}
 
 		// do not send any response
@@ -318,10 +318,10 @@ class Pizarra extends Service
 	{
 		// add one to the likes for that post
 		$connection = new Connection();
-		$connection->deepQuery("UPDATE _pizarra_notes SET likes = likes + 1 WHERE id='{$request->query}'");
+		$connection->query("UPDATE _pizarra_notes SET likes = likes + 1 WHERE id='{$request->query}'");
 
 		// pull the note liked
-		$note = $connection->deepQuery("SELECT email, `text` FROM _pizarra_notes WHERE id='{$request->query}'");
+		$note = $connection->query("SELECT email, `text` FROM _pizarra_notes WHERE id='{$request->query}'");
 
 		// generate a notification
 		if ($note)
@@ -353,7 +353,7 @@ class Pizarra extends Service
 	{
 		// add one to the likes for that post
 		$connection = new Connection();
-		$connection->deepQuery("UPDATE _pizarra_notes SET likes = likes - 1 WHERE id='{$request->query}'");
+		$connection->query("UPDATE _pizarra_notes SET likes = likes - 1 WHERE id='{$request->query}'");
 
 		// do not send any response
 		return new Response();
@@ -372,7 +372,7 @@ class Pizarra extends Service
 
 		// get the email from the username
 		$username = trim(strtolower(str_replace("@", "", $request->query)));
-		$email = $connection->deepQuery("SELECT email FROM person WHERE username = '$username'");
+		$email = $connection->query("SELECT email FROM person WHERE username = '$username'");
 
 		// add one to the likes for that post
 		if(count($email) > 0)
@@ -380,7 +380,7 @@ class Pizarra extends Service
 			// check if the person is already following
 			$person = $request->email;
 			$friend = $email[0]->email;
-			$res = $connection->deepQuery("SELECT * FROM relations WHERE user1='$person' AND user2='$friend'");
+			$res = $connection->query("SELECT * FROM relations WHERE user1='$person' AND user2='$friend'");
 
 			// delete if exists
 			if(count($res) > 0)
@@ -395,7 +395,7 @@ class Pizarra extends Service
 			}
 
 			// commit the query
-			$connection->deepQuery($sql);
+			$connection->query($sql);
 		}
 
 		// do not send any response
@@ -439,7 +439,7 @@ class Pizarra extends Service
 
 			// check real matches against the database
 			$connection = new Connection();
-			$users = $connection->deepQuery("SELECT email,username FROM person WHERE username in ($usernames)");
+			$users = $connection->query("SELECT email,username FROM person WHERE username in ($usernames)");
 
 			// format the return
 			foreach ($users as $user) {
@@ -518,7 +518,7 @@ class Pizarra extends Service
 		$text = substr($text, 0, 130);
 		$connection = new Connection();
 		$text = $connection->escape($text);
-		$connection->deepQuery("INSERT INTO _pizarra_notes (email, `text`) VALUES ('{$profile->email}', '$text')");
+		$connection->query("INSERT INTO _pizarra_notes (email, `text`) VALUES ('{$profile->email}', '$text')");
 
 		// search for mentions and alert the user mentioned
 		$mentions = $this->findUsersMentionedOnText($text);
