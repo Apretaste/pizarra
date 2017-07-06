@@ -46,10 +46,9 @@ class Pizarra extends Service
 		$notes = array();
 		foreach ($listOfNotes as $note)
 		{
-			// only accept the first 5 notes per person
-			if( ! isset($emails[$note->email])) $emails[$note->email] = 1;
-			elseif($emails[$note->email] < 3) $emails[$note->email]++;
-			else continue;
+			// only accept the first note of person
+			if(isset($emails[$note->email])) continue;
+			$emails[$note->email] = true;
 
 			// get the name
 			$name = trim("{$note->first_name} {$note->last_name}");
@@ -529,12 +528,9 @@ class Pizarra extends Service
 
 							if(strlen($text) < 16) return new Response();
 
-							$text = $this->prepareText($text);
-							$text = $connection->escape($text);
+							$text = $this->prepareText($text, $profile);
+							
 							$connection->deepQuery("INSERT INTO _pizarra_comments (email, note, text) VALUES ('{$profile->email}', $id, '$text');");
-
-							// search for mentions and alert the user mentioned
-							$responses = $this->notifyMentions($profile, $text);
 
 							// save a notificaction
 							$this->utils->addNotification($profile->email, 'pizarra', 'Su comentario ha sido publicado en Pizarra', 'PIZARRA');
@@ -554,14 +550,11 @@ class Pizarra extends Service
 		// only post notes with real content
 		if(strlen($text) < 16) return new Response();
 
-		$text = $this->prepareText($text);
+		$text = $this->prepareText($text, $profile);
 
 		// save note to the database
 		$text = $connection->escape($text);
 		$connection->deepQuery("INSERT INTO _pizarra_notes (email, `text`) VALUES ('{$profile->email}', '$text')");
-
-		// search for mentions and alert the user mentioned
-		$responses = $this->notifyMentions($profile, $text);
 
 		// save a notificaction
 		$this->utils->addNotification($profile->email, 'pizarra', 'Su nota ha sido publicada en Pizarra', 'PIZARRA');
@@ -572,20 +565,20 @@ class Pizarra extends Service
 
 	public function _responder(Request $request)
 	{
+		// get the user's profile
+		$profile = $this->utils->getPerson($request->email);
+
 		// do not allow default text to be posted
 		if ($text == "reemplace este texto por su respuesta") return new Response();
 
 		// only post notes with real content
 		if(strlen($text) < 16) return new Response();
 
-		$text = $this->prepareText($text);
+		$text = $this->prepareText($text, $profile);
 
 		// save note to the database
 		$connection = new Connection();
-		$text = $connection->escape($text);
 		$connection->deepQuery("INSERT INTO _pizarra_notes (email, `text`) VALUES ('{$profile->email}', '$text')");
-
-		$responses = $this->notifyMentions($profile, $text);
 
 		// save a notificaction
 		$this->utils->addNotification($profile->email, 'pizarra', 'Su respuesta ha sido publicada en Pizarra', 'PIZARRA');
@@ -594,7 +587,7 @@ class Pizarra extends Service
 		return new Response();
 	}
 
-	private function prepareText($text)
+	private function prepareText($text, $profile)
 	{
 		// replace accents by unicode chars
 		$text = $this->utils->removeTildes($text);
@@ -621,12 +614,10 @@ class Pizarra extends Service
 			}
 		}
 
-		// save note to the database
 		$text = substr($text, 0, 130);
 		$connection = new Connection();
 		$text = $connection->escape($text);
-		$connection->query("INSERT INTO _pizarra_notes (email, `text`) VALUES ('{$profile->email}', '$text')");
-
+		
 		// search for mentions and alert the user mentioned
 		$mentions = $this->findUsersMentionedOnText($text);
 		$usersMentioned = "";
@@ -658,10 +649,6 @@ class Pizarra extends Service
 			else $this->utils->addNotification($mentionedEmail, 'pizarra', "<b>@{$profile->username}</b> le ha mencionado en Pizarra.<br/>&gt;{$text}", "PIZARRA BUSCAR @{$profile->username}", 'IMPORTANT');
 		}
 
-		// save a notificaction
-		$this->utils->addNotification($profile->email, 'pizarra', 'Su nota ha sido publicada en Pizarra', 'PIZARRA');
-
-		// do not return any response when posting
-		return new Response();
+		return $text;
 	}
 }
