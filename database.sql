@@ -37,3 +37,12 @@ CREATE TABLE _pizarra_reputation(
 	reputation int(11) not null default 0,
 	primary key (user1, user2)
 );
+
+CREATE TABLE _pizarra_actions(
+	email varchar(255) not null references person(email) on delete cascade on update cascade,
+	note int(11) not null references _pizarra_notes(id) on delete cascade on update cascade,
+	action enum('like', 'unlike') default 'like',
+	inserted timestamp not null default current_timestamp
+);
+
+ALTER TABLE _pizarra_notes ADD COLUMN unlikes int(11) not null default 0;

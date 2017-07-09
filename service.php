@@ -71,6 +71,8 @@ class Pizarra extends Service
 				"text" => utf8_encode($note->text),
 				"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)),
 				"likes" => $note->likes,
+                "unlikes" => $note->unlikes,
+                "comments" => $note->comments,
 				'source' => $note->source,
 				'email' => $note->email,
 				"friend" => $note->friend > 0,
@@ -318,6 +320,15 @@ class Pizarra extends Service
 		// add one to the likes for that post
 		$connection = new Connection();
 
+		// search for duplicated like
+		$result = $connection->query("SELECT * FROM _pizarra_actions WHERE email = '{$request->email}' AND note = '{$request->query}';");
+
+		$downgrade = false;
+        if (isset($result[0]->action))
+            if ($result[0]->action == 'like')
+                return new Response();
+            else
+                $downgrade = true;
 		// pull the note liked
 		$note = $connection->query("SELECT email, `text` FROM _pizarra_notes WHERE id='{$request->query}'");
 
@@ -325,7 +336,10 @@ class Pizarra extends Service
 		{
 			if ($note[0]->email != $request->email)
 			{
-				$connection->deepQuery("UPDATE _pizarra_notes SET likes = likes + 1 WHERE id='{$request->query}'");
+
+                $connection->query("DELETE FROM _pizarra_actions WHERE email = '{$request->email}' AND note = '{$request->query}';");
+                $connection->query("INSERT INTO _pizarra_actions (email, note, action) VALUES ('{$request->email}','{$request->query}','like');");
+                $connection->deepQuery("UPDATE _pizarra_notes SET likes = likes + 1 ".($downgrade ? ", unlikes = unlikes - 1" : "")." WHERE id='{$request->query}'");
 
 				// generate a notification
 				$yourUsername = $this->utils->getUsernameFromEmail($request->email);
@@ -360,15 +374,26 @@ class Pizarra extends Service
 	{
         $connection = new Connection();
 
-		// pull the note unliked
+        // search for duplicated like
+        $result = $connection->query("SELECT * FROM _pizarra_actions WHERE email = '{$request->email}' AND note = '{$request->query}';");
+
+        $downgrade = false;
+        if (isset($result[0]->action))
+            if ($result[0]->action == 'unlike')
+                return new Response();
+            else
+                $downgrade = true;
+
+        // pull the note unliked
 		$note = $connection->deepQuery("SELECT email, `text` FROM _pizarra_notes WHERE id='{$request->query}'");
 		if ($note)
 		{
 			if ($note[0]->email != $request->email)
 			{
 				// add one to the likes for that post
-				$connection = new Connection();
-				$connection->query("UPDATE _pizarra_notes SET likes = likes - 1 WHERE id='{$request->query}'");
+                $connection->query("DELETE FROM _pizarra_actions WHERE email = '{$request->email}' AND note = '{$request->query}';");
+                $connection->query("INSERT INTO _pizarra_actions (email, note, action) VALUES ('{$request->email}','{$request->query}','unlike');");
+				$connection->query("UPDATE _pizarra_notes SET unlikes = unlikes + 1 ".($downgrade ? ", likes = likes - 1" : "")." WHERE id='{$request->query}'");
 
 				// decrease author reputation
 				$connection->deepQuery("INSERT IGNORE INTO _pizarra_reputation (user1, user2) VALUES ('{$request->email}', '{$note[0]->email}');");
@@ -586,6 +611,77 @@ class Pizarra extends Service
 		// do not return any response when posting
 		return new Response();
 	}
+
+    /**
+     * NOTA subservice
+     *
+     * @author kumahacker
+     * @param Request $request
+     */
+	public function _nota(Request $request)
+    {
+		// get the user's profile
+		$profile = $this->utils->getPerson($request->email);
+		
+        $id = intval($request->query);
+	    $connection = new Connection();
+	    $sql = "SELECT
+				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender,
+				DATEDIFF(inserted,CURRENT_DATE) as days,
+				(SELECT COUNT(user1) FROM relations WHERE user1='{$request->email}' AND user2 = A.email AND type = 'follow') * 3 AS friend,
+				(SELECT count(email) FROM _pizarra_seen_notes WHERE _pizarra_seen_notes.email = '{$request->email}' AND _pizarra_seen_notes.note = A.id) * 3 as seen,
+				(SELECT reputation FROM _pizarra_reputation WHERE _pizarra_reputation.user1 = '{$request->email}' AND _pizarra_reputation.user2 = A.email) as reputation,
+				(SELECT count(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments
+			FROM _pizarra_notes A
+			LEFT JOIN person B
+			ON A.email = B.email
+			WHERE A.id = $id;";
+			
+		$result = $connection->query($sql);
+		
+		if (isset($result[0]->id))
+			$note = $result[0];
+
+		// get the location
+		if (empty($note->province)) $location = "Cuba";
+		else $location = ucwords(strtolower(str_replace("_", " ", $note->province)));
+
+		// highlight usernames and link it to NOTA
+		$note->text = $this->hightlightUsernames($note->text, $profile->username);
+
+		// add the text to the array
+		$note = array(
+			"id" => $note->id,
+			"username" => $note->username,
+			"location" => $location,
+			"gender" => $note->gender,
+			"picture" => empty($note->picture) ? "" : "{$note->picture}.jpg",
+			"text" => utf8_encode($note->text),
+			"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)),
+			"likes" => $note->likes,
+            "unlikes" => $note->unlikes,
+			'source' => $note->source,
+			'email' => $note->email,
+			"friend" => $note->friend > 0,
+		);
+	    
+	    $comments = $connection->query("SELECT *, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender
+			FROM _pizarra_comments A
+			LEFT JOIN person B
+			ON A.email = B.email
+			WHERE note = $id;");
+			
+	    if (!isset($comments[0])) $comments = [];
+		$note['comments'] = $comments;
+		
+		$response = new Response();
+		$responseContent = ['note' => $note];
+		//$responseContent['profile'] = $this->utils->getPerson($responseContent['email']);
+		//$responseContent['username'] = $responseContent['profile']->username;
+	    $response->createFromTemplate("note.tpl", $responseContent);
+
+	    return $response;
+    }
 
 	private function prepareText($text, $profile)
 	{
