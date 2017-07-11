@@ -9,8 +9,6 @@
 			{if $note['picture']}[foto]{/if}
 			{separator}
 			<font color="gray">{$note['inserted']|date_format:"%e/%m %l:%M %p"}</font>
-			{separator}
-			{link href="PIZARRA BLOQUEAR @{$note['username']}" caption="&#10006; Quitar" body="Envie este email para bloquear a @{$note['username']} en tu Pizarra."}
 		</small>
 	</font>
 	<br/>
@@ -18,18 +16,17 @@
 	<br/>
 	<small>
 		<font color="green">+</font>&nbsp;{link href="PIZARRA LIKE {$note['id']}" caption="Bueno" body="Envie este email tal como esta para expresar gusto por este post de este usuario"}
-		[<font>{$note['likes']}</font>]
+		({$note['likes']})
 		{separator}
 		<font color="red">-</font>&nbsp;{link href="PIZARRA UNLIKE {$note['id']}" caption="Malo" body="Envie este email tal como esta para expresar que este post no le gusta"}
-		[<font>{$note['unlikes']}</font>]
+		({$note['unlikes']})
 	
 	</small>
 	{space5}
-
+<hr/>
 <table width="100%">
 {foreach from=$note['comments'] item=comment}
 	<tr>
-	<td width="30"></td>
 		<td>
 			{space5}
 			<font color="gray">
