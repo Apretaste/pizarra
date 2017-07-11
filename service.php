@@ -673,7 +673,7 @@ class Pizarra extends Service
 			
 	    if (!isset($comments[0])) $comments = [];
 		$note['comments'] = $comments;
-		
+		$note['total_comments'] = count($comments);
 		$response = new Response();
 		$responseContent = ['note' => $note];
 		//$responseContent['profile'] = $this->utils->getPerson($responseContent['email']);

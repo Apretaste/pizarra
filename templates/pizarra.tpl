@@ -47,12 +47,18 @@
 			<big><big>{$note['text']|replace_url}</big></big>
 			<br/>
 			<small>
-				{link href="PIZARRA LIKE {$note['id']}" caption="&hearts; Like" body="Envie este email tal como esta para expresar gusto por este post de este usuario"}
+				{link href="PIZARRA LIKE {$note['id']}" caption="&hearts; Bueno" body="Envie este email tal como esta para expresar gusto por este post de este usuario"}
 				[<font color="red">{$note['likes']}&hearts;</font>]
 				{separator}
-				{link href="PIZARRA UNLIKE {$note['id']}" caption="No me gusta" body="Envie este email tal como esta para expresar que este post no le gusta"}
+				{link href="PIZARRA UNLIKE {$note['id']}" caption="Malo" body="Envie este email tal como esta para expresar que este post no le gusta"}
+				[<font color="black">{$note['unlikes']}</font>]
 				{separator}
-				{link href="NOTA @{$note['username']} Reemplace este texto por su nota" caption="&#x2605; Chat" body="Escriba en el asunto la nota que le llegara a @{$note['username']} y envie este email."}
+				{link href="PIZARRA {$note['id']}* Reemplace este texto por su comentario" caption="&#x2605; Comentar" body="Escriba en el asunto el comentario a la nota de @{$note['username']} y envie este email."}
+				{if $note['comments'] > 0}
+				{link href="PIZARRA NOTA {$note['id']}" caption="({$note['comments']})" body="Envie este email tal y como esta preparado para ver los comentarios de la nota."}
+				{else}
+				(0)
+				{/if}
 				{*
 				{separator}
 				{link href="PIZARRA SEGUIR @{$note['username']}" caption="{if $note['friend']}&#10006; Parar{else}&#8619; Seguir{/if}" body="Siga a @{$note['username']} y vea sus notas arriba en la pizarra"}
