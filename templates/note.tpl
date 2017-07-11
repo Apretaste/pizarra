@@ -17,11 +17,11 @@
 	<big><big>{$note['text']|replace_url}</big></big>
 	<br/>
 	<small>
-		{link href="PIZARRA LIKE {$note['id']}" caption="Bueno" body="Envie este email tal como esta para expresar gusto por este post de este usuario"}
-		[<font>{$note['likes']}&nbsp;&#9787;</font>]
+		{link href="PIZARRA LIKE {$note['id']}" caption="&#9787; Bueno" body="Envie este email tal como esta para expresar gusto por este post de este usuario"}
+		[<font>{$note['likes']}</font>]
 		{separator}
-		{link href="PIZARRA UNLIKE {$note['id']}" caption="Malo" body="Envie este email tal como esta para expresar que este post no le gusta"}
-		[<font>{$note['unlikes']}&nbsp;&#9785;</font>]
+		{link href="PIZARRA UNLIKE {$note['id']}" caption="&#9785; Malo" body="Envie este email tal como esta para expresar que este post no le gusta"}
+		[<font>{$note['unlikes']}</font>]
 	
 	</small>
 	{space5}
