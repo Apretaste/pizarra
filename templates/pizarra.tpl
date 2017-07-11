@@ -13,7 +13,6 @@
 	<tr>
 		<td>
 			<h1>&Uacute;ltimas 50 notas</h1>
-			Usted tiene: <font color="red">{$likes} &hearts;</font> {separator} <font color="orange">{$follows} &#8619;</font> {separator} {$blocks} &#10006;
 		</td>
 		<td align="right" valign="top">
 			{button href="PIZARRA reemplace este texto por su nota" body="Escriba una nota que no exeda los 130 caracteres en el asunto y envie este email" caption="&#10010; Escribir" size="small"}
