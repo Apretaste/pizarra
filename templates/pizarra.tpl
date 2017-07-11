@@ -47,10 +47,10 @@
 			<big><big>{$note['text']|replace_url}</big></big>
 			<br/>
 			<small>
-				<font size="14">&#9787;</font>{link href="PIZARRA LIKE {$note['id']}" caption="Bueno" body="Envie este email tal como esta para expresar gusto por este post de este usuario"}
+				<font size="5">&#9787;</font>&nbsp;{link href="PIZARRA LIKE {$note['id']}" caption="Bueno" body="Envie este email tal como esta para expresar gusto por este post de este usuario"}
 				[<font>{$note['likes']}</font>]
 				{separator}
-				<font size="12">&#9785;</font>{link href="PIZARRA UNLIKE {$note['id']}" caption="Malo" body="Envie este email tal como esta para expresar que este post no le gusta"}
+				<font size="4">&#9785;</font>&nbsp;{link href="PIZARRA UNLIKE {$note['id']}" caption="Malo" body="Envie este email tal como esta para expresar que este post no le gusta"}
 				[<font>{$note['unlikes']}</font>]
 				{separator}
 				{link href="PIZARRA {$note['id']}* Reemplace este texto por su comentario" caption="&#x2605; Comentar" body="Escriba en el asunto el comentario a la nota de @{$note['username']} y envie este email."}
