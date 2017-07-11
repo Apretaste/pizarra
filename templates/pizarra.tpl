@@ -48,7 +48,7 @@
 			<br/>
 			<small>
 				{link href="PIZARRA LIKE {$note['id']}" caption="Bueno" body="Envie este email tal como esta para expresar gusto por este post de este usuario"}
-				[<font color="red">{$note['likes']}&#9786;</font>]
+				[<font color="red">{$note['likes']}&#9787;</font>]
 				{separator}
 				{link href="PIZARRA UNLIKE {$note['id']}" caption="Malo" body="Envie este email tal como esta para expresar que este post no le gusta"}
 				[<font color="black">{$note['unlikes']}&#9785;</font>]
