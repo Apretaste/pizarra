@@ -30,7 +30,6 @@
 			{space5}
 			<font color="gray">
 				<small>
-					<font color="orange">{if $note['friend']}&#8619;{/if}</font>
 					{link href="PERFIL @{$note['username']}" caption="@{$note['username']}"},
 					{$note['location']},
 					{if $note['gender'] eq "M"}<font color="#4863A0">M</font>{/if}
