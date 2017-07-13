@@ -20,12 +20,13 @@ class Pizarra extends Service
 		$connection = new Connection();
 		$listOfNotes = $connection->query("
 			SELECT
-				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender,
+				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country,
 				DATEDIFF(inserted,CURRENT_DATE) as days,
 				(SELECT COUNT(user1) FROM relations WHERE user1='{$request->email}' AND user2 = A.email AND type = 'follow') * 3 AS friend,
 				(SELECT count(email) FROM _pizarra_seen_notes WHERE _pizarra_seen_notes.email = '{$request->email}' AND _pizarra_seen_notes.note = A.id) * 3 as seen,
 				(SELECT reputation FROM _pizarra_reputation WHERE _pizarra_reputation.user1 = '{$request->email}' AND _pizarra_reputation.user2 = A.email) as reputation,
-				(SELECT count(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments
+				(SELECT count(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments,
+				(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.email = '{$request->email}' AND action = 'like') > 0 AS isliked
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.email = B.email
@@ -72,10 +73,12 @@ class Pizarra extends Service
 				"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)),
 				"likes" => $note->likes,
                 "unlikes" => $note->unlikes,
+                "isliked" => $note->isliked,
                 "comments" => $note->comments,
 				'source' => $note->source,
 				'email' => $note->email,
 				"friend" => $note->friend > 0,
+                "country" => empty(trim($note->country)) ? "CU": $note->country
 			);
 
 			// check the note as seen by the user
@@ -196,7 +199,9 @@ class Pizarra extends Service
 		// get the last 50 records from the db
 		$connection = new Connection();
 		$listOfNotes = $connection->query("
-			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country,
+			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.email = '{$request->email}' AND action = 'like') > 0 AS isliked,
+			(SELECT count(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.email = B.email
@@ -237,7 +242,12 @@ class Pizarra extends Service
 				"picture" => empty($note->picture) ? "" : "{$note->picture}.jpg",
 				"text" => utf8_encode($note->text),
 				"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)),
-				"likes" => $note->likes
+				"likes" => $note->likes,
+                "isliked" => $note->isliked,
+                "gender" => $note->gender,
+                "unlikes" => $note->unlikes,
+                "comments" => $note->comments,
+                "country" => empty(trim($note->country)) ? "CU": $note->country
 			);
 		}
 
@@ -626,7 +636,7 @@ class Pizarra extends Service
         $id = intval($request->query);
 	    $connection = new Connection();
 	    $sql = "SELECT
-				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender,
+				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country,
 				DATEDIFF(inserted,CURRENT_DATE) as days,
 				(SELECT COUNT(user1) FROM relations WHERE user1='{$request->email}' AND user2 = A.email AND type = 'follow') * 3 AS friend,
 				(SELECT count(email) FROM _pizarra_seen_notes WHERE _pizarra_seen_notes.email = '{$request->email}' AND _pizarra_seen_notes.note = A.id) * 3 as seen,
@@ -663,6 +673,7 @@ class Pizarra extends Service
 			'source' => $note->source,
 			'email' => $note->email,
 			"friend" => $note->friend > 0,
+            "country" => empty(trim($note->country)) ? "CU": $note->country
 		);
 	    
 	    $comments = $connection->query("SELECT *, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender
