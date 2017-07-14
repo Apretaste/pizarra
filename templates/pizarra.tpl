@@ -15,8 +15,8 @@
 			<h1>&Uacute;ltimas 50 notas</h1>
 		</td>
 		<td align="right" valign="top">
-			{button href="PIZARRA reemplace este texto por su nota" body="Escriba una nota que no exeda los 130 caracteres en el asunto y envie este email" caption="&#10010; Escribir" size="small"}
-			{button href="PIZARRA BUSCAR reemplace esto por un texto, @username o #hashtag a buscar" body='Escriba un texto a buscar, un @username o un #hashtag en el asunto, despues de la palabra BUSCAR, y envie este email. Por ejemplo: "PIZARRA BUSCAR amistad", "PIZARRA BUSCAR @apretaste" o "PIZARRA BUSCAR #cuba"' caption="Buscar"  size="small" color="grey"}
+			{button href="PIZARRA" body="Escriba una nota que no exeda los 130 caracteres despues de la palabra PIZARRA en el asunto y envie este email" caption="&#10010; Escribir" size="small" popup="true" wait="false" desc="Inserte una nota a escribir en la Pizarra"}
+			{button href="PIZARRA BUSCAR" body='Escriba un texto a buscar, un @username o un #hashtag en el asunto despues de "PIZARRA BUSCAR" y envie este email. Por ejemplo: "PIZARRA BUSCAR amistad", "PIZARRA BUSCAR @apretaste" o "PIZARRA BUSCAR #cuba"' caption="Buscar"  size="small" color="grey" popup="true" desc="Escriba un texto, @username o #hashtag a buscar"}
 		</td>
 	</tr>
 </table>
@@ -43,13 +43,13 @@
 			<big><big>{$note['text']|replace_url}</big></big>
 			<br/>
 			<small>
-				<font color="green">+</font>&nbsp;{link href="PIZARRA LIKE {$note['id']}" caption="Bueno" body="Envie este email tal como esta para expresar gusto por este post de este usuario"}
+				<font color="green">+</font>&nbsp;{link href="PIZARRA LIKE {$note['id']}" caption="Bueno" body="Envie este email tal como esta para expresar gusto por este post de este usuario" wait="false"}
 				(<font>{$note['likes']}</font>)
 				{separator}
-				<font color="red">-</font>&nbsp;{link href="PIZARRA UNLIKE {$note['id']}" caption="Malo" body="Envie este email tal como esta para expresar que este post no le gusta"}
+				<font color="red">-</font>&nbsp;{link href="PIZARRA UNLIKE {$note['id']}" caption="Malo" body="Envie este email tal como esta para expresar que este post no le gusta" wait="false"}
 				(<font>{$note['unlikes']}</font>)
 				{separator}
-				{link href="PIZARRA {$note['id']}* Reemplace este texto por su comentario" caption="Comentar" body="Escriba en el asunto el comentario a la nota de @{$note['username']} y envie este email."}
+				{link href="PIZARRA {$note['id']}* " caption="Comentar" body="Escriba en el asunto un comentario a la nota de @{$note['username']} a continuacion del simbolo * y envie este email" popup="true" wait="false" desc="Inserte un comentario para esta nota"}
 				{if $note['comments'] > 0}
 					{link href="PIZARRA NOTA {$note['id']}" caption="({$note['comments']})"}
 				{else}
