@@ -21,8 +21,6 @@
 	</tr>
 </table>
 
-{space5}
-
 <table width="100%">
 {foreach from=$notes item=note}
 	<tr {if $note@iteration is even}bgcolor="#F2F2F2"{/if}>
@@ -53,10 +51,10 @@
 				{separator}
 				{link href="PIZARRA {$note['id']}* Reemplace este texto por su comentario" caption="Comentar" body="Escriba en el asunto el comentario a la nota de @{$note['username']} y envie este email."}
 				{if $note['comments'] > 0}
-				{link href="PIZARRA NOTA {$note['id']}" caption="({$note['comments']})" body="Envie este email tal y como esta preparado para ver los comentarios de la nota."}
+					{link href="PIZARRA NOTA {$note['id']}" caption="({$note['comments']})"}
 				{else}
-				(0)
-				{/if}				
+					(0)
+				{/if}
 			</small>
 			{space5}
 		</td>
