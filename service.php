@@ -72,13 +72,13 @@ class Pizarra extends Service
 				"text" => utf8_encode($note->text),
 				"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)),
 				"likes" => $note->likes,
-                "unlikes" => $note->unlikes,
-                "isliked" => $note->isliked,
-                "comments" => $note->comments,
+				"unlikes" => $note->unlikes,
+				"isliked" => $note->isliked,
+				"comments" => $note->comments,
 				'source' => $note->source,
 				'email' => $note->email,
 				"friend" => $note->friend > 0,
-                "country" => empty(trim($note->country)) ? "CU": $note->country
+				"country" => empty(trim($note->country)) ? "CU": $note->country
 			);
 
 			// check the note as seen by the user
@@ -99,12 +99,17 @@ class Pizarra extends Service
 		$follows = $connection->query("SELECT COUNT(id) as follows FROM relations WHERE user2='{$request->email}'")[0]->follows;
 		$blocks = $connection->query("SELECT COUNT(id) as blocks FROM relations WHERE user2='{$request->email}'")[0]->blocks;
 
+		// check if the user is connecting via the app or email
+		$di = \Phalcon\DI\FactoryDefault::getDefault();
+		$notFromApp = $di->get('environment') != "app";
+
 		// create variables for the template
 		$responseContent = array(
 			"likes" => $likes,
 			"follows" => $follows,
 			"blocks" => $blocks,
 			"isProfileIncomplete" => $profile->completion < 70,
+			"notFromApp" => $notFromApp,
 			"notes" => $notes,
 			"username" => $profile->username,
 			"profile" => $this->utils->getPerson($request->email)
@@ -243,11 +248,11 @@ class Pizarra extends Service
 				"text" => utf8_encode($note->text),
 				"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)),
 				"likes" => $note->likes,
-                "isliked" => $note->isliked,
-                "gender" => $note->gender,
-                "unlikes" => $note->unlikes,
-                "comments" => $note->comments,
-                "country" => empty(trim($note->country)) ? "CU": $note->country
+				"isliked" => $note->isliked,
+				"gender" => $note->gender,
+				"unlikes" => $note->unlikes,
+				"comments" => $note->comments,
+				"country" => empty(trim($note->country)) ? "CU": $note->country
 			);
 		}
 
@@ -334,11 +339,11 @@ class Pizarra extends Service
 		$result = $connection->query("SELECT * FROM _pizarra_actions WHERE email = '{$request->email}' AND note = '{$request->query}';");
 
 		$downgrade = false;
-        if (isset($result[0]->action))
-            if ($result[0]->action == 'like')
-                return new Response();
-            else
-                $downgrade = true;
+		if (isset($result[0]->action))
+			if ($result[0]->action == 'like')
+				return new Response();
+			else
+				$downgrade = true;
 		// pull the note liked
 		$note = $connection->query("SELECT email, `text` FROM _pizarra_notes WHERE id='{$request->query}'");
 
@@ -347,9 +352,9 @@ class Pizarra extends Service
 			if ($note[0]->email != $request->email)
 			{
 
-                $connection->query("DELETE FROM _pizarra_actions WHERE email = '{$request->email}' AND note = '{$request->query}';");
-                $connection->query("INSERT INTO _pizarra_actions (email, note, action) VALUES ('{$request->email}','{$request->query}','like');");
-                $connection->deepQuery("UPDATE _pizarra_notes SET likes = likes + 1 ".($downgrade ? ", unlikes = unlikes - 1" : "")." WHERE id='{$request->query}'");
+				$connection->query("DELETE FROM _pizarra_actions WHERE email = '{$request->email}' AND note = '{$request->query}';");
+				$connection->query("INSERT INTO _pizarra_actions (email, note, action) VALUES ('{$request->email}','{$request->query}','like');");
+				$connection->query("UPDATE _pizarra_notes SET likes = likes + 1 ".($downgrade ? ", unlikes = unlikes - 1" : "")." WHERE id='{$request->query}'");
 
 				// generate a notification
 				$yourUsername = $this->utils->getUsernameFromEmail($request->email);
@@ -364,8 +369,8 @@ class Pizarra extends Service
 				else $this->utils->addNotification($creatorEmail, 'pizarra like', "A @$yourUsername le gusto tu nota <b>$text</b> en Pizarra.", "PERFIL @$yourUsername");
 
 				// increase author reputation
-				$connection->deepQuery("INSERT IGNORE INTO _pizarra_reputation (user1, user2) VALUES ('{$request->email}', '{$note[0]->email}');");
-				$connection->deepQuery("UPDATE _pizarra_reputation SET reputation = reputation + 1 WHERE user1 = '{$request->email}' AND user2 = '{$note[0]->email}';");
+				$connection->query("INSERT IGNORE INTO _pizarra_reputation (user1, user2) VALUES ('{$request->email}', '{$note[0]->email}');");
+				$connection->query("UPDATE _pizarra_reputation SET reputation = reputation + 1 WHERE user1 = '{$request->email}' AND user2 = '{$note[0]->email}';");
 			}
 		}
 
@@ -382,32 +387,32 @@ class Pizarra extends Service
 	 */
 	public function _unlike (Request $request)
 	{
-        $connection = new Connection();
+		$connection = new Connection();
 
-        // search for duplicated like
-        $result = $connection->query("SELECT * FROM _pizarra_actions WHERE email = '{$request->email}' AND note = '{$request->query}';");
+		// search for duplicated like
+		$result = $connection->query("SELECT * FROM _pizarra_actions WHERE email = '{$request->email}' AND note = '{$request->query}';");
 
-        $downgrade = false;
-        if (isset($result[0]->action))
-            if ($result[0]->action == 'unlike')
-                return new Response();
-            else
-                $downgrade = true;
+		$downgrade = false;
+		if (isset($result[0]->action))
+			if ($result[0]->action == 'unlike')
+				return new Response();
+			else
+				$downgrade = true;
 
-        // pull the note unliked
-		$note = $connection->deepQuery("SELECT email, `text` FROM _pizarra_notes WHERE id='{$request->query}'");
+		// pull the note unliked
+		$note = $connection->query("SELECT email, `text` FROM _pizarra_notes WHERE id='{$request->query}'");
 		if ($note)
 		{
 			if ($note[0]->email != $request->email)
 			{
 				// add one to the likes for that post
-                $connection->query("DELETE FROM _pizarra_actions WHERE email = '{$request->email}' AND note = '{$request->query}';");
-                $connection->query("INSERT INTO _pizarra_actions (email, note, action) VALUES ('{$request->email}','{$request->query}','unlike');");
+				$connection->query("DELETE FROM _pizarra_actions WHERE email = '{$request->email}' AND note = '{$request->query}';");
+				$connection->query("INSERT INTO _pizarra_actions (email, note, action) VALUES ('{$request->email}','{$request->query}','unlike');");
 				$connection->query("UPDATE _pizarra_notes SET unlikes = unlikes + 1 ".($downgrade ? ", likes = likes - 1" : "")." WHERE id='{$request->query}'");
 
 				// decrease author reputation
-				$connection->deepQuery("INSERT IGNORE INTO _pizarra_reputation (user1, user2) VALUES ('{$request->email}', '{$note[0]->email}');");
-				$connection->deepQuery("UPDATE _pizarra_reputation SET reputation = reputation - 1 WHERE user1 = '{$request->email}' AND user2 = '{$note[0]->email}';");
+				$connection->query("INSERT IGNORE INTO _pizarra_reputation (user1, user2) VALUES ('{$request->email}', '{$note[0]->email}');");
+				$connection->query("UPDATE _pizarra_reputation SET reputation = reputation - 1 WHERE user1 = '{$request->email}' AND user2 = '{$note[0]->email}';");
 			}
 		}
 
@@ -519,11 +524,21 @@ class Pizarra extends Service
 
 		if (is_array($mentions))
 		{
+			$di = \Phalcon\DI\FactoryDefault::getDefault();
+			$isApp = $di->get('environment') == "app";
+
 			foreach($mentions as $mention)
 			{
 				if ($mention[0] == $current_user) continue; // do not allow self-mentioning
-				$validEmailAddress = $this->utils->getValidEmailAddress();
-				$generatedLink = '<a href="mailto:'.$validEmailAddress.'?subject=NOTA @' . $mention[0].' hola amigo, vi que te mencionaron en PIZARRA y te escribo esta nota&body=Envie+el+correo+tal+y+como+esta,+ya+esta+preparado+para+usted">@' . $mention[0] . '</a>';
+
+				// if the user is connecting via the app
+				if($isApp){
+					$generatedLink = "<a href='' onclick=\'apretaste.doaction('NOTA @{$mention[0]}', true, 'Escriba una nota para @{$mention[0]}', false);\'";
+				// if the app is connecting via email
+				}else{
+					$validEmailAddress = $this->utils->getValidEmailAddress();
+					$generatedLink = '<a href="mailto:'.$validEmailAddress.'?subject=NOTA @' . $mention[0].' hola amigo, vi que te mencionaron en PIZARRA y te escribo esta nota&body=Envie+el+correo+tal+y+como+esta,+ya+esta+preparado+para+usted">@' . $mention[0] . '</a>';
+				}
 				$text = str_replace('@'.$mention[0], $generatedLink, $text);
 			}
 		}
@@ -554,7 +569,7 @@ class Pizarra extends Service
 				{
 					$id = intval($id);
 
-					$r = $connection->deepQuery("SELECT COUNT(*) AS t FROM _pizarra_notes WHERE id = $id;");
+					$r = $connection->query("SELECT COUNT(*) AS t FROM _pizarra_notes WHERE id = $id;");
 					if (isset($r[0]->t))
 					{
 						if (intval($r[0]->t) == 1)
@@ -564,8 +579,8 @@ class Pizarra extends Service
 							if(strlen($text) < 16) return new Response();
 
 							$text = $this->prepareText($text, $profile);
-							
-							$connection->deepQuery("INSERT INTO _pizarra_comments (email, note, text) VALUES ('{$profile->email}', $id, '$text');");
+
+							$connection->query("INSERT INTO _pizarra_comments (email, note, text) VALUES ('{$profile->email}', $id, '$text');");
 
 							// save a notificaction
 							$this->utils->addNotification($profile->email, 'pizarra', 'Su comentario ha sido publicado en Pizarra', 'PIZARRA');
@@ -589,7 +604,7 @@ class Pizarra extends Service
 
 		// save note to the database
 		$text = $connection->escape($text);
-		$connection->deepQuery("INSERT INTO _pizarra_notes (email, `text`) VALUES ('{$profile->email}', '$text')");
+		$connection->query("INSERT INTO _pizarra_notes (email, `text`) VALUES ('{$profile->email}', '$text')");
 
 		// save a notificaction
 		$this->utils->addNotification($profile->email, 'pizarra', 'Su nota ha sido publicada en Pizarra', 'PIZARRA');
@@ -613,7 +628,7 @@ class Pizarra extends Service
 
 		// save note to the database
 		$connection = new Connection();
-		$connection->deepQuery("INSERT INTO _pizarra_notes (email, `text`) VALUES ('{$profile->email}', '$text')");
+		$connection->query("INSERT INTO _pizarra_notes (email, `text`) VALUES ('{$profile->email}', '$text')");
 
 		// save a notificaction
 		$this->utils->addNotification($profile->email, 'pizarra', 'Su respuesta ha sido publicada en Pizarra', 'PIZARRA');
@@ -622,20 +637,20 @@ class Pizarra extends Service
 		return new Response();
 	}
 
-    /**
-     * NOTA subservice
-     *
-     * @author kumahacker
-     * @param Request $request
-     */
+	/**
+	 * NOTA subservice
+	 *
+	 * @author kumahacker
+	 * @param Request $request
+	 */
 	public function _nota(Request $request)
-    {
+	{
 		// get the user's profile
 		$profile = $this->utils->getPerson($request->email);
-		
-        $id = intval($request->query);
-	    $connection = new Connection();
-	    $sql = "SELECT
+
+		$id = intval($request->query);
+		$connection = new Connection();
+		$sql = "SELECT
 				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country,
 				DATEDIFF(inserted,CURRENT_DATE) as days,
 				(SELECT COUNT(user1) FROM relations WHERE user1='{$request->email}' AND user2 = A.email AND type = 'follow') * 3 AS friend,
@@ -646,9 +661,9 @@ class Pizarra extends Service
 			LEFT JOIN person B
 			ON A.email = B.email
 			WHERE A.id = $id;";
-			
+
 		$result = $connection->query($sql);
-		
+
 		if (isset($result[0]->id))
 			$note = $result[0];
 
@@ -669,30 +684,30 @@ class Pizarra extends Service
 			"text" => utf8_encode($note->text),
 			"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)),
 			"likes" => $note->likes,
-            "unlikes" => $note->unlikes,
+			"unlikes" => $note->unlikes,
 			'source' => $note->source,
 			'email' => $note->email,
 			"friend" => $note->friend > 0,
-            "country" => empty(trim($note->country)) ? "CU": $note->country
+			"country" => empty(trim($note->country)) ? "CU": $note->country
 		);
-	    
-	    $comments = $connection->query("SELECT *, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender
+
+		$comments = $connection->query("SELECT *, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender
 			FROM _pizarra_comments A
 			LEFT JOIN person B
 			ON A.email = B.email
 			WHERE note = $id;");
-			
-	    if (!isset($comments[0])) $comments = [];
+
+		if (!isset($comments[0])) $comments = [];
 		$note['comments'] = $comments;
 		$note['total_comments'] = count($comments);
 		$response = new Response();
 		$responseContent = ['note' => $note];
 		//$responseContent['profile'] = $this->utils->getPerson($responseContent['email']);
 		//$responseContent['username'] = $responseContent['profile']->username;
-	    $response->createFromTemplate("note.tpl", $responseContent);
+		$response->createFromTemplate("note.tpl", $responseContent);
 
-	    return $response;
-    }
+		return $response;
+	}
 
 	private function prepareText($text, $profile)
 	{
@@ -724,7 +739,7 @@ class Pizarra extends Service
 		$text = substr($text, 0, 130);
 		$connection = new Connection();
 		$text = $connection->escape($text);
-		
+
 		// search for mentions and alert the user mentioned
 		$mentions = $this->findUsersMentionedOnText($text);
 		$usersMentioned = "";

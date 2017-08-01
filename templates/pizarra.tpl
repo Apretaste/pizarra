@@ -2,7 +2,7 @@
 <table width="100%">
 	<tr>
 		<td align="center" bgcolor="#F6CED8">
-			<p><small>Para usar pizarra al m&aacute;ximo, {link href="PERFIL EDITAR" caption="complete su perfil"}.</small></p>
+			<p><small>Para usar pizarra al m&aacute;ximo, {if $notFromApp}{link href="PERFIL EDITAR" caption="complete su perfil"}{else}complete su perfil{/if}.</small></p>
 		</td>
 	</tr>
 </table>
@@ -15,8 +15,10 @@
 			<h1>&Uacute;ltimas 50 notas</h1>
 		</td>
 		<td align="right" valign="top">
-			{button href="PIZARRA" body="Escriba una nota que no exeda los 130 caracteres despues de la palabra PIZARRA en el asunto y envie este email" caption="&#10010; Escribir" size="small" popup="true" wait="false" desc="Inserte una nota a escribir en la Pizarra"}
-			{button href="PIZARRA BUSCAR" body='Escriba un texto a buscar, un @username o un #hashtag en el asunto despues de "PIZARRA BUSCAR" y envie este email. Por ejemplo: "PIZARRA BUSCAR amistad", "PIZARRA BUSCAR @apretaste" o "PIZARRA BUSCAR #cuba"' caption="Buscar"  size="small" color="grey" popup="true" desc="Escriba un texto, @username o #hashtag a buscar"}
+			<nobr>
+			{button href="PIZARRA" body="Escriba una nota que no exeda los 130 caracteres despues de la palabra PIZARRA en el asunto y envie este email. Por ejemplo: PIZARRA hola gente como anda todo hoy?" body="Escriba una nota que no exeda los 130 caracteres" caption="&#10010; Escribir" size="small" popup="true" wait="false"}
+			{button href="PIZARRA BUSCAR" body='Escriba un texto a buscar, un @username o un #hashtag en el asunto despues de "PIZARRA BUSCAR" y envie este email. Por ejemplo: "PIZARRA BUSCAR amistad", "PIZARRA BUSCAR @apretaste" o "PIZARRA BUSCAR #cuba"' caption="Buscar" size="small" color="grey" popup="true" desc="Escriba un texto, @username o #hashtag a buscar"}
+			</nobr>
 		</td>
 	</tr>
 </table>
@@ -36,7 +38,7 @@
 					{separator}
 					<font color="gray">{$note['inserted']|date_format:"%e/%m %l:%M %p"}</font>
 					{separator}
-					{link href="PIZARRA BLOQUEAR @{$note['username']}" caption="&#10006; Quitar" body="Envie este email para bloquear a @{$note['username']} en tu Pizarra."}
+					{link href="PIZARRA BLOQUEAR @{$note['username']}" caption="&#10006; Quitar" body="Envie este email para bloquear a @{$note['username']} en tu Pizarra." wait="false"}
 				</small>
 			</font>
 			<br/>
