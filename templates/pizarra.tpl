@@ -16,8 +16,8 @@
 		</td>
 		<td align="right" valign="top">
 			<nobr>
-			{button href="PIZARRA" body="Escriba una nota que no exeda los 130 caracteres despues de la palabra PIZARRA en el asunto y envie este email. Por ejemplo: PIZARRA hola gente como anda todo hoy?" body="Escriba una nota que no exeda los 130 caracteres" caption="&#10010; Escribir" size="small" popup="true" wait="false"}
-			{button href="PIZARRA BUSCAR" body='Escriba un texto a buscar, un @username o un #hashtag en el asunto despues de "PIZARRA BUSCAR" y envie este email. Por ejemplo: "PIZARRA BUSCAR amistad", "PIZARRA BUSCAR @apretaste" o "PIZARRA BUSCAR #cuba"' caption="Buscar" size="small" color="grey" popup="true" desc="Escriba un texto, @username o #hashtag a buscar"}
+			{button href="PIZARRA" body="Escriba una nota que no exeda los 130 caracteres" caption="&#10010; Escribir" size="small" popup="true" wait="false"}
+			{button href="PIZARRA BUSCAR" caption="Buscar" size="small" color="grey" popup="true" desc="Escriba un texto, @username o #hashtag a buscar"}
 			</nobr>
 		</td>
 	</tr>

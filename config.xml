@@ -7,7 +7,7 @@
 		<alias>pizarradecuba</alias>
 	</serviceAliases>
 	<serviceDescription>Conecta miles de Cubanos entre ellos y con el mundo, y nos permite dejar un trazo de tiza en esta gran pizarra global</serviceDescription>
-	<creatorEmail>salvi.pascual@gmail.com</creatorEmail>
+	<creatorEmail>salvi@apretaste.com</creatorEmail>
 	<serviceCategory>social</serviceCategory>
 	<serviceUsage>
 		<![CDATA[
@@ -29,5 +29,4 @@
 			Recibir&aacute; un email de confirmaci&oacute;n.
 		]]>
 	</serviceUsage>
-	<group>apretaste</group>
 </service>
