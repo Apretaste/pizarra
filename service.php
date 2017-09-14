@@ -23,14 +23,14 @@ class Pizarra extends Service
 				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country,
 				DATEDIFF(inserted,CURRENT_DATE) as days,
 				(SELECT COUNT(user1) FROM relations WHERE user1='{$request->email}' AND user2 = A.email AND type = 'follow') * 3 AS friend,
-				(SELECT count(email) FROM _pizarra_seen_notes WHERE _pizarra_seen_notes.email = '{$request->email}' AND _pizarra_seen_notes.note = A.id) * 3 as seen,
+				(SELECT COUNT(email) FROM _pizarra_seen_notes WHERE _pizarra_seen_notes.email = '{$request->email}' AND _pizarra_seen_notes.note = A.id) * 3 as seen,
 				(SELECT reputation FROM _pizarra_reputation WHERE _pizarra_reputation.user1 = '{$request->email}' AND _pizarra_reputation.user2 = A.email) as reputation,
-				(SELECT count(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.email = '{$request->email}' AND action = 'like') > 0 AS isliked
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.email = B.email
 			WHERE A.email NOT IN (SELECT relations.user2 FROM relations WHERE relations.user1 = '{$request->email}' AND relations.type = 'blocked')
+			AND A.ad = 0
 			ORDER BY inserted DESC
 			LIMIT 300");
 
@@ -41,6 +41,18 @@ class Pizarra extends Service
 			if ($one == $two) return 0;
 			return ($one > $two) ? -1 : 1;
 		});
+
+		// get one ad to show on top
+		$ads = $connection->query("
+			SELECT
+				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country,
+				0 as days, 0 as friend, 0 as seen, 0 as reputation,
+				(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.email = '{$request->email}' AND action = 'like') > 0 AS isliked
+			FROM _pizarra_notes A
+			LEFT JOIN person B
+			ON A.email = B.email
+			WHERE A.ad = 1");
+		$listOfNotes = array_merge($ads, $listOfNotes);
 
 		// format the array of notes
 		$emails = array();
@@ -75,10 +87,10 @@ class Pizarra extends Service
 				"unlikes" => $note->unlikes,
 				"isliked" => $note->isliked,
 				"comments" => $note->comments,
-				'source' => $note->source,
 				'email' => $note->email,
 				"friend" => $note->friend > 0,
-				"country" => empty(trim($note->country)) ? "CU": $note->country
+				"country" => empty(trim($note->country)) ? "CU": $note->country,
+				"ad" => $note->ad
 			);
 
 			// check the note as seen by the user
@@ -387,17 +399,15 @@ class Pizarra extends Service
 	 */
 	public function _unlike (Request $request)
 	{
+		// search for duplicated unlike
 		$connection = new Connection();
-
-		// search for duplicated like
 		$result = $connection->query("SELECT * FROM _pizarra_actions WHERE email = '{$request->email}' AND note = '{$request->query}';");
 
 		$downgrade = false;
-		if (isset($result[0]->action))
-			if ($result[0]->action == 'unlike')
-				return new Response();
-			else
-				$downgrade = true;
+		if (isset($result[0]->action)) {
+			if ($result[0]->action == 'unlike') return new Response();
+			else $downgrade = true;
+		}
 
 		// pull the note unliked
 		$note = $connection->query("SELECT email, `text` FROM _pizarra_notes WHERE id='{$request->query}'");
@@ -405,7 +415,7 @@ class Pizarra extends Service
 		{
 			if ($note[0]->email != $request->email)
 			{
-				// add one to the likes for that post
+				// add one to the unlikes for that post
 				$connection->query("DELETE FROM _pizarra_actions WHERE email = '{$request->email}' AND note = '{$request->query}';");
 				$connection->query("INSERT INTO _pizarra_actions (email, note, action) VALUES ('{$request->email}','{$request->query}','unlike');");
 				$connection->query("UPDATE _pizarra_notes SET unlikes = unlikes + 1 ".($downgrade ? ", likes = likes - 1" : "")." WHERE id='{$request->query}'");
@@ -575,27 +585,22 @@ class Pizarra extends Service
 						if (intval($r[0]->t) == 1)
 						{
 							$text = trim(substr($text,strpos($text, '*')+1));
-
 							if(strlen($text) < 16) return new Response();
-
 							$text = $this->prepareText($text, $profile);
-
-							$connection->query("INSERT INTO _pizarra_comments (email, note, text) VALUES ('{$profile->email}', $id, '$text');");
+							$connection->query("
+								INSERT INTO _pizarra_comments (email, note, text) VALUES ('{$profile->email}', $id, '$text');
+								UPDATE _pizarra_notes SET comments=comments+1 WHERE id=$id");
 
 							// save a notificaction
 							$this->utils->addNotification($profile->email, 'pizarra', 'Su comentario ha sido publicado en Pizarra', 'PIZARRA');
 
 							// do not return any response when posting
 							return new Response();
-
 						}
 					}
 				}
 			}
 		}
-
-		// do not allow default text to be posted
-		if ($text == "reemplace este texto por su nota") return new Response();
 
 		// only post notes with real content
 		if(strlen($text) < 16) return new Response();
@@ -617,9 +622,6 @@ class Pizarra extends Service
 	{
 		// get the user's profile
 		$profile = $this->utils->getPerson($request->email);
-
-		// do not allow default text to be posted
-		if ($text == "reemplace este texto por su respuesta") return new Response();
 
 		// only post notes with real content
 		if(strlen($text) < 16) return new Response();
@@ -654,18 +656,16 @@ class Pizarra extends Service
 				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country,
 				DATEDIFF(inserted,CURRENT_DATE) as days,
 				(SELECT COUNT(user1) FROM relations WHERE user1='{$request->email}' AND user2 = A.email AND type = 'follow') * 3 AS friend,
-				(SELECT count(email) FROM _pizarra_seen_notes WHERE _pizarra_seen_notes.email = '{$request->email}' AND _pizarra_seen_notes.note = A.id) * 3 as seen,
+				(SELECT COUNT(email) FROM _pizarra_seen_notes WHERE _pizarra_seen_notes.email = '{$request->email}' AND _pizarra_seen_notes.note = A.id) * 3 as seen,
 				(SELECT reputation FROM _pizarra_reputation WHERE _pizarra_reputation.user1 = '{$request->email}' AND _pizarra_reputation.user2 = A.email) as reputation,
-				(SELECT count(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments
+				(SELECT COUNT(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.email = B.email
 			WHERE A.id = $id;";
 
 		$result = $connection->query($sql);
-
-		if (isset($result[0]->id))
-			$note = $result[0];
+		if (isset($result[0]->id)) $note = $result[0];
 
 		// get the location
 		if (empty($note->province)) $location = "Cuba";
@@ -685,10 +685,10 @@ class Pizarra extends Service
 			"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)),
 			"likes" => $note->likes,
 			"unlikes" => $note->unlikes,
-			'source' => $note->source,
 			'email' => $note->email,
 			"friend" => $note->friend > 0,
-			"country" => empty(trim($note->country)) ? "CU": $note->country
+			"country" => empty(trim($note->country)) ? "CU": $note->country,
+			'ad' => $note->ad
 		);
 
 		$comments = $connection->query("SELECT *, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender
@@ -697,7 +697,7 @@ class Pizarra extends Service
 			ON A.email = B.email
 			WHERE note = $id;");
 
-		if (!isset($comments[0])) $comments = [];
+		if ( ! isset($comments[0])) $comments = [];
 		$note['comments'] = $comments;
 		$note['total_comments'] = count($comments);
 		$response = new Response();
