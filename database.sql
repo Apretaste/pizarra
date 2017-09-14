@@ -4,15 +4,19 @@ CREATE TABLE IF NOT EXISTS `_pizarra_users` (
   `penalized_until` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'If the user had been reported X times, will be penalized til this date'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-
 CREATE TABLE IF NOT EXISTS `_pizarra_notes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `email` varchar(50) NOT NULL,
+  `email` char(100) NOT NULL,
   `text` varchar(140) NOT NULL,
   `likes` int(5) NOT NULL DEFAULT '0',
+  `unlikes` int(5) NOT NULL DEFAULT '0',
+  `comments` int(5) NOT NULL DEFAULT '0',
+  `views` int(7) NOT NULL DEFAULT '0',
   `inserted` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `auto` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Autopost from ourside, 0=User insertion',
+  `ad` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1316 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=31018 ;
 
 CREATE TABLE IF NOT EXISTS `_pizarra_seen_notes` (
 	note int(11) NOT NULL,
@@ -30,7 +34,6 @@ CREATE TABLE _pizarra_comments(
 	read_date timestamp null default null
 );
 
-DROP TABLE _pizarra_reputation;
 CREATE TABLE _pizarra_reputation(
     user1 varchar(255) not null,
 	user2 varchar(255) not null,
@@ -44,5 +47,3 @@ CREATE TABLE _pizarra_actions(
 	action enum('like', 'unlike') default 'like',
 	inserted timestamp not null default current_timestamp
 );
-
-ALTER TABLE _pizarra_notes ADD COLUMN unlikes int(11) not null default 0;

@@ -100,6 +100,12 @@ class Pizarra extends Service
 			if(count($notes) > 50) break;
 		}
 
+		// mark all notes as viewed
+		$viewed = array();
+		foreach ($notes as $n) $viewed[] = $n['id'];
+		$viewed = implode(",", $viewed);
+		$connection->query("UPDATE _pizarra_notes SET views=views+1 WHERE id IN ($viewed)");
+
 		// highlight hash tags
 		for ($i = 0; $i < count($notes); $i ++)
 		{
