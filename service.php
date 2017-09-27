@@ -104,7 +104,8 @@ class Pizarra extends Service
 		$viewed = array();
 		foreach ($notes as $n) $viewed[] = $n['id'];
 		$viewed = implode(",", $viewed);
-		$connection->query("UPDATE _pizarra_notes SET views=views+1 WHERE id IN ($viewed)");
+		if (trim($viewed) !== '')
+			$connection->query("UPDATE _pizarra_notes SET views=views+1 WHERE id IN ($viewed)");
 
 		// highlight hash tags
 		for ($i = 0; $i < count($notes); $i ++)
