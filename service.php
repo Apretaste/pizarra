@@ -733,7 +733,7 @@ class Pizarra extends Service
 		}
 
 		// shorten all urls in the note
-		$pattern = '#[-a-zA-Z0-9@:%_\+.~\#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~\#?&//=]*)?#si';
+		/*$pattern = '#[-a-zA-Z0-9@:%_\+.~\#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~\#?&//=]*)?#si';
 		preg_match_all($pattern, $text, $matches);
 		if( ! empty($matches[0]))
 		{
@@ -741,7 +741,7 @@ class Pizarra extends Service
 				$shortUrl = $this->utils->shortenUrl($e);
 				if($shortUrl) $text = str_replace($e, $shortUrl, $text);
 			}
-		}
+		}*/
 
 		$text = substr($text, 0, 130);
 		$connection = new Connection();
