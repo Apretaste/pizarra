@@ -521,7 +521,7 @@ class Pizarra extends Service
 
 			// format the return
 			foreach ($users as $user) {
-				$return[] = array($user->username, $user->email);
+				$return[] = array("user"=>$user->username, "email"=>$user->email);
 			}
 		}
 
@@ -546,17 +546,17 @@ class Pizarra extends Service
 
 			foreach($mentions as $mention)
 			{
-				if ($mention[0] == $current_user) continue; // do not allow self-mentioning
+				if ($mention['user'] == $current_user) continue; // do not allow self-mentioning
 
 				// if the user is connecting via the app
 				if($isApp){
-					$generatedLink = "<a href='' onclick=\'apretaste.doaction('NOTA @{$mention[0]}', true, 'Escriba una nota para @{$mention[0]}', false);\'";
+					$generatedLink = "<a href='' onclick=\'apretaste.doaction('NOTA @{$mention['user']}', true, 'Escriba una nota para @{$mention['user']}', false);\'";
 				// if the app is connecting via email
 				}else{
 					$validEmailAddress = $this->utils->getValidEmailAddress();
-					$generatedLink = '<a href="mailto:'.$validEmailAddress.'?subject=NOTA @' . $mention[0].' hola amigo, vi que te mencionaron en PIZARRA y te escribo esta nota&body=Envie+el+correo+tal+y+como+esta,+ya+esta+preparado+para+usted">@' . $mention[0] . '</a>';
+					$generatedLink = '<a href="mailto:'.$validEmailAddress.'?subject=NOTA @' . $mention['user'].' hola amigo, vi que te mencionaron en PIZARRA y te escribo esta nota&body=Envie+el+correo+tal+y+como+esta,+ya+esta+preparado+para+usted">@' . $mention['user'] . '</a>';
 				}
-				$text = str_replace('@'.$mention[0], $generatedLink, $text);
+				$text = str_replace('@'.$mention['user'], $generatedLink, $text);
 			}
 		}
 
@@ -721,61 +721,25 @@ class Pizarra extends Service
 		// replace accents by unicode chars
 		$text = $this->utils->removeTildes($text);
 
-		// replace known emails in text by their usernames
-		$pattern = "/(?:[a-z0-9!#$%&'*+=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+=?^_`{|}~-]+)*|\"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/";
-		preg_match_all($pattern, $text, $matches);
-		if( ! empty($matches[0]))
-		{
-			foreach ($matches[0] as $e) {
-				$person = $this->utils->getPerson($e);
-				if($person) $text = str_replace($e, "@{$person->username}", $text);
-			}
-		}
-
-		// shorten all urls in the note
-		/*$pattern = '#[-a-zA-Z0-9@:%_\+.~\#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~\#?&//=]*)?#si';
-		preg_match_all($pattern, $text, $matches);
-		if( ! empty($matches[0]))
-		{
-			foreach ($matches[0] as $e) {
-				$shortUrl = $this->utils->shortenUrl($e);
-				if($shortUrl) $text = str_replace($e, $shortUrl, $text);
-			}
-		}*/
-
+		// shorten and clean the text
 		$text = substr($text, 0, 130);
 		$connection = new Connection();
 		$text = $connection->escape($text);
 
 		// search for mentions and alert the user mentioned
 		$mentions = $this->findUsersMentionedOnText($text);
-		$usersMentioned = "";
 		foreach ($mentions as $mention)
 		{
-			$mentionedUsername = $mention[0];
-			$mentionedEmail = $mention[1];
-
 			// do not allow self-mentioning
-			if ($mentionedUsername == $profile->username) continue;
-
-			// save the list of users mentioned
-			$usersMentioned .= "@" . $mention[0] . ", ";
-
-			// email the user mentioned
-			$responseContent = array("message" => "El usuario <b>@{$profile->username}</b> le ha mencionado en una nota escrita en la pizarra. La nota se lee a continuaci&oacute;n:<br/><br/><br/>{$text}");
-			$response = new Response();
-			$response->setEmailLayout('pizarra.tpl');
-			$response->setResponseEmail($mentionedEmail);
-			$response->setResponseSubject("Han mencionado su nombre en la pizarra");
-			$response->createFromTemplate("message.tpl", $responseContent);
-			$responses[] = $response;
+			if ($mention['user'] == $profile->username) continue;
 
 			// send web notification for web users
 			$pushNotification = new PushNotification();
-			$appid = $pushNotification->getAppId($mentionedEmail, "pizarra");
+			$appid = $pushNotification->getAppId($mention['email'], "pizarra");
 			if($appid) $pushNotification->pizarraUserMentioned($appid, $profile->username);
-			// OR generate a notification via email
-			else $this->utils->addNotification($mentionedEmail, 'pizarra', "<b>@{$profile->username}</b> le ha mencionado en Pizarra.<br/>&gt;{$text}", "PIZARRA BUSCAR @{$profile->username}", 'IMPORTANT');
+
+			// create a notification
+			$this->utils->addNotification($mention['email'], 'pizarra', "<b>@{$profile->username}</b> le ha mencionado en Pizarra", "PIZARRA BUSCAR @{$profile->username}", 'IMPORTANT');
 		}
 
 		return $text;

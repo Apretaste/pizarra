@@ -74,7 +74,7 @@
 				<!--footer-->
 				<tr>
 					<td align="center" colspan="3" bgcolor="#F2F2F2" style="padding: 20px 0px;">
-						<small>&iquest;Tienes internet? Accede v&iacute;a <a target="_blank" href="http://pizarracuba.com">PizarraCuba.com</a></small>
+						<small>Pizarra &copy; {$smarty.now|date_format:"%Y"}. All rights reserved.</small>
 					</td>
 				</tr>
 			</table>
