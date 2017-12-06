@@ -64,7 +64,7 @@
 				<tr>
 					<!--logo-->
 					<td valign="middle" style="padding-left:25px;">
-						<span style="color:#9E100A; font-size:60px; font-family:Times;"><i><b>P</b></i></span>
+						{link href="PIZARRA" caption="<i><b>P</b></i>" style="color:#9E100A; font-size:60px; font-family:Times; text-decoration: none;"}
 					</td>
 
 					<!--notifications & profile-->
