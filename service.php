@@ -645,7 +645,7 @@ class Pizarra extends Service
 				// if the user is connecting via the app
 				$params['caption'] = "text";
 				$params['href'] = "WEB diariodecuna.com";
-				$generatedLink = smarty_function_link($params, NULL);
+				$generatedLink = smarty_function_link($params, null);
 				$text = str_replace('@'.$mention['user'], $generatedLink, $text);
 			}
 		}
