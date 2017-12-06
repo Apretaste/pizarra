@@ -633,8 +633,10 @@ class Pizarra extends Service
 
 		if (is_array($mentions))
 		{
+			// include the function to create links
 			$di = \Phalcon\DI\FactoryDefault::getDefault();
-			$isApp = $di->get('environment') == "app";
+			$wwwroot = $di->get('path')['root'];
+			require_once "$wwwroot/app/plugins/function.link.php";
 
 			foreach($mentions as $mention)
 			{
@@ -644,16 +646,6 @@ class Pizarra extends Service
 				$params['caption'] = "text";
 				$params['href'] = "WEB diariodecuna.com";
 				$generatedLink = smarty_function_link($params);
-die($generatedLink);
-/*
-				if($isApp){
-					$generatedLink = "<a href='' onclick=\'apretaste.doaction('NOTA @{$mention['user']}', true, 'Escriba una nota para @{$mention['user']}', false);\'";
-				// if the app is connecting via email
-				}else{
-					$validEmailAddress = $this->utils->getValidEmailAddress();
-					$generatedLink = '<a href="mailto:'.$validEmailAddress.'?subject=NOTA @' . $mention['user'].' hola amigo, vi que te mencionaron en PIZARRA y te escribo esta nota&body=Envie+el+correo+tal+y+como+esta,+ya+esta+preparado+para+usted">@' . $mention['user'] . '</a>';
-				}
-*/
 				$text = str_replace('@'.$mention['user'], $generatedLink, $text);
 			}
 		}
