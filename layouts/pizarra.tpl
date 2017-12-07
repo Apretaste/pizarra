@@ -72,7 +72,8 @@
 						{link href="PIZARRA" caption="&#128220;" style="color:#9E100A; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
 						{link href="PERFIL EDITAR" caption="&#128100;" style="color:#9E100A; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
 						{link href="CHAT" caption="&#128172;" style="color:#9E100A; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
-						{link href="NOTIFICACIONES" caption="&#128276;<small>{$num_notifications}</small>" style="color:#9E100A; text-decoration: none;"}
+						{link href="PIZARRA AYUDA" caption="&#10067;" style="color:#9E100A; text-decoration: none;"}&nbsp;&nbsp;
+						{link href="NOTIFICACIONES pizarra nota chat" caption="&#128276;<small>{$num_notifications}</small>" style="color:#9E100A; text-decoration: none;"}
 					</td>
 				</tr>
 
