@@ -42,6 +42,12 @@
 				font-weight: normal;
 				margin-top: 0px;
 			}
+			hr {
+				border: 0;
+				height: 0;
+				border-top: 1px solid rgba(0, 0, 0, 0.1);
+				border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+			}
 			.rounded{
 				border-radius: 10px;
 				background: white;
@@ -55,6 +61,16 @@
 				height:50px;
 				border-radius: 100px;
 				margin:5px 10px 0px 3px;
+			}
+			.profile-comment{
+				width: 40px;
+				height:40px;
+				margin:0px 10px 0px 3px;
+			}
+			.flag{
+				vertical-align:middle;
+				width:20px;
+				margin-right:3px;
 			}
 		</style>
 	</head>
@@ -72,7 +88,7 @@
 						{link href="PIZARRA" caption="&#128220;" style="color:#9E100A; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
 						{link href="PERFIL EDITAR" caption="&#128100;" style="color:#9E100A; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
 						{link href="CHAT" caption="&#128172;" style="color:#9E100A; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
-						{link href="PIZARRA AYUDA" caption="&#10067;" style="color:#9E100A; text-decoration: none;"}&nbsp;&nbsp;
+						{link href="PIZARRA TEMAS" caption="#" style="color:#9E100A; text-decoration:none; font-size:18px;"}&nbsp;&nbsp;
 						{link href="NOTIFICACIONES pizarra nota chat" caption="&#128276;<small>{$num_notifications}</small>" style="color:#9E100A; text-decoration: none;"}
 					</td>
 				</tr>
