@@ -80,7 +80,7 @@ class Pizarra extends Service
 				"username" => $note->username,
 				"location" => $location,
 				"gender" => $note->gender,
-				"picture" => empty($note->picture) ? "" : "{$note->picture}.jpg",
+				"picture" => empty($note->picture) ? "/images/user.jpg" : "/profile/{$note->picture}.jpg",
 				"text" => utf8_encode($note->text),
 				"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)),
 				"likes" => $note->likes,
@@ -480,151 +480,6 @@ class Pizarra extends Service
 		return new Response();
 	}
 
-	/**
-	 * Highlight words with a #hashtag
-	 *
-	 * @author salvipascual
-	 * @param String $text
-	 * @return String
-	 */
-	private function highlightHashTags ($text)
-	{
-		return preg_replace_callback('/#\w*/', function($matches){
-			return "<b>{$matches[0]}</b>";
-		}, $text);
-	}
-
-	/**
-	 * Find all mentions on a text
-	 *
-	 * @author salvipascual
-	 * @param String $text
-	 * @return Array, [[username,email],[username,email]...]
-	 */
-	private function findUsersMentionedOnText($text)
-	{
-		// find all users mentioned
-		$return = array();
-		preg_match_all('/@\w*/', $text, $matches);
-		if ( ! empty($matches[0]))
-		{
-			// get string of possible matches
-			$usernames = "'" . implode("','", $matches[0]) . "'";
-			$usernames = str_replace("@", "", $usernames);
-			$usernames = str_replace(",'',", ",", $usernames);
-			$usernames = str_replace(",''", "", $usernames);
-			$usernames = str_replace("'',", "", $usernames);
-
-			// check real matches against the database
-			$connection = new Connection();
-			$users = $connection->query("SELECT email,username FROM person WHERE username in ($usernames)");
-
-			// format the return
-			foreach ($users as $user) {
-				$return[] = array("user"=>$user->username, "email"=>$user->email);
-			}
-		}
-
-		return $return;
-	}
-
-	/**
-	 * Search usernames mentioned on text and replace it with link to NOTA
-	 *
-	 * @param string $text
-	 * @return mixed
-	 */
-	function hightlightUsernames($text, $current_user)
-	{
-		// highlight usernames and link it to NOTA
-		$mentions = $this->findUsersMentionedOnText($text);
-
-		if (is_array($mentions))
-		{
-			$di = \Phalcon\DI\FactoryDefault::getDefault();
-			$isApp = $di->get('environment') == "app";
-
-			foreach($mentions as $mention)
-			{
-				if ($mention['user'] == $current_user) continue; // do not allow self-mentioning
-
-				// if the user is connecting via the app
-				if($isApp){
-					$generatedLink = "<a href='' onclick=\'apretaste.doaction('NOTA @{$mention['user']}', true, 'Escriba una nota para @{$mention['user']}', false);\'";
-				// if the app is connecting via email
-				}else{
-					$validEmailAddress = $this->utils->getValidEmailAddress();
-					$generatedLink = '<a href="mailto:'.$validEmailAddress.'?subject=NOTA @' . $mention['user'].' hola amigo, vi que te mencionaron en PIZARRA y te escribo esta nota&body=Envie+el+correo+tal+y+como+esta,+ya+esta+preparado+para+usted">@' . $mention['user'] . '</a>';
-				}
-				$text = str_replace('@'.$mention['user'], $generatedLink, $text);
-			}
-		}
-
-		return $text;
-	}
-
-	/**
-	 * Post a new note to the public feed
-	 *
-	 * @param string $text
-	 * @return mixed
-	 */
-	private function post($profile, $text)
-	{
-		$connection = new Connection();
-
-		// check if it is a comment
-		$words = explode(" ", trim($text));
-		if (isset($words[0]))
-		{
-			$id = $words[0];
-			$l = strlen($id);
-			if (substr($id,$l-1,1) == "*")
-			{
-				$id = substr($id, 0, $l - 1);
-				if ($id == "".intval($id))
-				{
-					$id = intval($id);
-
-					$r = $connection->query("SELECT COUNT(*) AS t FROM _pizarra_notes WHERE id = $id;");
-					if (isset($r[0]->t))
-					{
-						if (intval($r[0]->t) == 1)
-						{
-							$text = trim(substr($text,strpos($text, '*')+1));
-							if(strlen($text) < 16) return new Response();
-							$text = $this->prepareText($text, $profile);
-							$connection->query("
-								INSERT INTO _pizarra_comments (email, note, text) VALUES ('{$profile->email}', $id, '$text');
-								UPDATE _pizarra_notes SET comments=comments+1 WHERE id=$id");
-
-							// save a notificaction
-							$this->utils->addNotification($profile->email, 'pizarra', 'Su comentario ha sido publicado en Pizarra', 'PIZARRA');
-
-							// do not return any response when posting
-							return new Response();
-						}
-					}
-				}
-			}
-		}
-
-		// only post notes with real content
-		if(strlen($text) < 16) return new Response();
-
-		$text = $this->prepareText($text, $profile);
-
-		// save note to the database
-		$text = $connection->escape($text);
-		$connection->query("INSERT INTO _pizarra_notes (email, `text`) VALUES ('{$profile->email}', '$text')");
-
-		// save a notificaction
-		$this->utils->addNotification($profile->email, 'pizarra', 'Su nota ha sido publicada en Pizarra', 'PIZARRA');
-
-		// do not return any response when posting
-		return new Response();
-	}
-
 	public function _responder(Request $request)
 	{
 		// get the user's profile
@@ -711,9 +566,153 @@ class Pizarra extends Service
 		$responseContent = ['note' => $note];
 		//$responseContent['profile'] = $this->utils->getPerson($responseContent['email']);
 		//$responseContent['username'] = $responseContent['profile']->username;
+		$response->setEmailLayout('pizarra.tpl');
 		$response->createFromTemplate("note.tpl", $responseContent);
 
 		return $response;
+	}
+
+	/**
+	 * Highlight words with a #hashtag
+	 *
+	 * @author salvipascual
+	 * @param String $text
+	 * @return String
+	 */
+	private function highlightHashTags ($text)
+	{
+		return preg_replace_callback('/#\w*/', function($matches){
+			return "<b>{$matches[0]}</b>";
+		}, $text);
+	}
+
+	/**
+	 * Find all mentions on a text
+	 *
+	 * @author salvipascual
+	 * @param String $text
+	 * @return Array, [[username,email],[username,email]...]
+	 */
+	private function findUsersMentionedOnText($text)
+	{
+		// find all users mentioned
+		$return = array();
+		preg_match_all('/@\w*/', $text, $matches);
+		if ( ! empty($matches[0]))
+		{
+			// get string of possible matches
+			$usernames = "'" . implode("','", $matches[0]) . "'";
+			$usernames = str_replace("@", "", $usernames);
+			$usernames = str_replace(",'',", ",", $usernames);
+			$usernames = str_replace(",''", "", $usernames);
+			$usernames = str_replace("'',", "", $usernames);
+
+			// check real matches against the database
+			$connection = new Connection();
+			$users = $connection->query("SELECT email,username FROM person WHERE username in ($usernames)");
+
+			// format the return
+			foreach ($users as $user) {
+				$return[] = array("user"=>$user->username, "email"=>$user->email);
+			}
+		}
+
+		return $return;
+	}
+
+	/**
+	 * Search usernames mentioned on text and replace it with link to NOTA
+	 *
+	 * @param string $text
+	 * @return mixed
+	 */
+	function hightlightUsernames($text, $current_user)
+	{
+		// highlight usernames and link it to NOTA
+		$mentions = $this->findUsersMentionedOnText($text);
+
+		if (is_array($mentions))
+		{
+			// include the function to create links
+			$di = \Phalcon\DI\FactoryDefault::getDefault();
+			$wwwroot = $di->get('path')['root'];
+			require_once "$wwwroot/app/plugins/function.link.php";
+
+			foreach($mentions as $mention)
+			{
+				if ($mention['user'] == $current_user) continue; // do not allow self-mentioning
+
+				// if the user is connecting via the app
+				$params['caption'] = "text";
+				$params['href'] = "WEB diariodecuna.com";
+				$generatedLink = smarty_function_link($params, null);
+				$text = str_replace('@'.$mention['user'], $generatedLink, $text);
+			}
+		}
+
+		return $text;
+	}
+
+	/**
+	 * Post a new note to the public feed
+	 *
+	 * @param string $text
+	 * @return mixed
+	 */
+	private function post($profile, $text)
+	{
+		$connection = new Connection();
+
+		// check if it is a comment
+		$words = explode(" ", trim($text));
+		if (isset($words[0]))
+		{
+			$id = $words[0];
+			$l = strlen($id);
+			if (substr($id,$l-1,1) == "*")
+			{
+				$id = substr($id, 0, $l - 1);
+				if ($id == "".intval($id))
+				{
+					$id = intval($id);
+
+					$r = $connection->query("SELECT COUNT(*) AS t FROM _pizarra_notes WHERE id = $id;");
+					if (isset($r[0]->t))
+					{
+						if (intval($r[0]->t) == 1)
+						{
+							$text = trim(substr($text,strpos($text, '*')+1));
+							if(strlen($text) < 16) return new Response();
+							$text = $this->prepareText($text, $profile);
+							$connection->query("
+								INSERT INTO _pizarra_comments (email, note, text) VALUES ('{$profile->email}', $id, '$text');
+								UPDATE _pizarra_notes SET comments=comments+1 WHERE id=$id");
+
+							// save a notificaction
+							$this->utils->addNotification($profile->email, 'pizarra', 'Su comentario ha sido publicado en Pizarra', 'PIZARRA');
+
+							// do not return any response when posting
+							return new Response();
+						}
+					}
+				}
+			}
+		}
+
+		// only post notes with real content
+		if(strlen($text) < 16) return new Response();
+
+		$text = $this->prepareText($text, $profile);
+
+		// save note to the database
+		$text = $connection->escape($text);
+		$connection->query("INSERT INTO _pizarra_notes (email, `text`) VALUES ('{$profile->email}', '$text')");
+
+		// save a notificaction
+		$this->utils->addNotification($profile->email, 'pizarra', 'Su nota ha sido publicada en Pizarra', 'PIZARRA');
+
+		// do not return any response when posting
+		return new Response();
 	}
 
 	private function prepareText($text, $profile)

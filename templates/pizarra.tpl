@@ -11,7 +11,7 @@
 
 <table width="100%">
 	<tr>
-		<td><h1>&Uacute;ltimas 50 notas</h1></td>
+		<td><h1>Notas en la Pizarra</h1></td>
 		<td align="right" valign="top">
 			<nobr>
 			{button href="PIZARRA" desc="Escriba una nota" caption="&#10010; Escribir" size="small" popup="true" wait="false"}
@@ -21,43 +21,59 @@
 	</tr>
 </table>
 
-<table width="100%">
 {foreach from=$notes item=note}
-	<tr {if $note['ad']}bgcolor="#FFFF99"{elseif $note@iteration is even}bgcolor="#F2F2F2"{/if}>
-		<td>
-			{space5}
-			<font color="gray">
-				<small>
-					{link href="PERFIL @{$note['username']}" caption="@{$note['username']}"},
-					{$note['location']},
-					{if $note['gender'] eq "M"}<font color="#4863A0">M</font>{/if}
-					{if $note['gender'] eq "F"}<font color=#F778A1>F</font>{/if}
-					{if $note['picture']}[foto]{/if}
-					{separator}
-					<font color="gray">{$note['inserted']|date_format:"%e/%m %l:%M %p"}</font>
-					{separator}
-					{link href="PIZARRA BLOQUEAR @{$note['username']}" caption="&#10006; Quitar" desc="Envie este email para bloquear a @{$note['username']} en tu Pizarra." wait="false"}
-				</small>
-			</font>
-			<br/>
-			<big><big>{$note['text']|replace_url}</big></big>
-			<br/>
-			<small>
-				<font color="green">+</font>&nbsp;{link href="PIZARRA LIKE {$note['id']}" caption="Bueno" desc="Envie este email tal como esta para expresar gusto por este post de este usuario" wait="false"}
-				(<font>{$note['likes']}</font>)
-				{separator}
-				<font color="red">-</font>&nbsp;{link href="PIZARRA UNLIKE {$note['id']}" caption="Malo" desc="Envie este email tal como esta para expresar que este post no le gusta" wait="false"}
-				(<font>{$note['unlikes']}</font>)
-				{separator}
-				{link href="PIZARRA {$note['id']}* " caption="Comentar" desc="Escriba un comentario a esta nota" popup="true" wait="false"}
-				{if $note['comments'] > 0}
-					{link href="PIZARRA NOTA {$note['id']}" caption="({$note['comments']})"}
-				{else}
-					(0)
-				{/if}
-			</small>
-			{space5}
-		</td>
-	</tr>
+	{assign var="bgcolor" value="white"}
+	{if $note@iteration is even}{assign var="bgcolor" value="#F2F2F2"}{/if}
+
+	<table width="100%" cellspacing="0" bgcolor="{$bgcolor}" border=0>
+		<tr>
+			<!--PICTURE -->
+			{if {$APRETASTE_ENVIRONMENT} eq "web"}
+				<td rowspan="3" width="50" align="left" valign="top">
+					<img class="profile" src="{$note['picture']}" alt="@{$note['username']}"/>
+				</td>
+			{/if}
+
+			<!--HEADER ROW -->
+			<td style="font-size:small;" valign="top">
+				{assign var="color" value="gray"}
+				{if $note['gender'] eq "M"}{assign var="color" value="#4863A0"}{/if}
+				{if $note['gender'] eq "F"}{assign var="color" value="#F778A1"}{/if}
+
+				<font>
+					{link href="PERFIL @{$note['username']}" caption="@{$note['username']}" style="color:{$color};"}
+					&middot;
+					<small style="color:gray;">{$note['location']}</small>
+				</font>
+			</td>
+		</tr>
+		<tr>
+			<!--TEXT -->
+			<td valign="middle" style="padding:10px 0px;">
+				<big>{$note['text']|replace_url}</big>
+				{space5}
+				<small style="color:gray;">{$note['inserted']|date_format:"%B %e, %I:%M %p"|capitalize}</small>
+			</td>
+		</tr>
+		<tr>
+			<!--ACTION BUTTONS -->
+			<td valign="bottom">
+				<span class="emoji">
+					<big>{link href="PIZARRA LIKE {$note['id']}" caption="&#128077;" wait="false" style="text-decoration:none; color:black;"}</big>
+					<small>{$note['likes']}</small>
+				<span>&nbsp;&nbsp;
+
+				<span class="emoji">
+					<big>{link href="PIZARRA UNLIKE {$note['id']}" caption="&#x1F44E;" wait="false" style="text-decoration:none; color:black;"}</big>
+					<small>{$note['unlikes']}</small>
+				</span>&nbsp;&nbsp;
+
+				<span class="emoji">
+					{link href="PIZARRA NOTA {$note['id']}" caption="&#128172;" style="text-decoration:none; color:black;"}
+					<small>{$note['comments']}</small>
+				</span>
+			</td>
+		</tr>
+	</table>
+	{space10}
 {/foreach}
-</table>
