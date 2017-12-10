@@ -11,12 +11,21 @@
 
 <table width="100%">
 	<tr>
-		<td><h1>Notas en la Pizarra</h1></td>
+		<td><h1>{$title}</h1></td>
 		<td align="right" valign="top">
 			<nobr>
-			{button href="PIZARRA" desc="Escriba una nota" caption="&#10010; Escribir" size="small" popup="true" wait="false"}
-			{button href="PIZARRA BUSCAR" caption="Buscar" size="small" color="grey" popup="true" desc="Escriba un texto, @username o #hashtag a buscar"}
+			{button href="PIZARRA ESCRIBIR" desc="Escriba una nota|Escriba un #tema para su nota [{$topTopics}]" caption="&#10010; Escribir" size="small" popup="true" wait="false"}
+			{button href="PIZARRA" caption="Buscar" size="small" color="grey" popup="true" desc="Escriba un texto, @username o #tema"}
 			</nobr>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2" style="font-size:small;">
+			<span style="color:gray;">Temas populares:</span>
+			{foreach from=$popularTopics item=topic}
+				{link href="PIZARRA {$topic->name}" caption="#{$topic->name}" style="color:gray;"}&nbsp;
+			{/foreach}
+			{space15}
 		</td>
 	</tr>
 </table>
@@ -40,11 +49,15 @@
 				{if $note['gender'] eq "M"}{assign var="color" value="#4863A0"}{/if}
 				{if $note['gender'] eq "F"}{assign var="color" value="#F778A1"}{/if}
 
-				<font>
-					{link href="PERFIL @{$note['username']}" caption="@{$note['username']}" style="color:{$color};"}
-					&middot;
-					<small style="color:gray;">{$note['location']}</small>
-				</font>
+				{if {$APRETASTE_ENVIRONMENT} eq "web"}
+					<img class="flag" src="{$note['flag']}" alt="{$note['country']}"/>
+				{/if}
+
+				{link href="PERFIL @{$note['username']}" caption="@{$note['username']}" style="color:{$color};"}
+				&middot;
+				<small style="color:gray;">{$note['location']}</small>
+				&middot;
+				<small style="color:gray;">{$note['inserted']|date_format:"%b %e, %I:%M %p"|capitalize}</small>
 			</td>
 		</tr>
 		<tr>
@@ -52,7 +65,11 @@
 			<td valign="middle" style="padding:10px 0px;">
 				<big>{$note['text']|replace_url}</big>
 				{space5}
-				<small style="color:gray;">{$note['inserted']|date_format:"%B %e, %I:%M %p"|capitalize}</small>
+				<small>
+					{foreach from=$note['topics'] item=topic}
+						{link href="PIZARRA {$topic['name']}" caption="#{$topic['name']} ({$topic['count']})" style="color:gray;"}&nbsp;
+					{/foreach}
+				</small>
 			</td>
 		</tr>
 		<tr>

@@ -1,54 +1,103 @@
-{space5}
-
-<font color="gray">
-	<small>
-		{link href="PERFIL @{$note['username']}" caption="@{$note['username']}"},
-		{$note['location']},
-		{if $note['gender'] eq "M"}<font color="#4863A0">M</font>{/if}
-		{if $note['gender'] eq "F"}<font color=#F778A1>F</font>{/if}
-		{if $note['picture']}[foto]{/if}
-		{separator}
-		<font color="gray">{$note['inserted']|date_format:"%e/%m %l:%M %p"}</font>
-	</small>
-</font>
-<br/>
-<big><big>{$note['text']|replace_url}</big></big>
-<br/>
-<small>
-	<font color="green">+</font>&nbsp;{link href="PIZARRA LIKE {$note['id']}" caption="Bueno" body="Envie este email tal como esta para expresar gusto por este post de este usuario" wait="false"}
-	({$note['likes']})
-	{separator}
-	<font color="red">-</font>&nbsp;{link href="PIZARRA UNLIKE {$note['id']}" caption="Malo" body="Envie este email tal como esta para expresar que este post no le gusta" wait="false"}
-	({$note['unlikes']})
-</small>
-
-{space5}
-
-<hr/>
-<table width="100%">
-{foreach from=$note['comments'] item=comment}
+<table width="100%" cellspacing="0">
 	<tr>
-		<td>
-			{space5}
-			<font color="gray">
-				<small>
-					{link href="PERFIL @{$comment->username}" caption="@{$comment->username}"},
-					{if $comment->gender eq "M"}<font color="#4863A0">M</font>{/if}
-					{if $comment->gender eq "F"}<font color=#F778A1>F</font>{/if}
-					{if $comment->picture}[foto]{/if}
-					{separator}
-					<font color="gray">{$comment->inserted|date_format:"%e/%m %l:%M %p"}</font>
-				</small>
-			</font>
-			<br/>
-			{$comment->text|replace_url}
-			<br/>
-			{space5}
+		<!--PICTURE -->
+		{if {$APRETASTE_ENVIRONMENT} eq "web"}
+			<td rowspan="3" width="50" align="left" valign="top">
+				<img class="profile" src="{$note['picture']}" alt="@{$note['username']}"/>
+			</td>
+		{/if}
+
+		<!--HEADER ROW -->
+		<td style="font-size:small;" valign="top">
+			{assign var="color" value="gray"}
+			{if $note['gender'] eq "M"}{assign var="color" value="#4863A0"}{/if}
+			{if $note['gender'] eq "F"}{assign var="color" value="#F778A1"}{/if}
+
+			{if {$APRETASTE_ENVIRONMENT} eq "web"}
+				<img class="flag" src="{$note['flag']}" alt="{$note['country']}"/>
+			{/if}
+
+			{link href="PERFIL @{$note['username']}" caption="@{$note['username']}" style="color:{$color};"}
+			&middot;
+			<small style="color:gray;">{$note['location']}</small>
+			&middot;
+			<small style="color:gray;">{$note['inserted']|date_format:"%b %e, %I:%M %p"|capitalize}</small>
 		</td>
 	</tr>
-{/foreach}
+	<tr>
+		<!--TEXT -->
+		<td valign="middle" style="padding:10px 0px;">
+			<big>{$note['text']|replace_url}</big>
+			{space5}
+			<small>
+				{foreach from=$note['topics'] item=topic}
+					{link href="PIZARRA {$topic['name']}" caption="#{$topic['name']} ({$topic['count']})" style="color:gray;"}&nbsp;
+				{/foreach}
+			</small>
+		</td>
+	</tr>
+	<tr>
+		<!--ACTION BUTTONS -->
+		<td valign="bottom">
+			<span class="emoji">
+				<big>{link href="PIZARRA LIKE {$note['id']}" caption="&#128077;" wait="false" style="text-decoration:none; color:black;"}</big>
+				<small>{$note['likes']}</small>
+			<span>&nbsp;&nbsp;
+
+			<span class="emoji">
+				<big>{link href="PIZARRA UNLIKE {$note['id']}" caption="&#x1F44E;" wait="false" style="text-decoration:none; color:black;"}</big>
+				<small>{$note['unlikes']}</small>
+			</span>
+		</td>
+	</tr>
 </table>
 
+{if $note['comments']}
+
+<hr style="margin:30px 0px"/>
+
+{foreach from=$note['comments'] item=comment}
+<table width="100%" cellspacing="0" bgcolor="#F2F2F2">
+	<tr>
+		<!--PICTURE -->
+		{if {$APRETASTE_ENVIRONMENT} eq "web"}
+			<td rowspan="3" width="50" valign="top">
+				<img class="profile-comment" src="{$comment['picture']}" alt="@{$comment['username']}"/>
+			</td>
+		{/if}
+
+		<!--HEADER ROW -->
+		<td style="font-size:small;" valign="top">
+			{assign var="color" value="gray"}
+			{if $comment['gender'] eq "M"}{assign var="color" value="#4863A0"}{/if}
+			{if $comment['gender'] eq "F"}{assign var="color" value="#F778A1"}{/if}
+
+			{if {$APRETASTE_ENVIRONMENT} eq "web"}
+				<img class="flag" src="{$note['flag']}" alt="{$note['country']}"/>
+			{/if}
+
+			{link href="PERFIL @{$comment['username']}" caption="@{$comment['username']}" style="color:{$color};"}
+			&middot;
+			<small style="color:gray;">{$comment['location']}</small>
+			&middot;
+			<small style="color:gray;">{$comment['inserted']|date_format:"%b %e, %I:%M %p"|capitalize}</small>
+		</td>
+	</tr>
+
+	<!--TEXT -->
+	<tr>
+		<td valign="bottom">
+			<big>{$comment['text']}</big>
+		</td>
+	</tr>
+</table>
+{space10}
+{/foreach}
+
+{/if}
+
+{space15}
+
 <center>
-	{button href="PIZARRA {$note['id']}* " body="Escriba un comentario en el asunto despues de la palabra PIZARRA y envie este email" caption="Comentar" popup="true" wait="false" desc="Inserte una comentario a esta nota"}
+	{button href="PIZARRA COMENTAR {$note['id']} " caption="Comentar" popup="true" wait="false" desc="Escriba una comentario a esta nota"}
 </center>
