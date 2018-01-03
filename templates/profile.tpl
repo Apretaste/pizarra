@@ -31,7 +31,7 @@
 	<!--MY TOPICS-->
 	{if $profile->topics|@count gt 0}
 		{space15}
-		<h1>Mis temas</h1>
+		<h1>Temas</h1>
 		{foreach from=$profile->topics item=topic}
 			{link href="PIZARRA {$topic}" caption="#{$topic}"}
 			&nbsp;

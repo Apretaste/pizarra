@@ -18,6 +18,9 @@ class Pizarra extends Service
 		// get the user's profile
 		$profile = $this->utils->getPerson($request->email);
 
+		// create the user in the table if do not exist
+		Connection::query("INSERT IGNORE INTO _pizarra_users (email) VALUES ('{$request->email}')");
+
 		// get notes if serached by topic
 		if($searchType == "topic") {
 			$notes = $this->getNotesByTopic($profile, $searchValue);
@@ -96,10 +99,7 @@ class Pizarra extends Service
 		$this->utils->addNotification($note->email, 'pizarra', "El usurio @{$request->username} le dio like a tu nota en la Pizarra", "PIZARRA NOTA {$request->query}");
 
 		// increase the author's reputation
-		Connection::query("
-			INSERT IGNORE INTO _pizarra_reputation (user1, user2) VALUES ('{$request->email}', '{$note->email}');
-			UPDATE _pizarra_reputation SET reputation=reputation+1 WHERE user1='{$request->email}' AND user2='{$note->email}';
-			UPDATE _pizarra_users SET reputation=reputation+2 WHERE email='{$note->email}';");
+		Connection::query("UPDATE _pizarra_users SET reputation=reputation+2 WHERE email='{$note->email}'");
 
 		// do not send any response
 		return new Response();
@@ -128,10 +128,7 @@ class Pizarra extends Service
 		$note = Connection::query("SELECT email, `text` FROM _pizarra_notes WHERE id='{$request->query}'")[0];
 
 		// decrease the author's reputation
-		Connection::query("
-			INSERT IGNORE INTO _pizarra_reputation (user1, user2) VALUES ('{$request->email}', '{$note->email}');
-			UPDATE _pizarra_reputation SET reputation=reputation-1 WHERE user1='{$request->email}' AND user2='{$note->email}';
-			UPDATE _pizarra_users SET reputation=reputation-1 WHERE email='{$note->email}';");
+		Connection::query("UPDATE _pizarra_users SET reputation=reputation-1 WHERE email='{$note->email}'");
 
 		// do not send any response
 		return new Response();
@@ -145,21 +142,15 @@ class Pizarra extends Service
 	 */
 	public function _nota(Request $request)
 	{
-		// get the user's profile
-		$profile = $this->utils->getPerson($request->email);
-
-		// get note information
-		$result = Connection::query("SELECT
-				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country,
-				DATEDIFF(inserted,CURRENT_DATE) as days,
-				(SELECT COUNT(user1) FROM relations WHERE user1='{$request->email}' AND user2 = A.email AND type = 'follow') * 3 AS friend,
-				(SELECT COUNT(email) FROM _pizarra_seen_notes WHERE _pizarra_seen_notes.email = '{$request->email}' AND _pizarra_seen_notes.note = A.id) * 3 as seen,
-				(SELECT reputation FROM _pizarra_reputation WHERE _pizarra_reputation.user1 = '{$request->email}' AND _pizarra_reputation.user2 = A.email) as reputation,
-				(SELECT COUNT(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments
-			FROM _pizarra_notes A
-			LEFT JOIN person B
-			ON A.email = B.email
-			WHERE A.id = '$request->query';");
+		// get the records from the db
+		$result = Connection::query("
+			SELECT
+				A.id, A.email, A.text, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
+				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country,
+				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND email='{$request->email}' AND action='like') > 0 AS isliked,
+				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND email='{$request->email}' AND action='unlike') > 0 AS isunliked
+			FROM _pizarra_notes A LEFT JOIN person B ON A.email = B.email
+			WHERE A.id = '$request->query'");
 
 		// format note
 		if ($result) $note = $this->formatNote($result[0]);
@@ -514,60 +505,36 @@ class Pizarra extends Service
 	private function getNotesByTopic($profile, $topic)
 	{
 		// set the topic as default for the user
-		Connection::query("
-			INSERT IGNORE INTO _pizarra_users (email) VALUES ('{$profile->email}');
-			UPDATE _pizarra_users SET default_topic='$topic' WHERE email='{$profile->email}';");
+		Connection::query("UPDATE _pizarra_users SET default_topic='$topic' WHERE email='{$profile->email}'");
 
 		// get the records from the db
 		$listOfNotes = Connection::query("
 			SELECT
-				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country,
-				DATEDIFF(inserted,CURRENT_DATE) as days,
-				(SELECT COUNT(user1) FROM relations WHERE user1='{$profile->email}' AND user2 = A.email AND type = 'follow') * 3 AS friend,
-				(SELECT COUNT(email) FROM _pizarra_seen_notes WHERE _pizarra_seen_notes.email = '{$profile->email}' AND _pizarra_seen_notes.note = A.id) * 3 as seen,
-				(SELECT reputation FROM _pizarra_reputation WHERE _pizarra_reputation.user1 = '{$profile->email}' AND _pizarra_reputation.user2 = A.email) as reputation,
-				(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.email = '{$profile->email}' AND `action` = 'like') > 0 AS isliked
+				A.id, A.email, A.text, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
+				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country,
+				C.reputation,
+				DATEDIFF(A.inserted,CURRENT_DATE) as days,
+				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND email='{$profile->email}' AND action='like') > 0 AS isliked,
+				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND email='{$profile->email}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_notes A
-			LEFT JOIN person B
-			ON A.email = B.email
-			WHERE A.email NOT IN (SELECT relations.user2 FROM relations WHERE relations.user1 = '{$profile->email}' AND relations.type = 'blocked')
-			AND (A.topic1 = '$topic' OR A.topic2 = '$topic' OR A.topic3 = '$topic')
-			AND A.ad = 0
-			ORDER BY inserted DESC
-			LIMIT 300");
+			LEFT JOIN person B ON A.email = B.email
+			JOIN _pizarra_users C ON A.email = C.email
+			WHERE (A.topic1='$topic' OR A.topic2='$topic' OR A.topic3='$topic')
+			ORDER BY A.inserted DESC
+			LIMIT 500");
 
 		// sort results by weight. Too complex and slow in MySQL
 		usort($listOfNotes, function($a, $b) {
-			$one = $a->days * 0.5 + $a->reputation * 0.3 + $a->comments * 0.2;
-			$two = $b->days * 0.5 + $b->reputation * 0.3 + $b->comments * 0.2;
-			if ($one == $two) return 0;
-			return ($one > $two) ? -1 : 1;
+			$one = $a->days*0.5 + $a->reputation*0.9 + $a->comments*0.2 + ($a->likes - $a->unlikes*1.5) + $a->ad*1000;
+			$two = $b->days*0.5 + $b->reputation*0.9 + $b->comments*0.2 + ($b->likes - $b->unlikes*1.5) + $b->ad*1000;
+			return ($two-$one) ? ($two-$one)/abs($two-$one) : 0;
 		});
-
-		// get one ad to show on top
-		$ads = Connection::query("
-			SELECT
-				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country,
-				0 as days, 0 as friend, 0 as seen, 0 as reputation,
-				(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.email = '{$profile->email}' AND `action` = 'like') > 0 AS isliked
-			FROM _pizarra_notes A
-			LEFT JOIN person B
-			ON A.email = B.email
-			WHERE A.ad = 1");
-		$listOfNotes = array_merge($ads, $listOfNotes);
 
 		// format the array of notes
 		$notes = [];
-		foreach ($listOfNotes as $note)
-		{
-			// format the array of notes
-			$notes[] = $this->formatNote($note);
-
-			// check the note as seen by the user
-			Connection::query("INSERT IGNORE INTO _pizarra_seen_notes (note, email) VALUES ('{$note->id}', '{$profile->email}')");
-
-			// only parse the first 50 notes
-			if(count($notes) > 50) break;
+		foreach ($listOfNotes as $note) {
+			$notes[] = $this->formatNote($note); // format the array of notes
+			if(count($notes) > 50) break; // only parse the first 50 notes
 		}
 
 		// mark all notes as viewed
@@ -703,7 +670,8 @@ class Pizarra extends Service
 			"likes" => isset($note->likes) ? $note->likes : 0,
 			"unlikes" => isset($note->unlikes) ? $note->unlikes : 0,
 			"comments" => isset($note->comments) ? $note->comments : 0,
-			"isliked" => isset($note->isliked) ? $note->isliked : 0,
+			"likecolor" => isset($note->isliked) && $note->isliked ? "#9E100A" : "black",
+			"unlikecolor" => isset($note->isunliked) && $note->isunliked ? "#9E100A" : "black",
 			"ad" => isset($note->ad) ? $note->ad : false,
 			"country" => $country,
 			"flag" => $flag,

@@ -33,6 +33,7 @@
 {foreach from=$notes item=note}
 	{assign var="bgcolor" value="white"}
 	{if $note@iteration is even}{assign var="bgcolor" value="#F2F2F2"}{/if}
+	{if $note['ad']}{assign var="bgcolor" value="#ffff99"}{/if}
 
 	<table width="100%" cellspacing="0" bgcolor="{$bgcolor}" border=0>
 		<tr>
@@ -76,12 +77,12 @@
 			<!--ACTION BUTTONS -->
 			<td valign="bottom">
 				<span class="emoji">
-					<big>{link href="PIZARRA LIKE {$note['id']}" caption="&#128077;" wait="false" style="text-decoration:none; color:black;"}</big>
+					<big>{link href="PIZARRA LIKE {$note['id']}" caption="&#128077;" wait="false" style="text-decoration:none; color:{$note['likecolor']};"}</big>
 					<small>{$note['likes']}</small>
 				<span>&nbsp;&nbsp;
 
 				<span class="emoji">
-					<big>{link href="PIZARRA UNLIKE {$note['id']}" caption="&#x1F44E;" wait="false" style="text-decoration:none; color:black;"}</big>
+					<big>{link href="PIZARRA UNLIKE {$note['id']}" caption="&#x1F44E;" wait="false" style="text-decoration:none; color:{$note['unlikecolor']};"}</big>
 					<small>{$note['unlikes']}</small>
 				</span>&nbsp;&nbsp;
 

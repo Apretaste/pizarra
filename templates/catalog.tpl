@@ -7,7 +7,6 @@
 	<!--PICTURE-->
 	{if $person->picture}
 		{img src="{$person->picture_internal}" alt="Picture" width="60" height="60"}
-		<br/>
 	{else}
 		{noimage width="60" height="60" text="Sin foto"}
 	{/if}

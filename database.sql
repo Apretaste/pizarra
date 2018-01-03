@@ -1,9 +1,3 @@
-CREATE TABLE IF NOT EXISTS `_pizarra_users` (
-  `email` varchar(50) NOT NULL,
-  `reports` int(3) DEFAULT '0' COMMENT 'times the user had been reported',
-  `penalized_until` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'If the user had been reported X times, will be penalized til this date'
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
 CREATE TABLE IF NOT EXISTS `_pizarra_notes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `email` char(100) NOT NULL,
@@ -17,13 +11,6 @@ CREATE TABLE IF NOT EXISTS `_pizarra_notes` (
   `ad` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=31018 ;
-
-CREATE TABLE IF NOT EXISTS `_pizarra_seen_notes` (
-	note int(11) NOT NULL,
-	email varchar(50) NOT NULL,
-	inserted timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	PRIMARY KEY (note, email)
-);
 
 CREATE TABLE IF NOT EXISTS `_pizarra_comments`(
 	id int(11) AUTO_INCREMENT PRIMARY KEY,
@@ -47,3 +34,29 @@ CREATE TABLE IF NOT EXISTS `_pizarra_actions`(
 	action enum('like', 'unlike') default 'like',
 	inserted timestamp not null default current_timestamp
 );
+
+DROP TABLE IF EXISTS _pizarra_block;
+DROP TABLE IF EXISTS _pizarra_follow;
+DROP TABLE IF EXISTS _pizarra_seen_notes;
+DROP TABLE IF EXISTS _pizarra_reputation;
+
+ALTER TABLE `_pizarra_notes` ADD `topic1` VARCHAR(20) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;
+ALTER TABLE `_pizarra_notes` ADD `topic2` VARCHAR(20) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;
+ALTER TABLE `_pizarra_notes` ADD `topic3` VARCHAR(20) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL;
+
+CREATE TABLE IF NOT EXISTS `_pizarra_topics` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `topic` varchar(20) DEFAULT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `note` int(11) NOT NULL,
+  `person` char(100) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=781 ;
+
+CREATE TABLE IF NOT EXISTS `_pizarra_users` (
+  `email` char(100) NOT NULL,
+  `inserted` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `default_topic` varchar(30) DEFAULT 'general',
+  `reputation` int(6) NOT NULL DEFAULT '100',
+  PRIMARY KEY (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
