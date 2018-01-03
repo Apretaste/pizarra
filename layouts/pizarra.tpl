@@ -54,7 +54,7 @@
 				padding: 10px;
 			}
 			.emoji{
-				font-family:emoji;
+				font-family: emoji;
 			}
 			.profile{
 				width: 50px;
@@ -86,10 +86,11 @@
 					<!--notifications & profile-->
 					<td align="right" class="emoji" valign="middle" style="padding:10px 25px 0px 0px;">
 						{link href="PIZARRA" caption="&#128220;" style="color:#9E100A; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
-						{link href="PERFIL EDITAR" caption="&#128100;" style="color:#9E100A; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
+						{link href="PIZARRA PERFIL" caption="&#128100;" style="color:#9E100A; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
 						{link href="CHAT" caption="&#128172;" style="color:#9E100A; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
 						{link href="PIZARRA TEMAS" caption="#" style="color:#9E100A; text-decoration:none; font-size:18px;"}&nbsp;&nbsp;
-						{link href="NOTIFICACIONES pizarra nota chat" caption="&#128276;<small>{$num_notifications}</small>" style="color:#9E100A; text-decoration: none;"}
+						{if $num_notifications}{assign var="bell" value="🔔"}{else}{assign var="bell" value="🔕"}{/if}
+						{link href="NOTIFICACIONES pizarra nota chat" caption="{$bell}" style="color:#9E100A; text-decoration: none;"}
 					</td>
 				</tr>
 
@@ -105,7 +106,8 @@
 				<!--footer-->
 				<tr>
 					<td align="center" colspan="3" bgcolor="#F2F2F2" style="padding: 20px 0px;">
-						<small>Pizarra &copy; {$smarty.now|date_format:"%Y"}. All rights reserved.</small>
+						⚓ {link href="PIZARRA AYUDA" caption="Ayuda con Pizarra" style="color:#101010;"}<br/>
+						<small>Pizarra &copy; {$smarty.now|date_format:"%Y"}. All rights reserved</small>
 					</td>
 				</tr>
 			</table>

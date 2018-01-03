@@ -41,8 +41,7 @@ class Pizarra extends Service
 		$notFromApp = $di->get('environment') != "app";
 
 		// get most popular topics of last 7 days
-		$connection = new Connection();
-		$popularTopics = $connection->query("
+		$popularTopics = Connection::query("
 			SELECT topic AS name, COUNT(id) AS cnt FROM _pizarra_topics
 			WHERE created > DATE_ADD(NOW(), INTERVAL -7 DAY)
 			AND topic <> 'general'
@@ -81,26 +80,26 @@ class Pizarra extends Service
 	public function _like (Request $request)
 	{
 		// chekc if the user already liked this note
-		$connection = new Connection();
-		$res = $connection->query("SELECT id FROM _pizarra_actions WHERE email='{$request->email}' AND note='{$request->query}' AND `action`='like'");
+		$res = Connection::query("SELECT id FROM _pizarra_actions WHERE email='{$request->email}' AND note='{$request->query}' AND `action`='like'");
 		if($res) return new Response();
 
 		// delete possible previos vote and add new vote
-		$connection->query("
+		Connection::query("
 			DELETE FROM _pizarra_actions WHERE email='{$request->email}' AND note='{$request->query}';
 			INSERT INTO _pizarra_actions (email,note,action) VALUES ('{$request->email}','{$request->query}','like');
 			UPDATE _pizarra_notes SET likes=likes+1 WHERE id='{$request->query}'");
 
 		// pull the note
-		$note = $connection->query("SELECT email, `text` FROM _pizarra_notes WHERE id='{$request->query}'")[0];
+		$note = Connection::query("SELECT email, `text` FROM _pizarra_notes WHERE id='{$request->query}'")[0];
 
 		// create notification for the creator
 		$this->utils->addNotification($note->email, 'pizarra', "El usurio @{$request->username} le dio like a tu nota en la Pizarra", "PIZARRA NOTA {$request->query}");
 
 		// increase the author's reputation
-		$connection->query("
+		Connection::query("
 			INSERT IGNORE INTO _pizarra_reputation (user1, user2) VALUES ('{$request->email}', '{$note->email}');
-			UPDATE _pizarra_reputation SET reputation=reputation+1 WHERE user1='{$request->email}' AND user2='{$note->email}';");
+			UPDATE _pizarra_reputation SET reputation=reputation+1 WHERE user1='{$request->email}' AND user2='{$note->email}';
+			UPDATE _pizarra_users SET reputation=reputation+2 WHERE email='{$note->email}';");
 
 		// do not send any response
 		return new Response();
@@ -116,23 +115,23 @@ class Pizarra extends Service
 	public function _unlike (Request $request)
 	{
 		// chekc if the user already liked this note
-		$connection = new Connection();
-		$res = $connection->query("SELECT id FROM _pizarra_actions WHERE email='{$request->email}' AND note='{$request->query}' AND `action`='unlike'");
+		$res = Connection::query("SELECT id FROM _pizarra_actions WHERE email='{$request->email}' AND note='{$request->query}' AND `action`='unlike'");
 		if($res) return new Response();
 
 		// delete possible previos vote and add new vote
-		$connection->query("
+		Connection::query("
 			DELETE FROM _pizarra_actions WHERE email='{$request->email}' AND note='{$request->query}';
 			INSERT INTO _pizarra_actions (email,note,action) VALUES ('{$request->email}','{$request->query}','unlike');
 			UPDATE _pizarra_notes SET unlikes=unlikes+1 WHERE id='{$request->query}'");
 
 		// pull the note
-		$note = $connection->query("SELECT email, `text` FROM _pizarra_notes WHERE id='{$request->query}'")[0];
+		$note = Connection::query("SELECT email, `text` FROM _pizarra_notes WHERE id='{$request->query}'")[0];
 
 		// decrease the author's reputation
-		$connection->query("
+		Connection::query("
 			INSERT IGNORE INTO _pizarra_reputation (user1, user2) VALUES ('{$request->email}', '{$note->email}');
-			UPDATE _pizarra_reputation SET reputation=reputation-1 WHERE user1='{$request->email}' AND user2='{$note->email}';");
+			UPDATE _pizarra_reputation SET reputation=reputation-1 WHERE user1='{$request->email}' AND user2='{$note->email}';
+			UPDATE _pizarra_users SET reputation=reputation-1 WHERE email='{$note->email}';");
 
 		// do not send any response
 		return new Response();
@@ -150,8 +149,7 @@ class Pizarra extends Service
 		$profile = $this->utils->getPerson($request->email);
 
 		// get note information
-		$connection = new Connection();
-		$result = $connection->query("SELECT
+		$result = Connection::query("SELECT
 				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country,
 				DATEDIFF(inserted,CURRENT_DATE) as days,
 				(SELECT COUNT(user1) FROM relations WHERE user1='{$request->email}' AND user2 = A.email AND type = 'follow') * 3 AS friend,
@@ -168,7 +166,7 @@ class Pizarra extends Service
 		else return new Response();
 
 		// get note comments
-		$cmts = $connection->query("
+		$cmts = Connection::query("
 			SELECT A.*, B.username, B.province, B.picture, B.gender, B.country
 			FROM _pizarra_comments A
 			LEFT JOIN person B
@@ -193,17 +191,16 @@ class Pizarra extends Service
 	 * @param string $text
 	 * @return mixed
 	 */
-	public function _escribir($response)
+	public function _escribir(Request $request)
 	{
 		// only post notes with real content
-		if(strlen($response->query) < 16) return new Response();
+		if(strlen($request->query) < 16) return new Response();
 
 		// replace accents by unicode chars
-		$text = $this->utils->removeTildes($response->query);
+		$text = $this->utils->removeTildes($request->query);
 
 		// shorten and clean the text
-		$connection = new Connection();
-		$text = $connection->escape(substr($text, 0, 300));
+		$text = Connection::escape(substr($text, 0, 300));
 
 		// get all the topics from the post
 		preg_match_all('/#\w*/', $text, $topics);
@@ -214,26 +211,29 @@ class Pizarra extends Service
 		if(empty($topic1)) $topic1 = "general"; // default topic if no topic is passed
 
 		// save note to the database
-		$noteID = $connection->query("
+		$noteID = Connection::query("
 			INSERT INTO _pizarra_notes (email, `text`, topic1, topic2, topic3)
-			VALUES ('{$response->email}', '$text', '$topic1', '$topic2', '$topic3')");
+			VALUES ('{$request->email}', '$text', '$topic1', '$topic2', '$topic3')");
+
+		// increase the writer's reputation
+		Connection::query("UPDATE _pizarra_users SET reputation=reputation+1 WHERE email='{$request->email}'");
 
 		// save the topics to the topics table
 		foreach ($topics as $topic) {
 			$topic = str_replace("#", "", $topic);
-			$connection->query("
+			Connection::query("
 				INSERT INTO _pizarra_topics(topic, note, person)
-				VALUES ('$topic', '$noteID', '{$response->email}')");
+				VALUES ('$topic', '$noteID', '{$request->email}')");
 		}
 
 		// notify users mentioned
 		$mentions = $this->findUsersMentionedOnText($text);
 		foreach ($mentions as $m) {
-			$this->utils->addNotification($m->email, "PIZARRA", "El usuario @{$response->username} le ha mencionado en la pizarra", "PIZARRA NOTA $noteID");
+			$this->utils->addNotification($m->email, "PIZARRA", "El usuario @{$request->username} le ha mencionado en la pizarra", "PIZARRA NOTA $noteID");
 		}
 
 		// send a notificaction
-		$this->utils->addNotification($response->email, 'PIZARRA', 'Su nota ha sido publicada en la Pizarra', "PIZARRA NOTA $noteID");
+		$this->utils->addNotification($request->email, 'PIZARRA', 'Su nota ha sido publicada en la Pizarra', "PIZARRA NOTA $noteID");
 
 		// do not return any response
 		return new Response();
@@ -245,28 +245,27 @@ class Pizarra extends Service
 	 * @param string $text
 	 * @return mixed
 	 */
-	public function _comentar($response)
+	public function _comentar(Request $request)
 	{
 		// get ID and comment
-		$part = explode(" ", $response->query);
+		$part = explode(" ", $request->query);
 		$noteId = array_shift($part);
 		$text = implode(" ", $part);
 
 		// check the note ID is valid
-		$connection = new Connection();
-		$note = $connection->query("SELECT email FROM _pizarra_notes WHERE id='$noteId'");
+		$note = Connection::query("SELECT email FROM _pizarra_notes WHERE id='$noteId'");
 		if(empty($note)) return new Response(); else $note = $note[0];
 
 		// save the comment
-		$text = $connection->escape(substr($text, 0, 200));
-		$connection->query("
-			INSERT INTO _pizarra_comments (email, note, text) VALUES ('{$response->email}', '$noteId', '$text');
+		$text = Connection::escape(substr($text, 0, 200));
+		Connection::query("
+			INSERT INTO _pizarra_comments (email, note, text) VALUES ('{$request->email}', '$noteId', '$text');
 			UPDATE _pizarra_notes SET comments=comments+1 WHERE id=$noteId;");
 
 		// notify users mentioned
 		$mentions = $this->findUsersMentionedOnText($text);
 		foreach ($mentions as $m) {
-			$this->utils->addNotification($m->email, "PIZARRA", "El usuario @{$response->username} le ha mencionado en la pizarra", "PIZARRA NOTA $noteId");
+			$this->utils->addNotification($m->email, "PIZARRA", "El usuario @{$request->username} le ha mencionado en la pizarra", "PIZARRA NOTA $noteId");
 		}
 
 		// send a notificaction to the owner of the note
@@ -282,11 +281,10 @@ class Pizarra extends Service
 	 * @param string $text
 	 * @return mixed
 	 */
-	public function _temas($response)
+	public function _temas(Request $request)
 	{
 		// get list of topics
-		$connection = new Connection();
-		$ts = $connection->query("
+		$ts = Connection::query("
 			SELECT topic AS name, COUNT(id) AS cnt FROM _pizarra_topics
 			WHERE created > DATE_ADD(NOW(), INTERVAL -30 DAY)
 			AND topic <> 'general'
@@ -294,7 +292,7 @@ class Pizarra extends Service
 
 		// get params for the algorith
 		$maxLetterSize = 30;
-		$minLetterSize = 8;
+		$minLetterSize = 10;
 		$maxTopicMentions = $ts[0]->cnt;
 		$minTopicMentions = $ts[count($ts)-1]->cnt;
 		$rate = ($maxTopicMentions-$minTopicMentions) / ($maxLetterSize-$minLetterSize);
@@ -310,19 +308,154 @@ class Pizarra extends Service
 			$topics[] = $topic;
 		}
 
-		// set elements in random order
+		// set topics in random order
 		shuffle ($topics);
 
 		// get the list of most popular users
 		$users = [];
-		$popuplar = $connection->query("SELECT email FROM _pizarra_users ORDER BY reputation DESC LIMIT 9");
-		foreach ($popuplar as $p) $users[] = $this->utils->getPerson($p->email);
+		$popuplar = Connection::query("SELECT email, reputation FROM _pizarra_users ORDER BY reputation DESC LIMIT 9");
+		foreach ($popuplar as $p) {
+			$user = $this->utils->getPerson($p->email);
+			$user->reputation = $p->reputation;
+			$users[] = $user;
+		}
 
 		// create the response
 		$response = new Response();
 		$response->setEmailLayout('pizarra.tpl');
 		$response->setResponseSubject("Lista de temas");
 		$response->createFromTemplate("topics.tpl", ["topics"=>$topics, "users"=>$users]);
+		return $response;
+	}
+
+	/**
+	 * Show the user profile
+	 *
+	 * @param string $text
+	 * @return mixed
+	 */
+	public function _perfil(Request $request)
+	{
+		// get the user profile
+		if(empty($request->query)) $email = $request->email;
+		else $email = Utils::getEmailFromUsername($request->query);
+		$person = Utils::getPerson($email);
+
+		// if user do not exist, message the requestor
+		if (empty($person)) {
+			$response = new Response();
+			$response->setResponseSubject("No encontramos el perfil");
+			$response->createFromText("No encontramos un perfil para el usuario {$request->query}, por favor intente con otro nombre de usuario");
+			return $response;
+		}
+
+		// get user's reputation and topic
+		$res = Connection::query("SELECT * FROM _pizarra_users WHERE email='$email'");
+		$person->reputation = $res[0]->reputation;
+		$person->myTopic = $res[0]->default_topic;
+
+		// get user topics
+		$person->topics = [];
+		$res = Connection::query("SELECT DISTINCT topic FROM _pizarra_topics WHERE person='$email' ORDER BY created DESC");
+		foreach($res as $t) $person->topics[] = $t->topic;
+
+		// create data for the view
+		$content = [
+			"profile" => $person,
+			"isMyOwnProfile" => $person->email == $request->email
+		];
+
+		// return response
+		$response = new Response();
+		$response->setEmailLayout('pizarra.tpl');
+		$response->setResponseSubject("Perfil de @{$person->username}");
+		$response->createFromTemplate("profile.tpl", $content, [$person->picture_public]);
+		return $response;
+	}
+
+	/**
+	 * Catalog the posts by topic
+	 *
+	 * @param string $text
+	 * @return mixed
+	 */
+	public function _catalogar(Request $request)
+	{
+		// if you are trying to submit a topic
+		$message = false;
+		if($request->query) {
+			// get note ID and topic
+			$part = explode(" ", $request->query);
+			$noteId = isset($part[0]) ? $part[0] : "";
+			$topic = isset($part[1]) ? str_replace("#", "", $part[1]) : "";
+
+			// get the note to update
+			$note = Connection::query("SELECT topic1,topic2,topic3 FROM _pizarra_notes WHERE id='$noteId'");
+
+			if($note && $topic) {
+				// save topic in the database (also replace general topic)
+				if(empty($note[0]->topic1) || $note[0]->topic1=="general") $topicToSave = "topic1='$topic'";
+				elseif(empty($note[0]->topic2) || $note[0]->topic2=="general") $topicToSave = "topic2='$topic'";
+				else $topicToSave = "topic3='$topic'";
+				Connection::query("
+					UPDATE _pizarra_notes SET $topicToSave WHERE id='$noteId';
+					UPDATE _pizarra_users SET reputation=reputation+5 WHERE email='{$request->email}';
+					INSERT INTO _pizarra_topics(topic,note,person) VALUES ('$topic','$noteId','{$request->email}');");
+				$message = true;
+			}
+		}
+
+		// get a random note
+		$note = Connection::query("
+			SELECT id, email, text, topic1, topic2, topic3 FROM _pizarra_notes
+			WHERE inserted > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 150 DAY)
+			AND (topic1 = '' OR topic2 = '' OR topic3 = '')
+			ORDER BY RAND() LIMIT 1")[0];
+
+		// get the user profile
+		$person = Utils::getPerson($note->email);
+
+		// get last used topics
+		$topics = [];
+		$res = Connection::query("
+			SELECT COUNT(id) AS rows, topic
+			FROM _pizarra_topics
+			WHERE created > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 31 DAY)
+			AND topic <> '{$note->topic1}'
+			AND topic <> '{$note->topic2}'
+			AND topic <> '{$note->topic3}'
+			AND topic <> 'general'
+			GROUP BY topic ORDER BY rows DESC LIMIT 10");
+		foreach($res as $t) $topics[] = $t->topic;
+
+		// create data for the view
+		$content = [
+			"message" => $message,
+			"person" => $person,
+			"note" => $note,
+			"topics" => $topics
+		];
+
+		// return response
+		$response = new Response();
+		$response->setEmailLayout('pizarra.tpl');
+		$response->setResponseSubject("Catalogue esta nota");
+		$response->createFromTemplate("catalog.tpl", $content, [$person->picture_public]);
+		return $response;
+	}
+
+	/**
+	 * Display the help document
+	 *
+	 * @param string $text
+	 * @return mixed
+	 */
+	public function _ayuda(Request $request)
+	{
+		$response = new Response();
+		$response->setEmailLayout('pizarra.tpl');
+		$response->setResponseSubject("Ayuda de Pizarra");
+		$response->createFromTemplate("help.tpl", []);
 		return $response;
 	}
 
@@ -336,9 +469,8 @@ class Pizarra extends Service
 	private function getSearchType($keyword, $email)
 	{
 		// return topic selected by the user if blank
-		$connection = new Connection();
 		if(empty($keyword)) {
-			$topic = $connection->query("SELECT default_topic FROM _pizarra_users WHERE email='$email'");
+			$topic = Connection::query("SELECT default_topic FROM _pizarra_users WHERE email='$email'");
 			return ["topic", $topic[0]->default_topic];
 		}
 
@@ -350,7 +482,7 @@ class Pizarra extends Service
 
 		// check if searching for a topic
 		$topicNoHashSymbol = str_replace("#", "", $keyword);
-		$topicExists = $connection->query("SELECT id FROM _pizarra_topics WHERE topic='$topicNoHashSymbol'");
+		$topicExists = Connection::query("SELECT id FROM _pizarra_topics WHERE topic='$topicNoHashSymbol'");
 		if($topicExists) return ["topic", $topicNoHashSymbol];
 
 		// else searching for words on a note
@@ -367,8 +499,7 @@ class Pizarra extends Service
 	private function getTimesTopicShow($topic)
 	{
 		// @TODO add cache to avoid asking the same thousands of times
-		$connection = new Connection();
-		$res = $connection->query("SELECT COUNT(id) as cnt FROM _pizarra_topics WHERE topic='$topic'");
+		$res = Connection::query("SELECT COUNT(id) as cnt FROM _pizarra_topics WHERE topic='$topic'");
 		return $res[0]->cnt;
 	}
 
@@ -383,13 +514,12 @@ class Pizarra extends Service
 	private function getNotesByTopic($profile, $topic)
 	{
 		// set the topic as default for the user
-		$connection = new Connection();
-		$connection->query("
+		Connection::query("
 			INSERT IGNORE INTO _pizarra_users (email) VALUES ('{$profile->email}');
 			UPDATE _pizarra_users SET default_topic='$topic' WHERE email='{$profile->email}';");
 
 		// get the records from the db
-		$listOfNotes = $connection->query("
+		$listOfNotes = Connection::query("
 			SELECT
 				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country,
 				DATEDIFF(inserted,CURRENT_DATE) as days,
@@ -415,7 +545,7 @@ class Pizarra extends Service
 		});
 
 		// get one ad to show on top
-		$ads = $connection->query("
+		$ads = Connection::query("
 			SELECT
 				A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country,
 				0 as days, 0 as friend, 0 as seen, 0 as reputation,
@@ -434,7 +564,7 @@ class Pizarra extends Service
 			$notes[] = $this->formatNote($note);
 
 			// check the note as seen by the user
-			$connection->query("INSERT IGNORE INTO _pizarra_seen_notes (note, email) VALUES ('{$note->id}', '{$profile->email}')");
+			Connection::query("INSERT IGNORE INTO _pizarra_seen_notes (note, email) VALUES ('{$note->id}', '{$profile->email}')");
 
 			// only parse the first 50 notes
 			if(count($notes) > 50) break;
@@ -444,7 +574,7 @@ class Pizarra extends Service
 		$viewed = array();
 		foreach ($notes as $n) $viewed[] = $n['id'];
 		$viewed = implode(",", $viewed);
-		if (trim($viewed) !== '') $connection->query("UPDATE _pizarra_notes SET views=views+1 WHERE id IN ($viewed)");
+		if (trim($viewed) !== '') Connection::query("UPDATE _pizarra_notes SET views=views+1 WHERE id IN ($viewed)");
 
 		// return array of notes
 		return $notes;
@@ -461,8 +591,7 @@ class Pizarra extends Service
 	private function getNotesByUsername($profile, $username)
 	{
 		// get the last 50 records from the db
-		$connection = new Connection();
-		$listOfNotes = $connection->query("
+		$listOfNotes = Connection::query("
 			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country,
 			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.email = '{$profile->email}' AND `action` = 'like') > 0 AS isliked,
 			(SELECT count(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments
@@ -481,7 +610,7 @@ class Pizarra extends Service
 		$viewed = array();
 		foreach ($notes as $n) $viewed[] = $n['id'];
 		$viewed = implode(",", $viewed);
-		if (trim($viewed) !== '') $connection->query("UPDATE _pizarra_notes SET views=views+1 WHERE id IN ($viewed)");
+		if (trim($viewed) !== '') Connection::query("UPDATE _pizarra_notes SET views=views+1 WHERE id IN ($viewed)");
 
 		// return array of notes
 		return $notes;
@@ -498,8 +627,7 @@ class Pizarra extends Service
 	private function getNotesByKeyword($profile, $keyword)
 	{
 		// get the last 50 records from the db
-		$connection = new Connection();
-		$listOfNotes = $connection->query("
+		$listOfNotes = Connection::query("
 			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country,
 			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.email = '{$profile->email}' AND `action` = 'like') > 0 AS isliked,
 			(SELECT count(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments
@@ -518,7 +646,7 @@ class Pizarra extends Service
 		$viewed = array();
 		foreach ($notes as $n) $viewed[] = $n['id'];
 		$viewed = implode(",", $viewed);
-		if (trim($viewed) !== '') $connection->query("UPDATE _pizarra_notes SET views=views+1 WHERE id IN ($viewed)");
+		if (trim($viewed) !== '') Connection::query("UPDATE _pizarra_notes SET views=views+1 WHERE id IN ($viewed)");
 
 		// return array of notes
 		return $notes;
@@ -609,8 +737,7 @@ class Pizarra extends Service
 			$usernames = str_replace("'',", "", $usernames);
 
 			// check real matches against the database
-			$connection = new Connection();
-			$users = $connection->query("SELECT email, username FROM person WHERE username in ($usernames)");
+			$users = Connection::query("SELECT email, username FROM person WHERE username in ($usernames)");
 
 			// format the return
 			foreach ($users as $user) {

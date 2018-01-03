@@ -17,7 +17,7 @@
 				<img class="flag" src="{$note['flag']}" alt="{$note['country']}"/>
 			{/if}
 
-			{link href="PERFIL @{$note['username']}" caption="@{$note['username']}" style="color:{$color};"}
+			{link href="PIZARRA PERFIL @{$note['username']}" caption="@{$note['username']}" style="color:{$color};"}
 			&middot;
 			<small style="color:gray;">{$note['location']}</small>
 			&middot;
@@ -76,7 +76,7 @@
 				<img class="flag" src="{$note['flag']}" alt="{$note['country']}"/>
 			{/if}
 
-			{link href="PERFIL @{$comment['username']}" caption="@{$comment['username']}" style="color:{$color};"}
+			{link href="PIZARRA PERFIL @{$comment['username']}" caption="@{$comment['username']}" style="color:{$color};"}
 			&middot;
 			<small style="color:gray;">{$comment['location']}</small>
 			&middot;
