@@ -287,6 +287,7 @@ class Pizarra extends Service
 		$maxTopicMentions = $ts[0]->cnt;
 		$minTopicMentions = $ts[count($ts)-1]->cnt;
 		$rate = ($maxTopicMentions-$minTopicMentions) / ($maxLetterSize-$minLetterSize);
+		if($rate === 0) $rate = 1; // avoid divisions by zero
 
 		// get topics letter size and color
 		$topics = [];
@@ -347,8 +348,8 @@ class Pizarra extends Service
 
 		// get user topics
 		$person->topics = [];
-		$res = Connection::query("SELECT DISTINCT topic FROM _pizarra_topics WHERE person='$email' ORDER BY created DESC");
-		foreach($res as $t) $person->topics[] = $t->topic;
+		$res = Connection::query("SELECT DISTINCT topic FROM _pizarra_topics WHERE person='$email'");
+		if($res) foreach($res as $t) $person->topics[] = $t->topic;
 
 		// create data for the view
 		$content = [
