@@ -80,7 +80,7 @@
 				<tr>
 					<!--logo-->
 					<td valign="middle" style="padding-left:25px;">
-						{link href="PIZARRA" caption="<i><b>P</b></i>" style="color:#9E100A; font-size:60px; font-family:Times; text-decoration: none;"}
+						{link href="PIZARRA" caption="<i><b>P</b></i>" style="color:#9E100A; font-size:40px; font-family:Times; text-decoration: none;"}
 					</td>
 
 					<!--notifications & profile-->

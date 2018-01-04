@@ -5,7 +5,8 @@ class Pizarra extends Service
 	/**
 	 * To list lastest notes or post a new note
 	 *
-	 * @param Request
+	 * @author salvipascual
+	 * @param Request $request
 	 * @return Response
 	 */
 	public function _main (Request $request)
@@ -77,7 +78,7 @@ class Pizarra extends Service
 	 * The user likes a note
 	 *
 	 * @author salvipascual
-	 * @param Request
+	 * @param Request $request
 	 * @return Response
 	 */
 	public function _like (Request $request)
@@ -108,8 +109,8 @@ class Pizarra extends Service
 	/**
 	 * The user unlikes a note
 	 *
-	 * @author kuma
-	 * @param Request
+	 * @author salvipascual
+	 * @param Request $request
 	 * @return Response
 	 */
 	public function _unlike (Request $request)
@@ -137,8 +138,9 @@ class Pizarra extends Service
 	/**
 	 * NOTA subservice
 	 *
-	 * @author kumahacker
+	 * @author salvipascual
 	 * @param Request $request
+	 * @return Response
 	 */
 	public function _nota(Request $request)
 	{
@@ -179,8 +181,9 @@ class Pizarra extends Service
 	/**
 	 * Post a new note to the public feed
 	 *
-	 * @param string $text
-	 * @return mixed
+	 * @author salvipascual
+	 * @param Request $request
+	 * @return Response
 	 */
 	public function _escribir(Request $request)
 	{
@@ -233,8 +236,9 @@ class Pizarra extends Service
 	/**
 	 * Post a new note to the public feed
 	 *
-	 * @param string $text
-	 * @return mixed
+	 * @author salvipascual
+	 * @param Request $request
+	 * @return Response
 	 */
 	public function _comentar(Request $request)
 	{
@@ -269,8 +273,9 @@ class Pizarra extends Service
 	/**
 	 * Show extense list of topics as a web cloud
 	 *
-	 * @param string $text
-	 * @return mixed
+	 * @author salvipascual
+	 * @param Request $request
+	 * @return Response
 	 */
 	public function _temas(Request $request)
 	{
@@ -323,8 +328,9 @@ class Pizarra extends Service
 	/**
 	 * Show the user profile
 	 *
-	 * @param string $text
-	 * @return mixed
+	 * @author salvipascual
+	 * @param Request $request
+	 * @return Response
 	 */
 	public function _perfil(Request $request)
 	{
@@ -368,8 +374,9 @@ class Pizarra extends Service
 	/**
 	 * Catalog the posts by topic
 	 *
-	 * @param string $text
-	 * @return mixed
+	 * @author salvipascual
+	 * @param Request $request
+	 * @return Response
 	 */
 	public function _catalogar(Request $request)
 	{
@@ -437,10 +444,54 @@ class Pizarra extends Service
 	}
 
 	/**
+	 * Denounce users
+	 *
+	 * @author salvipascual
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function _denunciar(Request $request)
+	{
+		// get @username and text
+		$parts = explode(" ", $request->query);
+		$username = array_shift($parts);
+		$text = implode(" ", $parts);
+
+		// get the email
+		$email = $this->utils->getEmailFromUsername($username);
+		if(empty($email)) return new Response();
+
+		// only allow to report a person once a week
+		$reportedByYou = Connection::query("SELECT id FROM _pizarra_denounce WHERE email='$email' AND denouncer='{$request->email}' AND inserted > (NOW()-INTERVAL 7 DAY)");
+		if($reportedByYou) return new Response();
+
+		// get code from text
+		$reason = "OTHER";
+		if(php::exists($text, "info falsa")) $reason = "FAKE_PROFILE";
+		if(php::exists($text, "imperso")) $reason = "PERSONIFICATION";
+		if(php::exists($text, "ofensiv")) $reason = "OFFENSIVE";
+		if(php::exists($text, "notas falsa")) $reason = "FAKE_NOTES";
+		if(php::exists($text, "inenten")) $reason = "ILLEGIBLE_NOTES";
+		if(php::exists($text, "ilegal")) $reason = "ILLEGAL";
+		if(php::exists($text, "inmoral")) $reason = "IMMORAL";
+
+		// save into the database
+		Connection::query("INSERT INTO _pizarra_denounce (email,denouncer,reason,`text`) VALUES ('$email','{$request->email}','$reason','$text')");
+
+		// substract 50 to reputation when a user receives 5+ denounces a week
+		$weeklyTimesReported = Connection::query("SELECT COUNT(id) AS cnt FROM _pizarra_denounce WHERE email='$email' AND inserted > (NOW()-INTERVAL 7 DAY)")[0]->cnt;
+		if($weeklyTimesReported > 4) Connection::query("UPDATE _pizarra_users SET reputation=reputation-50 WHERE email='$email'");
+
+		// respond empty variable
+		return new Response();
+	}
+
+	/**
 	 * Display the help document
 	 *
-	 * @param string $text
-	 * @return mixed
+	 * @author salvipascual
+	 * @param Request $request
+	 * @return Response
 	 */
 	public function _ayuda(Request $request)
 	{
@@ -648,12 +699,11 @@ class Pizarra extends Service
 		$wwwroot = $di->get('path')['root'];
 		require_once "$wwwroot/app/plugins/function.link.php";
 
-
 		// create @usernames as links
 		$mentions = $this->findUsersMentionedOnText($note->text);
 		foreach ($mentions as $m) {
 			$params['caption'] = "@{$m->username}";
-			$params['href'] = "PERFIL @{$m->username}";
+			$params['href'] = "PIZARRA PERFIL @{$m->username}";
 			$params['style'] = "color:#9E100A;";
 			$link = smarty_function_link($params, null);
 			$note->text = str_replace("@{$m->username}", $link, $note->text);

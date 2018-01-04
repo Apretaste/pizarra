@@ -13,9 +13,15 @@
 
 	<!--BUTTONS-->
 	{space5}
-	{if $isMyOwnProfile}{button href="PERFIL EDITAR" caption="Editar perfil" size="small"}{/if}
-	{button href="PIZARRA @{$profile->username}" caption="Ver notas" color="grey" size="small"}
-	{button href="CHAT @{$profile->username}" caption="Chatear" color="grey" size="small"}
+
+	{if $isMyOwnProfile}
+		{button href="PERFIL EDITAR" caption="Editar perfil" size="small"}
+		{button href="PIZARRA @{$profile->username}" caption="Mis notas" color="grey" size="small"}
+	{else}
+		{button href="CHAT @{$profile->username}" caption="Chatear" color="grey" size="small"}
+		{button href="PIZARRA @{$profile->username}" caption="Ver notas" color="grey" size="small"}
+		{button href="PIZARRA DENUNCIAR @{$profile->username}" caption="Denunciar" desc="Por que desea denunciar a este usuario? [El perfil tiene info falsa,Esta impersonando a alguien,Sus notas son ofensivas,Escribe notas falsas a sabiendas,Sus notas son inentendibles,Promueve comportamiento ilegal,Promueve practicas inmorales]" popup="true" wait="false" color="red" size="small"}
+	{/if}
 
 	{space10}
 

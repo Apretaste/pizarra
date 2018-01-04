@@ -60,3 +60,14 @@ CREATE TABLE IF NOT EXISTS `_pizarra_users` (
   `reputation` int(6) NOT NULL DEFAULT '100',
   PRIMARY KEY (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE IF NOT EXISTS `_pizarra_denounce` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `email` char(100) NOT NULL,
+  `denouncer` char(100) NOT NULL,
+  `reason` varchar(20) NOT NULL,
+  `text` varchar(100) NOT NULL,
+  `review` tinyint(1) NOT NULL DEFAULT '0',
+  `inserted` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=13;
