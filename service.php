@@ -15,6 +15,7 @@ class Pizarra extends Service
 		$search = $this->getSearchType($request->query, $request->email);
 		$searchType = $search[0];
 		$searchValue = $search[1];
+		$topic = false;
 
 		// get the user's profile
 		$profile = $this->utils->getPerson($request->email);
@@ -48,13 +49,8 @@ class Pizarra extends Service
 		$popularTopics = Connection::query("
 			SELECT topic AS name, COUNT(id) AS cnt FROM _pizarra_topics
 			WHERE created > DATE_ADD(NOW(), INTERVAL -7 DAY)
-			AND topic <> 'general'
+			AND topic <> '$searchValue'
 			GROUP BY topic ORDER BY cnt DESC LIMIT 10");
-
-		// create the list of elements for the dropdown
-		$dropdown[] = "#general";
-		foreach ($popularTopics as $t) $dropdown[] = "#{$t->name}";
-		$topTopics = implode(",", $dropdown);
 
 		// create variables for the template
 		$content = [
@@ -62,8 +58,7 @@ class Pizarra extends Service
 			"notFromApp" => $notFromApp,
 			"notes" => $notes,
 			"popularTopics" => $popularTopics,
-			"title" => $title,
-			"topTopics" => $topTopics
+			"title" => $title
 		];
 
 		// create the response
@@ -196,13 +191,15 @@ class Pizarra extends Service
 		// shorten and clean the text
 		$text = Connection::escape(substr($text, 0, 300));
 
+		// get the current topic
+		$defaultTopic = Connection::query("SELECT default_topic FROM _pizarra_users WHERE email='{$request->email}'")[0]->default_topic;
+
 		// get all the topics from the post
 		preg_match_all('/#\w*/', $text, $topics);
-		$topics = $topics[0];
+		$topics = array_merge($topics[0], [$defaultTopic]);
 		$topic1 = isset($topics[0]) ? str_replace("#", "", $topics[0]) : "";
 		$topic2 = isset($topics[1]) ? str_replace("#", "", $topics[1]) : "";
 		$topic3 = isset($topics[2]) ? str_replace("#", "", $topics[2]) : "";
-		if(empty($topic1)) $topic1 = "general"; // default topic if no topic is passed
 
 		// save note to the database
 		$noteID = Connection::query("
