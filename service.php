@@ -330,7 +330,7 @@ class Pizarra extends Service
 	 */
 	public function _perfil(Request $request)
 	{
-		// get the user profile
+		// get the user's profile
 		if(empty($request->query)) $email = $request->email;
 		else $email = Utils::getEmailFromUsername($request->query);
 		$person = Utils::getPerson($email);
@@ -339,20 +339,19 @@ class Pizarra extends Service
 		if (empty($person)) {
 			$response = new Response();
 			$response->setResponseSubject("No encontramos el perfil");
-			$response->createFromText("No encontramos un perfil para el usuario {$request->query}, por favor intente con otro nombre de usuario");
+			$response->createFromText("No encontramos un perfil para este usuario, por favor intente con otro nombre de usuario o pruebe mas tarde.");
 			return $response;
 		}
 
-		// get user's reputation and topic
-		Connection::query("INSERT IGNORE INTO _pizarra_users (email) VALUES ('{$request->email}')");
-		$res = Connection::query("SELECT * FROM _pizarra_users WHERE email='$email'");
-		$person->reputation = $res[0]->reputation;
-		$person->myTopic = $res[0]->default_topic;
+		// get user's reputation and default topic
+		$user = Connection::query("SELECT * FROM _pizarra_users WHERE email='$email'");
+		$person->reputation = empty($user[0]) ? 0 : $user[0]->reputation;
+		$person->myTopic = empty($user[0]) ? "general" : $user[0]->default_topic;
 
 		// get user topics
 		$person->topics = [];
-		$res = Connection::query("SELECT DISTINCT topic FROM _pizarra_topics WHERE person='$email'");
-		if($res) foreach($res as $t) $person->topics[] = $t->topic;
+		$topics = Connection::query("SELECT DISTINCT topic FROM _pizarra_topics WHERE person='$email'");
+		if($topics) foreach($topics as $t) $person->topics[] = $t->topic;
 
 		// create data for the view
 		$content = [
