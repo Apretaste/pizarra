@@ -201,9 +201,10 @@ class Pizarra extends Service
 		$topic3 = isset($topics[2]) ? str_replace("#", "", $topics[2]) : "";
 
 		// save note to the database
+		$cleanText = Connection::escape($text, 300);
 		$noteID = Connection::query("
 			INSERT INTO _pizarra_notes (email, `text`, topic1, topic2, topic3)
-			VALUES ('{$request->email}', '$text', '$topic1', '$topic2', '$topic3')");
+			VALUES ('{$request->email}', '$cleanText', '$topic1', '$topic2', '$topic3')");
 
 		// increase the writer's reputation
 		Connection::query("UPDATE _pizarra_users SET reputation=reputation+1 WHERE email='{$request->email}'");
