@@ -15,7 +15,6 @@ class Pizarra extends Service
 		$search = $this->getSearchType($request->query, $request->email);
 		$searchType = $search[0];
 		$searchValue = $search[1];
-		$topic = false;
 
 		// get the user's profile
 		$profile = $this->utils->getPerson($request->email);
