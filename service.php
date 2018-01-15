@@ -510,7 +510,9 @@ class Pizarra extends Service
 		// return topic selected by the user if blank
 		if(empty($keyword)) {
 			$topic = Connection::query("SELECT default_topic FROM _pizarra_users WHERE email='$email'");
-			return ["topic", $topic[0]->default_topic];
+			if(empty($topic[0]->default_topic)) $defaultTopic = "general";
+			else $defaultTopic = $topic[0]->default_topic;
+			return ["topic", $defaultTopic];
 		}
 
 		// get the number of words passed
