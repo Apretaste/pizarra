@@ -79,7 +79,7 @@
 				<span class="emoji">
 					<big>{link href="PIZARRA LIKE {$note['id']}" caption="&#128077;" wait="false" style="text-decoration:none; color:{$note['likecolor']};"}</big>
 					<small>{$note['likes']}</small>
-				<span>&nbsp;&nbsp;
+				</span>&nbsp;&nbsp;
 
 				<span class="emoji">
 					<big>{link href="PIZARRA UNLIKE {$note['id']}" caption="&#x1F44E;" wait="false" style="text-decoration:none; color:{$note['unlikecolor']};"}</big>
@@ -89,7 +89,11 @@
 				<span class="emoji">
 					{link href="PIZARRA NOTA {$note['id']}" caption="&#128172;" style="text-decoration:none; color:black;"}
 					<small>{$note['comments']}</small>
-				</span>
+				</span>&nbsp;&nbsp;
+
+				{if count($note['topics']) < 3}
+					<b>{link href="PIZARRA TEMIFICAR {$note['id']}" popup="true" wait="false" caption="#" desc="A que #tema pertenece esta nota?" style="text-decoration:none; color:black;"}</b>
+				{/if}
 			</td>
 		</tr>
 	</table>

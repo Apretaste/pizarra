@@ -369,6 +369,37 @@ class Pizarra extends Service
 	}
 
 	/**
+	 * Assign a topic to a note
+	 *
+	 * @author salvipascual
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function _temificar(Request $request)
+	{
+		// get note ID and topic
+		$part = explode(" ", $request->query);
+		$noteId = isset($part[0]) ? $part[0] : "";
+		$topic = isset($part[1]) ? str_replace("#", "", $part[1]) : "";
+
+		// get the note to update
+		$note = Connection::query("SELECT topic1,topic2,topic3 FROM _pizarra_notes WHERE id='$noteId'");
+
+		if($note && $topic) {
+			// save topic in the database (also replace general topic)
+			if(empty($note[0]->topic1) || $note[0]->topic1=="general") $topicToSave = "topic1='$topic'";
+			elseif(empty($note[0]->topic2) || $note[0]->topic2=="general") $topicToSave = "topic2='$topic'";
+			else $topicToSave = "topic3='$topic'";
+			Connection::query("
+				UPDATE _pizarra_notes SET $topicToSave WHERE id='$noteId';
+				UPDATE _pizarra_users SET reputation=reputation+5 WHERE email='{$request->email}';
+				INSERT INTO _pizarra_topics(topic,note,person) VALUES ('$topic','$noteId','{$request->email}');");
+		}
+
+		return new Response();
+	}
+
+	/**
 	 * Catalog the posts by topic
 	 *
 	 * @author salvipascual
@@ -380,25 +411,8 @@ class Pizarra extends Service
 		// if you are trying to submit a topic
 		$message = false;
 		if($request->query) {
-			// get note ID and topic
-			$part = explode(" ", $request->query);
-			$noteId = isset($part[0]) ? $part[0] : "";
-			$topic = isset($part[1]) ? str_replace("#", "", $part[1]) : "";
-
-			// get the note to update
-			$note = Connection::query("SELECT topic1,topic2,topic3 FROM _pizarra_notes WHERE id='$noteId'");
-
-			if($note && $topic) {
-				// save topic in the database (also replace general topic)
-				if(empty($note[0]->topic1) || $note[0]->topic1=="general") $topicToSave = "topic1='$topic'";
-				elseif(empty($note[0]->topic2) || $note[0]->topic2=="general") $topicToSave = "topic2='$topic'";
-				else $topicToSave = "topic3='$topic'";
-				Connection::query("
-					UPDATE _pizarra_notes SET $topicToSave WHERE id='$noteId';
-					UPDATE _pizarra_users SET reputation=reputation+5 WHERE email='{$request->email}';
-					INSERT INTO _pizarra_topics(topic,note,person) VALUES ('$topic','$noteId','{$request->email}');");
-				$message = true;
-			}
+			$this->_temificar($request);
+			$message = true;
 		}
 
 		// get a random note
