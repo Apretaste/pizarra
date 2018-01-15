@@ -420,7 +420,7 @@ class Pizarra extends Service
 			AND topic <> '{$note->topic2}'
 			AND topic <> '{$note->topic3}'
 			AND topic <> 'general'
-			GROUP BY topic ORDER BY rows DESC LIMIT 10");
+			GROUP BY topic ORDER BY rows DESC LIMIT 50");
 		foreach($res as $t) $topics[] = $t->topic;
 
 		// create data for the view
