@@ -20,7 +20,7 @@
 	{else}
 		{button href="CHAT @{$profile->username}" caption="Chatear" color="grey" size="small"}
 		{button href="PIZARRA @{$profile->username}" caption="Ver notas" color="grey" size="small"}
-		{button href="PIZARRA DENUNCIAR @{$profile->username}" caption="Denunciar" desc="Por que desea denunciar a este usuario? [El perfil tiene info falsa,Esta impersonando a alguien,Sus notas son ofensivas,Escribe notas falsas a sabiendas,Sus notas son inentendibles,Promueve comportamiento ilegal,Promueve practicas inmorales]" popup="true" wait="false" color="red" size="small"}
+		{button href="PIZARRA DENUNCIAR @{$profile->username}" caption="Denunciar" desc="Por que desea denunciar a este usuario? [El perfil tiene info falsa,Esta impersonando a alguien,Sus notas son ofensivas,Escribe notas falsas o ilegibles,Escribe en temas incorrectos,Promueve comportamiento ilegal,Promueve practicas inmorales]" popup="true" wait="false" color="red" size="small"}
 	{/if}
 
 	{space10}

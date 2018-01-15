@@ -468,7 +468,7 @@ class Pizarra extends Service
 		if(php::exists($text, "imperso")) $reason = "PERSONIFICATION";
 		if(php::exists($text, "ofensiv")) $reason = "OFFENSIVE";
 		if(php::exists($text, "notas falsa")) $reason = "FAKE_NOTES";
-		if(php::exists($text, "inenten")) $reason = "ILLEGIBLE_NOTES";
+		if(php::exists($text, "temas")) $reason = "WRONG_TOPIC";
 		if(php::exists($text, "ilegal")) $reason = "ILLEGAL";
 		if(php::exists($text, "inmoral")) $reason = "IMMORAL";
 
