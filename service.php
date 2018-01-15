@@ -344,6 +344,7 @@ class Pizarra extends Service
 		}
 
 		// get user's reputation and topic
+		Connection::query("INSERT IGNORE INTO _pizarra_users (email) VALUES ('{$request->email}')");
 		$res = Connection::query("SELECT * FROM _pizarra_users WHERE email='$email'");
 		$person->reputation = $res[0]->reputation;
 		$person->myTopic = $res[0]->default_topic;
