@@ -212,6 +212,7 @@ class Pizarra extends Service
 		// save the topics to the topics table
 		foreach ($topics as $topic) {
 			$topic = str_replace("#", "", $topic);
+			$topic = Connection::escape($topic, 20);
 			Connection::query("
 				INSERT INTO _pizarra_topics(topic, note, person)
 				VALUES ('$topic', '$noteID', '{$request->email}')");
@@ -386,9 +387,10 @@ class Pizarra extends Service
 		$note = Connection::query("SELECT topic1,topic2,topic3 FROM _pizarra_notes WHERE id='$noteId'");
 
 		if($note && $topic) {
-			// save topic in the database (also replace general topic)
-			if(empty($note[0]->topic1) || $note[0]->topic1=="general") $topicToSave = "topic1='$topic'";
-			elseif(empty($note[0]->topic2) || $note[0]->topic2=="general") $topicToSave = "topic2='$topic'";
+			// save topic in the database
+			$topic = Connection::escape($topic, 20);
+			if(empty($note[0]->topic1)) $topicToSave = "topic1='$topic'";
+			elseif(empty($note[0]->topic2)) $topicToSave = "topic2='$topic'";
 			else $topicToSave = "topic3='$topic'";
 			Connection::query("
 				UPDATE _pizarra_notes SET $topicToSave WHERE id='$noteId';
