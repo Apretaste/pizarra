@@ -365,7 +365,7 @@ class Pizarra extends Service
 		$response = new Response();
 		$response->setEmailLayout('pizarra.tpl');
 		$response->setResponseSubject("Perfil de @{$person->username}");
-		$response->createFromTemplate("profile.tpl", $content, [$person->picture_public]);
+		$response->createFromTemplate("profile.tpl", $content, [$person->picture_internal]);
 		return $response;
 	}
 
