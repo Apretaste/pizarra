@@ -489,6 +489,7 @@ class Pizarra extends Service
 		if(php::exists($text, "inmoral")) $reason = "IMMORAL";
 
 		// save into the database
+		$text = Connection::escape($text, 500);
 		Connection::query("INSERT INTO _pizarra_denounce (email,denouncer,reason,`text`) VALUES ('$email','{$request->email}','$reason','$text')");
 
 		// substract 50 to reputation when a user receives 5+ denounces a week
