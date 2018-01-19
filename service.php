@@ -308,18 +308,20 @@ class Pizarra extends Service
 
 		// get the list of most popular users
 		$users = [];
+		$images = [];
 		$popuplar = Connection::query("SELECT email, reputation FROM _pizarra_users ORDER BY reputation DESC LIMIT 9");
 		foreach ($popuplar as $p) {
 			$user = $this->utils->getPerson($p->email);
 			$user->reputation = $p->reputation;
 			$users[] = $user;
+			if($user->picture) $images[] = $user->picture_public;
 		}
 
 		// create the response
 		$response = new Response();
 		$response->setEmailLayout('pizarra.tpl');
 		$response->setResponseSubject("Lista de temas");
-		$response->createFromTemplate("topics.tpl", ["topics"=>$topics, "users"=>$users]);
+		$response->createFromTemplate("topics.tpl", ["topics"=>$topics, "users"=>$users], $images);
 		return $response;
 	}
 
