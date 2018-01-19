@@ -314,7 +314,7 @@ class Pizarra extends Service
 			$user = $this->utils->getPerson($p->email);
 			$user->reputation = $p->reputation;
 			$users[] = $user;
-			if($user->picture) $images[] = $user->picture_public;
+			if($user->picture) $images[] = $user->picture_internal;
 		}
 
 		// create the response
