@@ -581,7 +581,7 @@ class Pizarra extends Service
 				A.id, A.email, A.text, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country,
 				C.reputation,
-				DATEDIFF(A.inserted,CURRENT_DATE) as days,
+				DATEDIFF(CURRENT_DATE,A.inserted) as days,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND email='{$profile->email}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND email='{$profile->email}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_notes A
@@ -593,9 +593,9 @@ class Pizarra extends Service
 
 		// sort results by weight. Too complex and slow in MySQL
 		usort($listOfNotes, function($a, $b) {
-			$one = $a->days*0.5 + $a->reputation*0.9 + $a->comments*0.2 + ($a->likes - $a->unlikes*1.5) + $a->ad*1000;
-			$two = $b->days*0.5 + $b->reputation*0.9 + $b->comments*0.2 + ($b->likes - $b->unlikes*1.5) + $b->ad*1000;
-			return ($two-$one) ? ($two-$one)/abs($two-$one) : 0;
+			$a->score = 100-$a->days + $a->reputation*0.01 + $a->comments*0.2 + ($a->likes-$a->unlikes*2) + $a->ad*1000;
+			$b->score = 100-$b->days + $b->reputation*0.01 + $b->comments*0.2 + ($b->likes-$b->unlikes*2) + $b->ad*1000;
+			return ($b->score-$a->score) ? ($b->score-$a->score)/abs($b->score-$a->score) : 0;
 		});
 
 		// format the array of notes
@@ -724,6 +724,10 @@ class Pizarra extends Service
 			$link = smarty_function_link($params, null);
 			$note->text = str_replace("@{$m->username}", $link, $note->text);
 		}
+
+		// remove \" and \' from the note
+		$note->text = str_replace('\"', '"', $note->text);
+		$note->text = str_replace("\'", "'", $note->text);
 
 		// add the text to the array
 		$newNote = [
