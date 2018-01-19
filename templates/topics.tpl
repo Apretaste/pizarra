@@ -1,3 +1,5 @@
+{include file="../layouts/appmenu.tpl"}
+
 <center>
 	<h1>Temas mas leidos</h1>
 	{foreach from=$topics item=topic}

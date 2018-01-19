@@ -1,3 +1,5 @@
+{include file="../layouts/appmenu.tpl"}
+
 <center>
 	{if $message}
 		<div style="background-color:#DFF0D8; color:#3c763d; padding:5px;">&iexcl;Gracias! Ha ganado 5 puntos de reputacion</div>

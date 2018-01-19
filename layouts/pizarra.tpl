@@ -98,19 +98,6 @@
 				<tr>
 					<td style="padding: 5px 10px 0px 10px;" colspan="3">
 						<div class="rounded">
-							{if {$APRETASTE_ENVIRONMENT} eq "app"}
-							<table width="100%">
-								<tr align="center">
-									<td>{link href="PIZARRA" caption="PIZARRA"}</td>
-									<td>{link href="PIZARRA PERFIL" caption="PERFIL"}</td>
-									<td>{link href="CHAT" caption="CHAT"}</td>
-									<td>{link href="PIZARRA TEMAS" caption="#TEMAS"}</td>
-								</tr>
-							</table>
-							<hr/>
-							{space10}
-							{/if}
-
 							{include file="$APRETASTE_USER_TEMPLATE"}
 						</div>
 					</td>

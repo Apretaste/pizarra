@@ -1,3 +1,5 @@
+{include file="../layouts/appmenu.tpl"}
+
 {if $isProfileIncomplete}
 <table width="100%">
 	<tr>

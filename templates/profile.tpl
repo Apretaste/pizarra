@@ -1,3 +1,5 @@
+{include file="../layouts/appmenu.tpl"}
+
 <!--PROFILE PICTURE-->
 <center>
 	{if $profile->picture}

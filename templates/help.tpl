@@ -1,3 +1,5 @@
+{include file="../layouts/appmenu.tpl"}
+
 <h1>&iquest;Que es Pizarra?</h1>
 <p>Nuestra Pizarra es un espacio en el cual puede compartir notas con otros usuarios, o puede leer lo que otros escriben y dejarles saber su opinion. En la Pizarra puede conocer amigos y compartir temas que le apasionen, ya sea en publico o en privado.</p>
 

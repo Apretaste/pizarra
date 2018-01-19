@@ -1,3 +1,5 @@
+{include file="../layouts/appmenu.tpl"}
+
 <table width="100%" cellspacing="0">
 	<tr>
 		<!--PICTURE -->
