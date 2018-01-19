@@ -454,7 +454,7 @@ class Pizarra extends Service
 		$response = new Response();
 		$response->setEmailLayout('pizarra.tpl');
 		$response->setResponseSubject("Catalogue esta nota");
-		$response->createFromTemplate("catalog.tpl", $content, [$person->picture_public]);
+		$response->createFromTemplate("catalog.tpl", $content, [$person->picture_internal]);
 		return $response;
 	}
 
