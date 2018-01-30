@@ -89,8 +89,8 @@
 						{link href="PIZARRA PERFIL" caption="&#128100;" style="color:#9E100A; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
 						{link href="CHAT" caption="&#128172;" style="color:#9E100A; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
 						{link href="PIZARRA TEMAS" caption="#" style="color:#9E100A; text-decoration:none; font-size:18px;"}&nbsp;&nbsp;
-						{if $num_notifications}{assign var="bell" value="🔔"}{else}{assign var="bell" value="🔕"}{/if}
-						{link href="NOTIFICACIONES pizarra nota chat" caption="{$bell}" style="color:#9E100A; text-decoration: none;"}
+						{if $num_notifications}{assign var="bell" value="🔔"}{assign var="color" value="#9E100A"}{else}{assign var="bell" value="🔕"}{assign var="color" value="grey"}{/if}
+						{link href="NOTIFICACIONES pizarra nota chat" caption="{$bell}" style="color:{$color}; text-decoration: none;"}
 					</td>
 				</tr>
 
