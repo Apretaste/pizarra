@@ -730,6 +730,7 @@ class Pizarra extends Service
 		// remove \" and \' from the note
 		$note->text = str_replace('\"', '"', $note->text);
 		$note->text = str_replace("\'", "'", $note->text);
+		$note->text = str_replace("\\n", "<br/>", $note->text);
 
 		// add the text to the array
 		$newNote = [
