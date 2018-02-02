@@ -101,5 +101,5 @@
 {space15}
 
 <center>
-	{button href="PIZARRA COMENTAR {$note['id']} " caption="Comentar" popup="true" wait="false" desc="Escriba una comentario a esta nota"}
+	{button href="PIZARRA COMENTAR {$note['id']} " caption="Comentar" popup="true" wait="false" desc="a:Escriba un comentario para esta nota*"}
 </center>

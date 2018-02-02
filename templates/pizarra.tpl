@@ -16,7 +16,7 @@
 		<td><h1>{$title}</h1></td>
 		<td align="right" valign="top">
 			<nobr>
-			{button href="PIZARRA ESCRIBIR" desc="Escriba una nota" caption="&#10010; Escribir" size="small" popup="true" wait="false"}
+			{button href="PIZARRA ESCRIBIR" desc="a:Escriba una nota*" caption="&#10010; Escribir" size="small" popup="true" wait="false"}
 			{button href="PIZARRA" caption="Buscar" size="small" color="grey" popup="true" desc="Escriba un texto, @username o #tema"}
 			</nobr>
 		</td>
@@ -94,7 +94,7 @@
 				</span>&nbsp;&nbsp;
 
 				{if count($note['topics']) < 3}
-					<b>{link href="PIZARRA TEMIFICAR {$note['id']}" popup="true" wait="false" caption="#" desc="A que #tema pertenece esta nota?" style="text-decoration:none; color:black;"}</b>
+					<b>{link href="PIZARRA TEMIFICAR {$note['id']}" popup="true" wait="false" caption="#" desc="A que #tema pertenece esta nota?*" style="text-decoration:none; color:black;"}</b>
 				{/if}
 			</td>
 		</tr>

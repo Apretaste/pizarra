@@ -30,6 +30,6 @@
 
 	{space10}
 
-	{button href="PIZARRA CATALOGAR {$note->id}" caption="Otro tema" size="small" popup="true" desc="Inserte un nombre de tema"}
+	{button href="PIZARRA CATALOGAR {$note->id}" caption="Otro tema" size="small" popup="true" desc="Inserte un nombre de tema*"}
 	{button href="PIZARRA CATALOGAR" caption="Saltar" size="small" color="grey"}
 </center>
