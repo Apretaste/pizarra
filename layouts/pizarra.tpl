@@ -85,10 +85,10 @@
 
 					<!--notifications & profile-->
 					<td align="right" class="emoji" valign="middle" style="padding:10px 25px 0px 0px;">
-						{link href="PIZARRA" caption="&#128220;" style="color:#9E100A; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
-						{link href="PIZARRA PERFIL" caption="&#128100;" style="color:#9E100A; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
-						{link href="CHAT" caption="&#128172;" style="color:#9E100A; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
-						{link href="PIZARRA TEMAS" caption="#" style="color:#9E100A; text-decoration:none; font-size:18px;"}&nbsp;&nbsp;
+						{link href="PIZARRA" caption="📜" style="color:#9E100A; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
+						{link href="PIZARRA PERFIL" caption="👤" style="color:#9E100A; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
+						{link href="CHAT" caption="💬" style="color:#9E100A; text-decoration: none;"}&nbsp;&nbsp;&nbsp;
+						{link href="PIZARRA TEMAS" caption="🏆" style="color:#9E100A; text-decoration:none; font-size:18px;"}&nbsp;&nbsp;
 						{if $num_notifications}{assign var="bell" value="🔔"}{assign var="color" value="#9E100A"}{else}{assign var="bell" value="🔕"}{assign var="color" value="grey"}{/if}
 						{link href="NOTIFICACIONES pizarra nota chat" caption="{$bell}" style="color:{$color}; text-decoration: none;"}
 					</td>
