@@ -503,6 +503,64 @@ class Pizarra extends Service
 	}
 
 	/**
+	 * Check the list of opens chats or chat with somebody
+	 *
+	 * @author salvipascual
+	 * @param Request $request
+	 * @return Response
+	 */
+	public function _chat(Request $request)
+	{
+		// get person to chat
+		$friendEmail = $this->utils->getEmailFromUsername($request->query);
+
+		// show list of chats for a person
+		if($friendEmail) {
+			require_once "/var/www/Core/services/chat/service.php";
+			$chats = Chat::getConversation($request->email, $friendEmail);
+
+			// add profiles to the list of notes
+			foreach($chats as $n) {
+				$email = $this->utils->getEmailFromUsername($n->username);
+				$n->profile = $this->utils->getPerson($email);
+			}
+
+			$response = new Response();
+			$response->setEmailLayout('pizarra.tpl');
+			$response->setResponseSubject("Lista de chats");
+			$response->createFromTemplate("conversation.tpl", ["username"=>str_replace("@", "", $request->query), "chats"=>$chats]);
+			return $response;
+		}
+
+		// Searching contacts of the current user
+		$notes = Connection::query("
+			SELECT to_user as email, MAX(send_date) as last
+			FROM _note
+			WHERE from_user = '{$request->email}'
+			GROUP BY to_user
+			UNION
+			SELECT from_user as email, MAX(send_date) as last
+			FROM _note
+			WHERE to_user = '{$request->email}'
+			GROUP BY from_user");
+
+		// add profiles to the list of notes
+		$unique = []; $chats = [];
+		foreach($notes as $n) {
+			if(in_array($n->email, $unique)) continue;
+			$n->profile = $this->utils->getPerson($n->email);
+			$unique[] = $n->email;
+			$chats[] = $n;
+		}
+
+		$response = new Response();
+		$response->setEmailLayout('pizarra.tpl');
+		$response->setResponseSubject("Lista de chats");
+		$response->createFromTemplate("chats.tpl", ["chats"=>$chats]);
+		return $response;
+	}
+
+	/**
 	 * Display the help document
 	 *
 	 * @author salvipascual
