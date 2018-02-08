@@ -63,10 +63,7 @@
 				<small style="color:gray;">{$note['inserted']|date_format:"%b %e, %I:%M %p"|capitalize}</small>
 
 				<!--IS THE USER ONLINE-->
-				{if {$note['online']}}
-					&nbsp;
-					<span class="online">ONLINE</span>
-				{/if}
+				{if {$note['online']}}&nbsp;<span class="online">ONLINE</span>{/if}
 			</td>
 		</tr>
 		<tr>
