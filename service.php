@@ -534,15 +534,17 @@ class Pizarra extends Service
 
 		// Searching contacts of the current user
 		$notes = Connection::query("
-			SELECT to_user as email, MAX(send_date) as last
-			FROM _note
-			WHERE from_user = '{$request->email}'
-			GROUP BY to_user
-			UNION
-			SELECT from_user as email, MAX(send_date) as last
-			FROM _note
-			WHERE to_user = '{$request->email}'
-			GROUP BY from_user");
+			SELECT * FROM (
+				SELECT to_user as email, MAX(send_date) as last
+				FROM _note
+				WHERE from_user = '{$request->email}'
+				GROUP BY to_user
+				UNION
+				SELECT from_user as email, MAX(send_date) as last
+				FROM _note
+				WHERE to_user = '{$request->email}'
+				GROUP BY from_user) A
+			ORDER BY last DESC");
 
 		// add profiles to the list of notes
 		$unique = []; $chats = [];
