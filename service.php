@@ -553,6 +553,7 @@ class Pizarra extends Service
 		foreach($notes as $n) {
 			if(in_array($n->email, $unique)) continue;
 			$n->profile = $this->utils->getPerson($n->email);
+			if(empty($n->profile)) continue;
 			$n->picture = $n->profile->picture ? $n->profile->picture_public : "/images/user.jpg";
 			$unique[] = $n->email;
 			$chats[] = $n;
