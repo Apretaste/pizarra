@@ -516,13 +516,15 @@ class Pizarra extends Service
 
 		// show list of chats for a person
 		if($friendEmail) {
-			require_once "/var/www/Core/services/chat/service.php";
+			$di = \Phalcon\DI\FactoryDefault::getDefault();
+			require_once $di->get('path')['root'] . "/services/chat/service.php";
 			$chats = Chat::getConversation($request->email, $friendEmail);
 
 			// add profiles to the list of notes
 			foreach($chats as $n) {
 				$email = $this->utils->getEmailFromUsername($n->username);
 				$n->profile = $this->utils->getPerson($email);
+				$n->picture = $n->profile->picture ? $n->profile->picture_public : "/images/user.jpg";
 			}
 
 			$response = new Response();
@@ -551,6 +553,7 @@ class Pizarra extends Service
 		foreach($notes as $n) {
 			if(in_array($n->email, $unique)) continue;
 			$n->profile = $this->utils->getPerson($n->email);
+			$n->picture = $n->profile->picture ? $n->profile->picture_public : "/images/user.jpg";
 			$unique[] = $n->email;
 			$chats[] = $n;
 		}

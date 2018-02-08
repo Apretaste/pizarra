@@ -12,7 +12,7 @@
 			<td><small>
 				<!--PICTURE-->
 				{if {$APRETASTE_ENVIRONMENT} eq "web"}
-					<img class="profile-small" src="{$item->profile->picture_public}" title="@{$item->profile->username}" alt="@{$item->profile->username}"/>
+					<img class="profile-small" src="{$item->picture}" title="@{$item->profile->username}" alt="@{$item->profile->username}"/>
 				{/if}
 
 				<!--FLAG AND COUNTRY-->
