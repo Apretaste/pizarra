@@ -12,16 +12,16 @@
 			{if $item->profile->gender eq "M"}{assign var="color" value="#4863A0"}{/if}
 			{if $item->profile->gender eq "F"}{assign var="color" value="#F778A1"}{/if}
 
-			<td>
+			<td width="1" valign="top">
 				{if {$APRETASTE_ENVIRONMENT} eq "web"}
-					<img class="profile-small" src="{$item->profile->picture_public}" alt="@{$item->profile->username}"/>
+					<img class="profile-small" src="{$item->profile->picture_public}" title="@{$item->profile->username}" alt="@{$item->profile->username}"/>
 				{/if}
-				<small>
-					{link href="PIZARRA PERFIL @{$item->profile->username}" caption="@{$item->profile->username}" style="color:{$color};"}<br/>
-					{$item->sent|date_format:"%e/%m/%Y %I:%M %p"}
-				</small>
 			</td>
 			<td>
+				<span style="color:grey; font-size:10px;">
+					{link href="PIZARRA PERFIL @{$item->profile->username}" caption="@{$item->profile->username}" style="color:{$color};"}
+					{$item->sent|date_format:"%e/%m/%Y %I:%M %p"}
+				</span><br/>
 				<span style="color:{if $username == $item->username}#000000{else}#000066{/if};">{$item->text}</span>
 			</td>
 		</tr>

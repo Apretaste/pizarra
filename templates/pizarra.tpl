@@ -39,14 +39,14 @@
 
 	<table width="100%" cellspacing="0" bgcolor="{$bgcolor}" border=0>
 		<tr>
-			<!--PICTURE -->
+			<!--PICTURE-->
 			{if {$APRETASTE_ENVIRONMENT} eq "web"}
 				<td rowspan="3" width="50" align="left" valign="top">
 					<img class="profile" src="{$note['picture']}" alt="@{$note['username']}"/>
 				</td>
 			{/if}
 
-			<!--HEADER ROW -->
+			<!--HEADER ROW-->
 			<td style="font-size:small;" valign="top">
 				{assign var="color" value="gray"}
 				{if $note['gender'] eq "M"}{assign var="color" value="#4863A0"}{/if}
@@ -61,6 +61,12 @@
 				<small style="color:gray;">{$note['location']}</small>
 				&middot;
 				<small style="color:gray;">{$note['inserted']|date_format:"%b %e, %I:%M %p"|capitalize}</small>
+
+				<!--IS THE USER ONLINE-->
+				{if {$note['online']}}
+					&nbsp;
+					<span class="online">ONLINE</span>
+				{/if}
 			</td>
 		</tr>
 		<tr>

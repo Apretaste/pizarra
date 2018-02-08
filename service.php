@@ -639,7 +639,7 @@ class Pizarra extends Service
 		$listOfNotes = Connection::query("
 			SELECT
 				A.id, A.email, A.text, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
-				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country,
+				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country, B.online,
 				C.reputation,
 				DATEDIFF(CURRENT_DATE,A.inserted) as days,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND email='{$profile->email}' AND action='like') > 0 AS isliked,
@@ -723,7 +723,7 @@ class Pizarra extends Service
 	{
 		// get the last 50 records from the db
 		$listOfNotes = Connection::query("
-			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country,
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.online,
 			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.email = '{$profile->email}' AND `action` = 'like') > 0 AS isliked,
 			(SELECT count(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments
 			FROM _pizarra_notes A
@@ -805,6 +805,7 @@ class Pizarra extends Service
 			"likecolor" => isset($note->isliked) && $note->isliked ? "#9E100A" : "black",
 			"unlikecolor" => isset($note->isunliked) && $note->isunliked ? "#9E100A" : "black",
 			"ad" => isset($note->ad) ? $note->ad : false,
+			"online" => isset($note->online) ? $note->online : 0,
 			"country" => $country,
 			"flag" => $flag,
 			'email' => $note->email,
