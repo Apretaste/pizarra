@@ -17,7 +17,7 @@
 		<td align="right" valign="top">
 			<nobr>
 			{button href="PIZARRA ESCRIBIR" desc="a:Escriba una nota*" caption="&#10010; Escribir" size="small" popup="true" wait="false"}
-			{button href="PIZARRA" caption="🔍" size="icon" color="grey" popup="true" desc="Escriba un texto, @username o #tema"}
+			{button href="PIZARRA" caption="🔍" size="icon" color="grey" popup="true" desc="Escriba un texto, @username o #tema*"}
 			</nobr>
 		</td>
 	</tr>
