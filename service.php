@@ -25,7 +25,7 @@ class Pizarra extends Service
 		// get notes if serached by topic
 		if($searchType == "topic") {
 			$notes = $this->getNotesByTopic($profile, $searchValue);
-			$title = "Tema #$searchValue";
+			$title = "#$searchValue";
 		}
 
 		// get notes if serached by username
