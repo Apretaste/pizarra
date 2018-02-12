@@ -512,21 +512,15 @@ class Pizarra extends Service
 	public function _chat(Request $request)
 	{
 		// get person to chat
+		$social = new Social();
 		$friendEmail = $this->utils->getEmailFromUsername($request->query);
 
-		// show list of chats for a person
+		// show notes of the conversation with a person
 		if($friendEmail) {
-			$di = \Phalcon\DI\FactoryDefault::getDefault();
-			require_once $di->get('path')['root'] . "/services/chat/service.php";
-			$chats = Chat::getConversation($request->email, $friendEmail);
+			// get the list of people chating with you
+			$chats = $social->chatConversation($request->email, $friendEmail);
 
-			// add profiles to the list of notes
-			foreach($chats as $n) {
-				$email = $this->utils->getEmailFromUsername($n->username);
-				$n->profile = $this->utils->getPerson($email);
-				$n->picture = $n->profile->picture ? $n->profile->picture_public : "/images/user.jpg";
-			}
-
+			// send information to the view
 			$response = new Response();
 			$response->setEmailLayout('pizarra.tpl');
 			$response->setResponseSubject("Lista de chats");
@@ -534,31 +528,10 @@ class Pizarra extends Service
 			return $response;
 		}
 
-		// Searching contacts of the current user
-		$notes = Connection::query("
-			SELECT * FROM (
-				SELECT to_user as email, MAX(send_date) as last
-				FROM _note
-				WHERE from_user = '{$request->email}'
-				GROUP BY to_user
-				UNION
-				SELECT from_user as email, MAX(send_date) as last
-				FROM _note
-				WHERE to_user = '{$request->email}'
-				GROUP BY from_user) A
-			ORDER BY last DESC");
+		// get open chats
+		$chats = $social->chatsOpen($request->email);
 
-		// add profiles to the list of notes
-		$unique = []; $chats = [];
-		foreach($notes as $n) {
-			if(in_array($n->email, $unique)) continue;
-			$n->profile = $this->utils->getPerson($n->email);
-			if(empty($n->profile)) continue;
-			$n->picture = $n->profile->picture ? $n->profile->picture_public : "/images/user.jpg";
-			$unique[] = $n->email;
-			$chats[] = $n;
-		}
-
+		// send info to the view
 		$response = new Response();
 		$response->setEmailLayout('pizarra.tpl');
 		$response->setResponseSubject("Lista de chats");
