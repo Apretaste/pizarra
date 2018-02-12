@@ -75,7 +75,7 @@
 			{if $comment['gender'] eq "F"}{assign var="color" value="#F778A1"}{/if}
 
 			{if {$APRETASTE_ENVIRONMENT} eq "web"}
-				<img class="flag" src="{$note['flag']}" alt="{$note['country']}"/>
+				<img class="flag" src="{$comment['flag']}" alt="{$note['country']}"/>
 			{/if}
 
 			{link href="PIZARRA PERFIL @{$comment['username']}" caption="@{$comment['username']}" style="color:{$color};"}
