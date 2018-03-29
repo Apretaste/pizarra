@@ -625,7 +625,7 @@ class Pizarra extends Service
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND email='{$profile->email}' AND action='unlike') > 0 AS isunliked
 			FROM (
 				SELECT * FROM _pizarra_notes subq2 INNER JOIN (
-					SELECT max(id) FROM _pizarra_notes
+					SELECT max(id) as id FROM _pizarra_notes
 					WHERE (topic1='$topic' OR topic2='$topic' OR topic3='$topic')
 					GROUP BY email
 					ORDER BY inserted DESC
