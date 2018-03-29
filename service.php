@@ -628,7 +628,7 @@ class Pizarra extends Service
 					SELECT max(id) FROM _pizarra_notes
 					WHERE (topic1='$topic' OR topic2='$topic' OR topic3='$topic')
 					GROUP BY email
-					ORDER BY A.inserted DESC
+					ORDER BY inserted DESC
 					LIMIT 500) subq 
 				ON subq.id = subq2.id
 			) A
