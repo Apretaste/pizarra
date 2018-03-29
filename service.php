@@ -623,12 +623,17 @@ class Pizarra extends Service
 				DATEDIFF(CURRENT_DATE,A.inserted) as days,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND email='{$profile->email}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND email='{$profile->email}' AND action='unlike') > 0 AS isunliked
-			FROM _pizarra_notes A
+			FROM (
+				SELECT * FROM _pizarra_notes subq2 INNER JOIN (
+					SELECT max(id) FROM _pizarra_notes
+					WHERE (topic1='$topic' OR topic2='$topic' OR topic3='$topic')
+					GROUP BY email
+					ORDER BY A.inserted DESC
+					LIMIT 500) subq 
+				ON subq.id = subq2.id
+			) A
 			LEFT JOIN person B ON A.email = B.email
-			JOIN _pizarra_users C ON A.email = C.email
-			WHERE (A.topic1='$topic' OR A.topic2='$topic' OR A.topic3='$topic')
-			ORDER BY A.inserted DESC
-			LIMIT 500");
+			JOIN _pizarra_users C ON A.email = C.email");
 
 		// sort results by weight. Too complex and slow in MySQL
 		usort($listOfNotes, function($a, $b) {
