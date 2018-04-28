@@ -596,9 +596,13 @@ class Pizarra extends Service
 	 */
 	private function getTimesTopicShow($topic)
 	{
-		// @TODO add cache to avoid asking the same thousands of times
-		$res = Connection::query("SELECT COUNT(id) as cnt FROM _pizarra_topics WHERE topic='$topic'");
-		return $res[0]->cnt;
+		$cache = $this->utils->getTempDir() . "pizarra_$topic" . date("YmdH") . ".cache";
+		if(file_exists($cache)) $count = file_get_contents($cache);
+		else {
+			$count = Connection::query("SELECT COUNT(id) as cnt FROM _pizarra_topics WHERE topic='$topic'")[0]->cnt;
+			file_put_contents($cache, $count);
+		}
+		return $count;
 	}
 
 	/**
@@ -628,7 +632,7 @@ class Pizarra extends Service
 					SELECT max(id) as idx FROM _pizarra_notes
 					WHERE (topic1='$topic' OR topic2='$topic' OR topic3='$topic')
 					GROUP BY email
-					) subq 
+					) subq
 				ON subq.idx = subq2.id
 				ORDER BY inserted DESC
 				LIMIT 500
