@@ -1,0 +1,93 @@
+@font-face {
+	font-family: "emoji";
+	src: url('/fonts/seguiemj.ttf') format("truetype");
+}
+@media only screen and (max-width: 600px) {
+	#container {
+		width: 100%;
+	}
+}
+@media only screen and (max-width: 480px) {
+	.button {
+		display: block !important;
+	}
+	.button a {
+		display: block !important;
+		font-size: 18px !important;
+		width: 100% !important;
+		max-width: 600px !important;
+	}
+	.section {
+		width: 100%;
+		margin: 2px 0px;
+		display: block;
+	}
+	.phone-block {
+		display: block;
+	}
+}
+
+body{
+	font-family: Arial;
+}
+
+h1{
+	color: #9E100A;
+	text-transform: uppercase;
+	font-size: 22px;
+	font-weight: normal;
+	margin-top: 0px;
+}
+
+hr {
+	border: 0;
+	height: 0;
+	border-top: 1px solid rgba(0, 0, 0, 0.1);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.online{
+	background-color:#74C365;
+	font-size:7px;
+	padding:2px;
+	border-radius:3px;
+	color:white;
+	font-weight:bold;
+}
+
+.rounded{
+	border-radius: 10px;
+	background: white;
+	padding: 10px;
+}
+
+.emoji{
+	font-family: emoji;
+}
+
+.profile{
+	width: 50px;
+	height:50px;
+	border-radius:100px;
+	margin:5px 10px 0px 3px;
+}
+
+.profile-small{
+	float:left;
+	width: 30px;
+	height:30px;
+	border-radius:100px;
+	margin-right:5px;
+}
+
+.profile-comment{
+	width: 40px;
+	height:40px;
+	margin:0px 10px 0px 3px;
+}
+
+.flag{
+	vertical-align:middle;
+	width:20px;
+	margin-right:3px;
+}

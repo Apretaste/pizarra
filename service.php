@@ -60,11 +60,20 @@ class Pizarra extends Service
 			"title" => $title
 		];
 
+		// get images for the web
+		$images = [];
+		if($request->environment == "web") {
+			foreach ($notes as $note) {
+				$images[] = $note['picture'];
+				$images[] = $note['flag'];
+			}
+		}
+
 		// create the response
 		$response = new Response();
 		$response->setEmailLayout('pizarra.tpl');
 		$response->setResponseSubject("Notas en la pizarra");
-		$response->createFromTemplate("pizarra.tpl", $content);
+		$response->createFromTemplate("pizarra.tpl", $content, $images);
 		return $response;
 	}
 
@@ -165,10 +174,21 @@ class Pizarra extends Service
 		if($cmts) foreach ($cmts as $c) $comments[] = $this->formatNote($c);
 		$note['comments'] = $comments;
 
+		// get images for the web
+		$images = [];
+		if($request->environment == "web") {
+			$images[] = $note['picture'];
+			$images[] = $note['flag'];
+			foreach ($comments as $comment) {
+				$images[] = $comment['picture'];
+				$images[] = $comment['flag'];
+			}
+		}
+
 		// crease response
 		$response = new Response();
 		$response->setEmailLayout('pizarra.tpl');
-		$response->createFromTemplate("note.tpl", ["note"=>$note]);
+		$response->createFromTemplate("note.tpl", ["note"=>$note], $images);
 		return $response;
 	}
 
@@ -363,11 +383,19 @@ class Pizarra extends Service
 			"isMyOwnProfile" => $person->email == $request->email
 		];
 
+		// get images for the web
+		$images = [$person->picture_internal];
+		if($request->environment == "web" && $person->country) {
+			$di = \Phalcon\DI\FactoryDefault::getDefault();
+			$wwwroot = $di->get('path')['root'];
+			$images[] = "$wwwroot/public/images/flags/".strtolower($person->country).".png";
+		}
+
 		// return response
 		$response = new Response();
 		$response->setEmailLayout('pizarra.tpl');
 		$response->setResponseSubject("Perfil de @{$person->username}");
-		$response->createFromTemplate("profile.tpl", $content, [$person->picture_internal]);
+		$response->createFromTemplate("profile.tpl", $content, $images);
 		return $response;
 	}
 
@@ -531,11 +559,24 @@ class Pizarra extends Service
 		// get open chats
 		$chats = $social->chatsOpen($request->email);
 
+		// get the path to the root
+		$di = \Phalcon\DI\FactoryDefault::getDefault();
+		$wwwroot = $di->get('path')['root'];
+
+		// get images for the web
+		$images = [];
+		if($request->environment == "web") {
+			foreach ($chats as $chat) {
+				$images[] = $chat->profile->picture_internal;
+				$images[] = "$wwwroot/public/images/flags/".strtolower($chat->profile->country).".png";
+			}
+		}
+
 		// send info to the view
 		$response = new Response();
 		$response->setEmailLayout('pizarra.tpl');
 		$response->setResponseSubject("Lista de chats");
-		$response->createFromTemplate("chats.tpl", ["chats"=>$chats]);
+		$response->createFromTemplate("chats.tpl", ["chats"=>$chats], $images);
 		return $response;
 	}
 
@@ -755,13 +796,15 @@ class Pizarra extends Service
 		if(isset($note->topic2) && $note->topic2) $topics[] = ["name"=>$note->topic2, "count"=>$this->getTimesTopicShow($note->topic2)];
 		if(isset($note->topic3) && $note->topic3) $topics[] = ["name"=>$note->topic3, "count"=>$this->getTimesTopicShow($note->topic3)];
 
-		// get the country and flag
-		$country = empty(trim($note->country)) ? "cu": strtolower($note->country);
-		$flag = "/images/flags/$country.png";
-
-		// include the function to create links
+		// get the path to the root
 		$di = \Phalcon\DI\FactoryDefault::getDefault();
 		$wwwroot = $di->get('path')['root'];
+
+		// get the country and flag
+		$country = empty(trim($note->country)) ? "cu": strtolower($note->country);
+		$flag = "$wwwroot/public/images/flags/$country.png";
+
+		// include the function to create links
 		require_once "$wwwroot/app/plugins/function.link.php";
 
 		// create @usernames as links
@@ -785,7 +828,7 @@ class Pizarra extends Service
 			"username" => $note->username,
 			"location" => $location,
 			"gender" => $note->gender,
-			"picture" => empty($note->picture) ? "/images/user.jpg" : "/profile/{$note->picture}.jpg",
+			"picture" => empty($note->picture) ? "$wwwroot/public/images/user.jpg" : "$wwwroot/public/profile/{$note->picture}.jpg",
 			"text" => utf8_encode($note->text),
 			"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)),
 			"likes" => isset($note->likes) ? $note->likes : 0,

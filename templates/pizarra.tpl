@@ -42,7 +42,7 @@
 			<!--PICTURE-->
 			{if {$APRETASTE_ENVIRONMENT} eq "web"}
 				<td rowspan="3" width="50" align="left" valign="top">
-					<img class="profile" src="{$note['picture']}" alt="@{$note['username']}"/>
+					{img src="{$note['picture']}" alt="@{$note['username']}" class="profile"}
 				</td>
 			{/if}
 
@@ -53,7 +53,7 @@
 				{if $note['gender'] eq "F"}{assign var="color" value="#F778A1"}{/if}
 
 				{if {$APRETASTE_ENVIRONMENT} eq "web"}
-					<img class="flag" src="{$note['flag']}" alt="{$note['country']}"/>
+					{img src="{$note['flag']}" alt="{$note['country']}" class="flag"}
 				{/if}
 
 				{link href="PIZARRA PERFIL @{$note['username']}" caption="@{$note['username']}" style="color:{$color};"}
