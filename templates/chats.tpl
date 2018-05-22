@@ -17,7 +17,7 @@
 
 				<!--FLAG AND COUNTRY-->
 				{if {$APRETASTE_ENVIRONMENT} eq "web" AND $item->profile->country}
-					{img src="{$WWWROOT}/public/images/flags/{$item->profile->country|lower}.png" alt="{$item->profile->country}" class="flag"}
+					{img src="{$item->profile->country|lower}.png" alt="{$item->profile->country}" class="flag"}
 				{/if}
 
 				<!--USERNAME-->
