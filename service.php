@@ -829,7 +829,7 @@ class Pizarra extends Service
 			"location" => $location,
 			"gender" => $note->gender,
 			"picture" => empty($note->picture) ? "$wwwroot/public/images/user.jpg" : "$wwwroot/public/profile/{$note->picture}.jpg",
-			"text" => utf8_encode($note->text),
+			"text" => $note->text,
 			"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)),
 			"likes" => isset($note->likes) ? $note->likes : 0,
 			"unlikes" => isset($note->unlikes) ? $note->unlikes : 0,
