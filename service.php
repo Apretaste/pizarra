@@ -201,12 +201,12 @@ class Pizarra extends Service
 	 */
 	public function _escribir(Request $request)
 	{
+		$text = $this->removeHTMLCode($request->query);
+
 		// only post notes with real content
-		if(strlen($request->query) < 16) return new Response();
+		if(strlen($text) < 16) return new Response();
 
-		// replace accents by unicode chars
-		$text = $this->utils->removeTildes($request->query);
-
+		//$text = $this->utils->removeTildes($request->query);
 		// shorten and clean the text
 		$text = Connection::escape(substr($text, 0, 300));
 
@@ -270,6 +270,7 @@ class Pizarra extends Service
 		if(empty($note)) return new Response(); else $note = $note[0];
 
 		// save the comment
+		$text=$this->removeHTMLCode($text);
 		$text = Connection::escape(substr($text, 0, 200));
 		Connection::query("
 			INSERT INTO _pizarra_comments (email, note, text) VALUES ('{$request->email}', '$noteId', '$text');
@@ -594,6 +595,19 @@ class Pizarra extends Service
 		$response->setResponseSubject("Ayuda de Pizarra");
 		$response->createFromTemplate("help.tpl", []);
 		return $response;
+	}
+
+	/**
+	 * Remove potentially dangerous HTML code
+	 * @param String
+	 * @return String
+	 */
+
+	private function removeHTMLCode(String $text)
+	{
+		$htmlCode=['<body','<html','<script','</body','</html','</table','</td','</tr'];
+		$text = str_ireplace($htmlCode,'',$text);
+		return $text;
 	}
 
 	/**
