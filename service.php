@@ -665,7 +665,7 @@ class Pizarra extends Service
 				A.id, A.email, A.text, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country, B.online,
 				C.reputation,
-				DATEDIFF(CURRENT_DATE,A.inserted) as days,
+				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND email='{$profile->email}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND email='{$profile->email}' AND action='unlike') > 0 AS isunliked
 			FROM (
@@ -683,8 +683,8 @@ class Pizarra extends Service
 
 		// sort results by weight. Too complex and slow in MySQL
 		usort($listOfNotes, function($a, $b) {
-			$a->score = 100-$a->days + $a->reputation*0.01 + $a->comments*0.2 + ($a->likes-$a->unlikes*2) + $a->ad*1000;
-			$b->score = 100-$b->days + $b->reputation*0.01 + $b->comments*0.2 + ($b->likes-$b->unlikes*2) + $b->ad*1000;
+			$a->score = 100-$a->hours + $a->comments*0.2 + ($a->likes-$a->unlikes*2) + $a->ad*1000;
+			$b->score = 100-$b->hours + $b->comments*0.2 + ($b->likes-$b->unlikes*2) + $b->ad*1000;
 			return ($b->score-$a->score) ? ($b->score-$a->score)/abs($b->score-$a->score) : 0;
 		});
 
