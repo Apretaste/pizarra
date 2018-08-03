@@ -161,12 +161,9 @@ class Pizarra extends Service
 		if ($result) $note = $this->formatNote($result[0]);
 		else return new Response();
 
-		$noteEmail=$result[0]->email;
 		//check if the user is blocked by the owner of the note
-		$r = Connection::query("SELECT COUNT(user1) AS blocked FROM relations 
-					WHERE user1 = '$noteEmail' AND user2 = '$request->email' 
-					AND `type` = 'blocked' AND confirmed=1");
-		if($r[0]->blocked>0){
+		$blocks=$this->isBlocked($request->email,$result[0]->email);
+		if($blocks->blocked>0){
 			$response=new Response();
 			$response->subject="Lo sentimos, usted no puede ver esta nota";
 			$response->createFromText("Lo sentimos, usted no tiene acceso a la nota solicitada");
@@ -282,11 +279,8 @@ class Pizarra extends Service
 		$note = Connection::query("SELECT email FROM _pizarra_notes WHERE id='$noteId'");
 		if(empty($note)) return new Response(); else $note = $note[0];
 
-		//check if the user is blocked by the owner of the note
-		$r = Connection::query("SELECT COUNT(user1) AS blocked FROM relations 
-					WHERE user1 = '$note->email' AND user2 = '$request->email' 
-					AND `type` = 'blocked' AND confirmed=1");
-		if($r[0]->blocked>0) return new Response();
+		$blocks=$this->isBlocked($request->email,$note->email);
+		if($blocks->blocked>0) return new Response();
 
 		// save the comment
 		$text = Connection::escape(substr($text, 0, 200));
@@ -297,11 +291,13 @@ class Pizarra extends Service
 		// notify users mentioned
 		$mentions = $this->findUsersMentionedOnText($text);
 		foreach ($mentions as $m) {
+			$blocks=$this->isBlocked($request->email,$m->email);
+			if($blocks->blocked>0) continue;
 			$this->utils->addNotification($m->email, "PIZARRA", "El usuario @{$request->username} le ha mencionado en la pizarra", "PIZARRA NOTA $noteId");
 		}
 
 		// send a notificaction to the owner of the note
-		$this->utils->addNotification($note->email, 'pizarra', 'Han comentado en su nota', "PIZARRA NOTA $noteId");
+		if($request->email!=$note->email) $this->utils->addNotification($note->email, 'pizarra', 'Han comentado en su nota', "PIZARRA NOTA $noteId");
 
 		// do not return any response when posting
 		return new Response();
@@ -386,24 +382,15 @@ class Pizarra extends Service
 			return $response;
 		}
 
-		$person->blocked = false;
-		$person->blockedByMe = false;
-		if(!empty($request->query)){
-			$r = Connection::query("SELECT * 
-			FROM ((SELECT COUNT(user1) AS blockedByMe FROM relations 
-					WHERE user1 = '$request->email' AND user2 = '$person->email' 
-					AND `type` = 'blocked' AND confirmed=1) AS A,
-					(SELECT COUNT(user1) AS blocked FROM relations 
-					WHERE user1 = '$person->email' AND user2 = '$request->email' 
-					AND `type` = 'blocked' AND confirmed=1) AS B)");
-			$person->blocked=($r[0]->blocked>0)?true:false;
-			$person->blockedByMe=($r[0]->blockedByMe>0)?true:false;
-		}
+		//check if the user is blocked
+		$blocks=$this->isBlocked($request->email,$person->email);
+		$person->blocked=$blocks->blocked;
+		$person->blockedByMe=$blocks->blockedByMe;
 
 		if ($person->blocked) {
 			$response = new Response();
 			$response->setResponseSubject("Lo sentimos, usted no tiene acceso a este perfil");
-			$response->createFromText("Lo sentimos, el perfil que usted nos solicita no puede ser mostrado");
+			$response->createFromTemplate("blocked.tpl",['person'=>$person]);
 			return $response;
 		}
 
@@ -815,6 +802,32 @@ class Pizarra extends Service
 
 		// return array of notes
 		return $notes;
+	}
+
+	/**
+	 * Get if the user is blocked or has been blocked by
+	 * @author ricardo@apretaste.com
+	 * @param String $user1
+	 * @param String $user2
+	 * @return Object
+	 */
+	private function isBlocked(String $user1, String $user2){
+		$res=new stdClass();
+		$res->blocked = false;
+		$res->blockedByMe = false;
+
+		$r = Connection::query("SELECT * 
+		FROM ((SELECT COUNT(user1) AS blockedByMe FROM relations 
+				WHERE user1 = '$user1' AND user2 = '$user2' 
+				AND `type` = 'blocked' AND confirmed=1) AS A,
+				(SELECT COUNT(user1) AS blocked FROM relations 
+				WHERE user1 = '$user2' AND user2 = '$user1' 
+				AND `type` = 'blocked' AND confirmed=1) AS B)");
+
+		$res->blocked=($r[0]->blocked>0)?true:false;
+		$res->blockedByMe=($r[0]->blockedByMe>0)?true:false;
+		
+		return $res;
 	}
 
 	/**
