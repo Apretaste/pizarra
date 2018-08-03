@@ -29,9 +29,14 @@
 		{/if}
 		{button href="PIZARRA @{$profile->username}" caption="Mis notas" color="grey" size="small"}
 	{else}
-		{button href="PIZARRA CHAT @{$profile->username}" caption="Chatear" color="grey" size="small"}
-		{button href="PIZARRA @{$profile->username}" caption="Ver notas" color="grey" size="small"}
-		{button href="PIZARRA DENUNCIAR @{$profile->username}" caption="Denunciar" desc="m:Por que desea denunciar a este usuario? [El perfil tiene info falsa,Esta impersonando a alguien,Sus notas son ofensivas,Escribe notas falsas o ilegibles,Escribe en temas incorrectos,Promueve comportamiento ilegal,Promueve practicas inmorales]*" popup="true" wait="false" color="red" size="small"}
+		{if $profile->blockedByMe}
+			{button href="PERFIL DESBLOQUEAR @{$profile->username}" caption="Desbloquear" color="red" size="small"}
+		{else}
+			{button href="PIZARRA CHAT @{$profile->username}" caption="Chatear" color="grey" size="small"}
+			{button href="PIZARRA @{$profile->username}" caption="Ver notas" color="grey" size="small"}<br>
+			{button href="PIZARRA DENUNCIAR @{$profile->username}" caption="Denunciar" desc="m:Por que desea denunciar a este usuario? [El perfil tiene info falsa,Esta impersonando a alguien,Sus notas son ofensivas,Escribe notas falsas o ilegibles,Escribe en temas incorrectos,Promueve comportamiento ilegal,Promueve practicas inmorales]*" popup="true" wait="false" color="red" size="small"}
+			{button href="PERFIL BLOQUEAR @{$profile->username}" caption="Bloquear" color="red" size="small"}
+		{/if}
 	{/if}
 
 	{space10}

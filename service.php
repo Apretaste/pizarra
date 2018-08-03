@@ -161,6 +161,18 @@ class Pizarra extends Service
 		if ($result) $note = $this->formatNote($result[0]);
 		else return new Response();
 
+		$noteEmail=$result[0]->email;
+		//check if the user is blocked by the owner of the note
+		$r = Connection::query("SELECT COUNT(user1) AS blocked FROM relations 
+					WHERE user1 = '$noteEmail' AND user2 = '$request->email' 
+					AND `type` = 'blocked' AND confirmed=1");
+		if($r[0]->blocked>0){
+			$response=new Response();
+			$response->subject="Lo sentimos, usted no puede ver esta nota";
+			$response->createFromText("Lo sentimos, usted no tiene acceso a la nota solicitada");
+			return $response;
+		}
+
 		// get note comments
 		$cmts = Connection::query("
 			SELECT A.*, B.username, B.province, B.picture, B.gender, B.country
@@ -201,7 +213,7 @@ class Pizarra extends Service
 	 */
 	public function _escribir(Request $request)
 	{
-		$text = $text = strip_tags($request->query,'<span>');
+		$text = $text = strip_tags($request->query);
 
 		// only post notes with real content
 		if(strlen($text) < 16) return new Response();
@@ -264,11 +276,17 @@ class Pizarra extends Service
 		$part = explode(" ", $request->query);
 		$noteId = array_shift($part);
 		$text = implode(" ", $part);
-		$text = strip_tags($text,'<span>');
+		$text = strip_tags($text);
 
 		// check the note ID is valid
 		$note = Connection::query("SELECT email FROM _pizarra_notes WHERE id='$noteId'");
 		if(empty($note)) return new Response(); else $note = $note[0];
+
+		//check if the user is blocked by the owner of the note
+		$r = Connection::query("SELECT COUNT(user1) AS blocked FROM relations 
+					WHERE user1 = '$note->email' AND user2 = '$request->email' 
+					AND `type` = 'blocked' AND confirmed=1");
+		if($r[0]->blocked>0) return new Response();
 
 		// save the comment
 		$text = Connection::escape(substr($text, 0, 200));
@@ -365,6 +383,27 @@ class Pizarra extends Service
 			$response = new Response();
 			$response->setResponseSubject("No encontramos el perfil");
 			$response->createFromText("No encontramos un perfil para este usuario, por favor intente con otro nombre de usuario o pruebe mas tarde.");
+			return $response;
+		}
+
+		$person->blocked = false;
+		$person->blockedByMe = false;
+		if(!empty($request->query)){
+			$r = Connection::query("SELECT * 
+			FROM ((SELECT COUNT(user1) AS blockedByMe FROM relations 
+					WHERE user1 = '$request->email' AND user2 = '$person->email' 
+					AND `type` = 'blocked' AND confirmed=1) AS A,
+					(SELECT COUNT(user1) AS blocked FROM relations 
+					WHERE user1 = '$person->email' AND user2 = '$request->email' 
+					AND `type` = 'blocked' AND confirmed=1) AS B)");
+			$person->blocked=($r[0]->blocked>0)?true:false;
+			$person->blockedByMe=($r[0]->blockedByMe>0)?true:false;
+		}
+
+		if ($person->blocked) {
+			$response = new Response();
+			$response->setResponseSubject("Lo sentimos, usted no tiene acceso a este perfil");
+			$response->createFromText("Lo sentimos, el perfil que usted nos solicita no puede ser mostrado");
 			return $response;
 		}
 
