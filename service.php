@@ -705,8 +705,16 @@ class Pizarra extends Service
 				ORDER BY inserted DESC
 				LIMIT 500
 			) A
-			LEFT JOIN person B ON A.email = B.email
-			JOIN _pizarra_users C ON A.email = C.email");
+			LEFT JOIN person B ON A.email = B.email 
+			JOIN _pizarra_users C ON A.email = C.email
+			WHERE A.email NOT IN(
+				SELECT user1 AS email FROM relations 
+				WHERE user2 = '$profile->email' 
+				AND `type` = 'blocked' AND confirmed=1 UNION
+				SELECT user2 AS email FROM relations 
+				WHERE user1 = '$profile->email' 
+				AND `type` = 'blocked' AND confirmed=1
+			)");
 
 		// sort results by weight. Too complex and slow in MySQL
 		usort($listOfNotes, function($a, $b) {
@@ -742,6 +750,11 @@ class Pizarra extends Service
 	 */
 	private function getNotesByUsername($profile, $username)
 	{
+		$email = Utils::getEmailFromUsername($username);
+		$blocks=$this->isBlocked($profile->email,$email);
+		if($blocks->blocked>0 || $blocks->blockedByMe>0){
+			return array();
+		}
 		// get the last 50 records from the db
 		$listOfNotes = Connection::query("
 			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country,
@@ -786,7 +799,15 @@ class Pizarra extends Service
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.email = B.email
-			WHERE A.text like '%$keyword%'
+			WHERE A.text like '%$keyword%' AND 
+			A.email NOT IN(
+				SELECT user1 AS email FROM relations 
+				WHERE user2 = '$profile->email' 
+				AND `type` = 'blocked' AND confirmed=1 UNION
+				SELECT user2 AS email FROM relations 
+				WHERE user1 = '$profile->email' 
+				AND `type` = 'blocked' AND confirmed=1
+			)
 			ORDER BY inserted DESC
 			LIMIT 30");
 
