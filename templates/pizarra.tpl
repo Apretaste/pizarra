@@ -96,6 +96,12 @@
 					<small>{$note['comments']}</small>
 				</span>&nbsp;&nbsp;
 
+				{if $note['candelete']}
+				<span class="emoji">
+					{link href="PIZARRA ELIMINAR {$note['id']}" caption="❌" wait="false" style="text-decoration:none; color:black;"}
+				</span>&nbsp;&nbsp;
+				{/if}
+
 				{if count($note['topics']) < 3}
 					<b>{link href="PIZARRA TEMIFICAR {$note['id']}" popup="true" wait="false" caption="#" desc="A que #tema pertenece esta nota?*" style="text-decoration:none; color:black;"}</b>
 				{/if}

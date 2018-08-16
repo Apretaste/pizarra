@@ -155,10 +155,10 @@ class Pizarra extends Service
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND email='{$request->email}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND email='{$request->email}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_notes A LEFT JOIN person B ON A.email = B.email
-			WHERE A.id = '$request->query'");
+			WHERE A.id = '$request->query' AND A.active=1");
 
 		// format note
-		if ($result) $note = $this->formatNote($result[0]);
+		if ($result) $note = $this->formatNote($result[0],$request->email);
 		else return new Response();
 
 		//check if the user is blocked by the owner of the note
@@ -180,7 +180,7 @@ class Pizarra extends Service
 
 		// format comments
 		$comments = [];
-		if($cmts) foreach ($cmts as $c) $comments[] = $this->formatNote($c);
+		if($cmts) foreach ($cmts as $c) $comments[] = $this->formatNote($c,$request->email);
 		$note['comments'] = $comments;
 
 		// get images for the web
@@ -276,7 +276,7 @@ class Pizarra extends Service
 		$text = strip_tags($text);
 
 		// check the note ID is valid
-		$note = Connection::query("SELECT email FROM _pizarra_notes WHERE id='$noteId'");
+		$note = Connection::query("SELECT email FROM _pizarra_notes WHERE id='$noteId' AND active=1");
 		if(empty($note)) return new Response(); else $note = $note[0];
 
 		$blocks=$this->isBlocked($request->email,$note->email);
@@ -441,7 +441,7 @@ class Pizarra extends Service
 		$topic = isset($part[1]) ? str_replace("#", "", $part[1]) : "";
 
 		// get the note to update
-		$note = Connection::query("SELECT topic1,topic2,topic3 FROM _pizarra_notes WHERE id='$noteId'");
+		$note = Connection::query("SELECT topic1,topic2,topic3 FROM _pizarra_notes WHERE id='$noteId' AND active=1");
 
 		if($note && $topic) {
 			// save topic in the database
@@ -512,6 +512,22 @@ class Pizarra extends Service
 		$response->createFromTemplate("catalog.tpl", $content, [$person->picture_internal]);
 		return $response;
 	}
+
+	/**
+	 * @author ricardo
+	 * @param Request
+	 * @return Response
+	 */
+
+	 public function _eliminar(Request $request){
+		 $note=Connection::query("SELECT * FROM _pizarra_notes 
+		 WHERE id='$request->query' AND email='$request->email'");
+		 
+		 if($note) Connection::query("UPDATE _pizarra_notes SET active=0 
+		 WHERE id='$request->query'");
+
+		 return new Response();
+	 }
 
 	/**
 	 * Denounce users
@@ -699,6 +715,7 @@ class Pizarra extends Service
 				SELECT * FROM _pizarra_notes subq2 INNER JOIN (
 					SELECT max(id) as idx FROM _pizarra_notes
 					WHERE (topic1='$topic' OR topic2='$topic' OR topic3='$topic')
+					AND active=1
 					GROUP BY email
 					) subq
 				ON subq.idx = subq2.id
@@ -726,7 +743,7 @@ class Pizarra extends Service
 		// format the array of notes
 		$notes = [];
 		foreach ($listOfNotes as $note) {
-			$notes[] = $this->formatNote($note); // format the array of notes
+			$notes[] = $this->formatNote($note,$profile->email); // format the array of notes
 			if(count($notes) > 50) break; // only parse the first 50 notes
 		}
 
@@ -763,13 +780,13 @@ class Pizarra extends Service
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.email = B.email
-			WHERE B.username = '$username'
+			WHERE A.active=1 AND B.username = '$username'
 			ORDER BY inserted DESC
 			LIMIT 20");
 
 		// format the array of notes
 		$notes = array();
-		foreach ($listOfNotes as $note) $notes[] = $this->formatNote($note);
+		foreach ($listOfNotes as $note) $notes[] = $this->formatNote($note,$profile->email);
 
 		// mark all notes as viewed
 		$viewed = array();
@@ -799,7 +816,7 @@ class Pizarra extends Service
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.email = B.email
-			WHERE A.text like '%$keyword%' AND 
+			WHERE A.active=1 AND A.text like '%$keyword%' AND 
 			A.email NOT IN(
 				SELECT user1 AS email FROM relations 
 				WHERE user2 = '$profile->email' 
@@ -813,7 +830,7 @@ class Pizarra extends Service
 
 		// format the array of notes
 		$notes = array();
-		foreach ($listOfNotes as $note) $notes[] = $this->formatNote($note);
+		foreach ($listOfNotes as $note) $notes[] = $this->formatNote($note,$profile->email);
 
 		// mark all notes as viewed
 		$viewed = array();
@@ -858,7 +875,7 @@ class Pizarra extends Service
 	 * @param Object $note
 	 * @return Array
 	 */
-	private function formatNote($note)
+	private function formatNote($note,$email)
 	{
 		// get the location
 		if (empty($note->province)) $location = "Cuba";
@@ -915,7 +932,8 @@ class Pizarra extends Service
 			"country" => $country,
 			"flag" => $flag,
 			'email' => $note->email,
-			"topics" => $topics
+			"topics" => $topics,
+			'candelete' => ($note->email==$email)?true:false
 		];
 
 		return $newNote;
