@@ -441,7 +441,7 @@ class Pizarra extends Service
 		$topic = isset($part[1]) ? str_replace("#", "", $part[1]) : "";
 
 		// get the note to update
-		$note = Connection::query("SELECT topic1,topic2,topic3 FROM _pizarra_notes WHERE id='$noteId' AND active=1");
+		$note = Connection::query("SELECT topic1,topic2,topic3 FROM _pizarra_notes WHERE id='$noteId' AND email='$request->email' AND active=1");
 
 		if($note && $topic) {
 			// save topic in the database
@@ -456,61 +456,6 @@ class Pizarra extends Service
 		}
 
 		return new Response();
-	}
-
-	/**
-	 * Catalog the posts by topic
-	 *
-	 * @author salvipascual
-	 * @param Request $request
-	 * @return Response
-	 */
-	public function _catalogar(Request $request)
-	{
-		// if you are trying to submit a topic
-		$message = false;
-		if($request->query) {
-			$this->_temificar($request);
-			$message = true;
-		}
-
-		// get a random note
-		$note = Connection::query("
-			SELECT id, email, text, topic1, topic2, topic3 FROM _pizarra_notes
-			WHERE inserted > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 150 DAY)
-			AND (topic1 = '' OR topic2 = '' OR topic3 = '')
-			ORDER BY RAND() LIMIT 1")[0];
-
-		// get the user profile
-		$person = Utils::getPerson($note->email);
-
-		// get last used topics
-		$topics = [];
-		$res = Connection::query("
-			SELECT COUNT(id) AS rows, topic
-			FROM _pizarra_topics
-			WHERE created > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 31 DAY)
-			AND topic <> '{$note->topic1}'
-			AND topic <> '{$note->topic2}'
-			AND topic <> '{$note->topic3}'
-			AND topic <> 'general'
-			GROUP BY topic ORDER BY rows DESC LIMIT 50");
-		foreach($res as $t) $topics[] = $t->topic;
-
-		// create data for the view
-		$content = [
-			"message" => $message,
-			"person" => $person,
-			"note" => $note,
-			"topics" => $topics
-		];
-
-		// return response
-		$response = new Response();
-		$response->setEmailLayout('pizarra.tpl');
-		$response->setResponseSubject("Catalogue esta nota");
-		$response->createFromTemplate("catalog.tpl", $content, [$person->picture_internal]);
-		return $response;
 	}
 
 	/**
@@ -933,7 +878,7 @@ class Pizarra extends Service
 			"flag" => $flag,
 			'email' => $note->email,
 			"topics" => $topics,
-			'candelete' => ($note->email==$email)?true:false
+			'canmodify' => ($note->email==$email)?true:false
 		];
 
 		return $newNote;

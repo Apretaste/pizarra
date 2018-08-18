@@ -68,7 +68,7 @@
 		</tr>
 		<tr>
 			<!--TEXT -->
-			<td valign="middle" style="padding:10px 0px;">
+			<td valign="middle" class="noteText">
 				<big>{$note['text']|replace_url}</big>
 				{space5}
 				<small>
@@ -96,13 +96,13 @@
 					<small>{$note['comments']}</small>
 				</span>&nbsp;&nbsp;
 
-				{if $note['candelete']}
+				{if $note['canmodify']}
 				<span class="emoji">
 					{link href="PIZARRA ELIMINAR {$note['id']}" caption="❌" wait="false" style="text-decoration:none; color:black;"}
 				</span>&nbsp;&nbsp;
 				{/if}
 
-				{if count($note['topics']) < 3}
+				{if $note['canmodify'] and count($note['topics']) < 3}
 					<b>{link href="PIZARRA TEMIFICAR {$note['id']}" popup="true" wait="false" caption="#" desc="A que #tema pertenece esta nota?*" style="text-decoration:none; color:black;"}</b>
 				{/if}
 			</td>

@@ -28,7 +28,7 @@
 	</tr>
 	<tr>
 		<!--TEXT -->
-		<td valign="middle" style="padding:10px 0px;">
+		<td valign="middle" class="noteText">
 			<big>{$note['text']|replace_url}</big>
 			{space5}
 			<small>
@@ -100,6 +100,6 @@
 
 {space15}
 
-<center>
+<center id="bottom">
 	{button href="PIZARRA COMENTAR {$note['id']} " caption="Comentar" popup="true" wait="false" desc="a:Escriba un comentario para esta nota*"}
 </center>

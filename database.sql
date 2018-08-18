@@ -56,7 +56,6 @@ CREATE TABLE `_pizarra_notes` (
   `comments` int(5) NOT NULL DEFAULT '0',
   `views` int(7) NOT NULL DEFAULT '0',
   `inserted` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `auto` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Autopost from ourside, 0=User insertion',
   `ad` tinyint(1) NOT NULL DEFAULT '0',
   `topic1` varchar(20) NOT NULL,
   `topic2` varchar(20) NOT NULL,

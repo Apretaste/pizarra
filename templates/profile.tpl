@@ -45,9 +45,6 @@
 	<div style="background-color:#F2F2F2; padding:10px;">
 		<h1 style="margin:0px;">Reputaci&oacute;n</h1>
 		<span style="font-size:50px;">{$profile->reputation}</span><br/>
-		{if $isMyOwnProfile}
-			{link href="PIZARRA CATALOGAR" caption="Ganar reputacion" style="font-size:small;"}
-		{/if}
 	</div>
 
 	<!--MY TOPICS-->

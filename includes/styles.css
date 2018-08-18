@@ -46,6 +46,11 @@ hr {
 	border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 }
 
+.noteText{
+	padding:10px 0px; 
+	word-break: break-word;
+}
+
 .online{
 	background-color:#74C365;
 	font-size:7px;
