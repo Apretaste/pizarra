@@ -88,7 +88,7 @@
 
 	<!--TEXT -->
 	<tr>
-		<td valign="bottom">
+		<td valign="bottom" class="noteText">
 			<big>{$comment['text']}</big>
 		</td>
 	</tr>

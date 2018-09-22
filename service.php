@@ -529,12 +529,12 @@ class Pizarra extends Service
 	{
 		// get person to chat
 		$social = new Social();
-		$friendEmail = $this->utils->getEmailFromUsername($request->query);
+		$friendId = $this->utils->getIdFromUsername($request->query);
 
 		// show notes of the conversation with a person
-		if($friendEmail) {
+		if($friendId) {
 			// get the list of people chating with you
-			$chats = $social->chatConversation($request->email, $friendEmail);
+			$chats = $social->chatConversation($request->userId, $friendId);
 
 			// send information to the view
 			$response = new Response();
@@ -545,7 +545,7 @@ class Pizarra extends Service
 		}
 
 		// get open chats
-		$chats = $social->chatsOpen($request->email);
+		$chats = $social->chatsOpen($request->userId);
 
 		// get the path to the root
 		$di = \Phalcon\DI\FactoryDefault::getDefault();
