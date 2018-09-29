@@ -1,59 +1,42 @@
 {include file="../includes/appmenu.tpl"}
 
-<center>
-	<!--PROFILE PICTURE-->
-	{if $profile->picture}
-		{img src="{$profile->picture_internal}" alt="Picture" width="200" style="border:3px solid #9E100A; border-radius:10px;"}
-	{else}
-		{noimage width="200" height="200" text="Tristemente ...<br/>Sin foto de perfil :'-("}
-	{/if}
+{assign var="color" value="black-text"}
+{if $profile->gender eq "M"}{assign var="color" value="blue-text"}{/if}
+{if $profile->gender eq "F"}{assign var="color" value="pink-text"}{/if}
 
-	<!--FLAG AND COUNTRY-->
-	{if {$APRETASTE_ENVIRONMENT} eq "web" AND $profile->country}
-		{space5}
-		{img src="{$profile->country|lower}.png" alt="{$profile->country}" class="flag"}
-		{$profile->location}
-	{/if}
-
-	{space10}
-
-	<!--ABOUT ME-->
-	<div>{$profile->about_me}</div>
-
-	<!--BUTTONS-->
-	{space5}
-
-	{if $isMyOwnProfile}
+<div class="card">
+  <div class="card-header">
+    <!--PROFILE PICTURE-->
+	{if $profile->picture}{img src="{$profile->picture_internal}" alt="Picture"}
+	{else}<center>{noimage text="Tristemente ...<br/>Sin foto de perfil"}<center>{/if}
+  </div>
+  <div class="card-content">
+    <h3 class="{$color}">{link href="PIZARRA PERFIL @{$profile->username}" caption="@{$profile->username}"}{if $profile->location} - {$profile->location}{/if}</h3>
+    {if $profile->topics|@count gt 0}<h6>
+	{foreach from=$profile->topics item=topic}
+		{link href="PIZARRA {$topic}" caption="#{$topic}"}&nbsp;
+	{/foreach}
+	</h6>{/if}
+	<div class="divider"></div>
+    <p id="desc">{$profile->about_me}</p>
+  </div>
+  <div class="card-action" id="profile-buttons">
+  {if $isMyOwnProfile}
 		{if {$APRETASTE_ENVIRONMENT} eq "web"}
-			{button href="PERFIL EDITAR" caption="Editar perfil" size="small"}
+			{button href="PERFIL EDITAR" caption="Editar" size="small"}
 		{/if}
 		{button href="PIZARRA @{$profile->username}" caption="Mis notas" color="grey" size="small"}
+		{button href="PERFIL DESCRIPCION" caption="Describirse" popup="true" desc="a:Describase a su gusto para que los demas lo conozcan, mínimo 100 caracteres*" wait="false" size="small"}
 	{else}
 		{if $profile->blockedByMe}
 			{button href="PERFIL DESBLOQUEAR @{$profile->username}" caption="Desbloquear" color="red" size="small"}
 		{else}
 			{button href="PIZARRA CHAT @{$profile->username}" caption="Chatear" color="grey" size="small"}
-			{button href="PIZARRA @{$profile->username}" caption="Ver notas" color="grey" size="small"}<br>
+			{button href="PIZARRA @{$profile->username}" caption="Ver notas" color="grey" size="small"}
+			{space5}
 			{button href="PIZARRA DENUNCIAR @{$profile->username}" caption="Denunciar" desc="m:Por que desea denunciar a este usuario? [El perfil tiene info falsa,Esta impersonando a alguien,Sus notas son ofensivas,Escribe notas falsas o ilegibles,Escribe en temas incorrectos,Promueve comportamiento ilegal,Promueve practicas inmorales]*" popup="true" wait="false" color="red" size="small"}
 			{button href="PERFIL BLOQUEAR @{$profile->username}" caption="Bloquear" color="red" size="small"}
 		{/if}
 	{/if}
-
-	{space10}
-
-	<!--REPUTATION-->
-	<div style="background-color:#F2F2F2; padding:10px;">
-		<h1 style="margin:0px;">Reputaci&oacute;n</h1>
-		<span style="font-size:50px;">{$profile->reputation}</span><br/>
-	</div>
-
-	<!--MY TOPICS-->
-	{if $profile->topics|@count gt 0}
-		{space15}
-		<h1>Temas</h1>
-		{foreach from=$profile->topics item=topic}
-			{link href="PIZARRA {$topic}" caption="#{$topic}"}
-			&nbsp;
-		{/foreach}
-	{/if}
-</center>
+  </div>
+</div>

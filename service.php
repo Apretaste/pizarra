@@ -274,13 +274,13 @@ class Pizarra extends Service
 		$noteId = array_shift($part);
 		$text = implode(" ", $part);
 		$text = strip_tags($text);
-
+		$request->query = "";
 		// check the note ID is valid
 		$note = Connection::query("SELECT email FROM _pizarra_notes WHERE id='$noteId' AND active=1");
-		if(empty($note)) return new Response(); else $note = $note[0];
+		if(empty($note)) return $this->main($request); else $note = $note[0];
 
 		$blocks=$this->isBlocked($request->email,$note->email);
-		if($blocks->blocked>0) return new Response();
+		if($blocks->blocked>0) return $this->main($request);
 
 		// save the comment
 		$text = Connection::escape(substr($text, 0, 200));
@@ -298,9 +298,9 @@ class Pizarra extends Service
 
 		// send a notificaction to the owner of the note
 		if($request->email!=$note->email) $this->utils->addNotification($note->email, 'pizarra', 'Han comentado en su nota', "PIZARRA NOTA $noteId");
-
-		// do not return any response when posting
-		return new Response();
+		$request->query = $noteId;
+		// return the same note
+		return $this->_nota($request);
 	}
 
 	/**
@@ -401,7 +401,8 @@ class Pizarra extends Service
 
 		// get user topics
 		$person->topics = [];
-		$topics = Connection::query("SELECT DISTINCT topic FROM _pizarra_topics WHERE person='$email'");
+		$topics = Connection::query("SELECT * FROM (SELECT `topic` FROM _pizarra_topics WHERE person='$email'  
+		ORDER BY `created` DESC LIMIT 5) A GROUP BY `topic`");
 		if($topics) foreach($topics as $t) $person->topics[] = $t->topic;
 
 		// create data for the view
@@ -471,7 +472,8 @@ class Pizarra extends Service
 		 if($note) Connection::query("UPDATE _pizarra_notes SET active=0 
 		 WHERE id='$request->query'");
 
-		 return new Response();
+		 $request->query="";
+		 return $this->_main($request);
 	 }
 
 	/**

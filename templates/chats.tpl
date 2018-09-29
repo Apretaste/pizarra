@@ -1,6 +1,6 @@
 {include file="../includes/appmenu.tpl"}
 
-<h1>Chats pendientes</h1>
+<h1>Chats</h1>
 
 <table width="100%" cellpadding="3">
 	{foreach item=item from=$chats}
@@ -13,11 +13,6 @@
 				<!--PICTURE-->
 				{if {$APRETASTE_ENVIRONMENT} eq "web"}
 					{img src="{$item->profile->picture_internal}" alt="@{$item->profile->username}" class="profile-small"}
-				{/if}
-
-				<!--FLAG AND COUNTRY-->
-				{if {$APRETASTE_ENVIRONMENT} eq "web" AND $item->profile->country}
-					{img src="{$item->profile->country|lower}.png" alt="{$item->profile->country}" class="flag"}
 				{/if}
 
 				<!--USERNAME-->
