@@ -40,10 +40,6 @@ class Pizarra extends Service
 			$title = $searchValue;
 		}
 
-		// check if the user is connecting via the app or email
-		$di = \Phalcon\DI\FactoryDefault::getDefault();
-		$notFromApp = $di->get('environment') != "app";
-
 		// get most popular topics of last 7 days
 		$popularTopics = Connection::query("
 			SELECT topic AS name, COUNT(id) AS cnt FROM _pizarra_topics
@@ -54,7 +50,6 @@ class Pizarra extends Service
 		// create variables for the template
 		$content = [
 			"isProfileIncomplete" => $profile->completion < 70,
-			"notFromApp" => $notFromApp,
 			"notes" => $notes,
 			"popularTopics" => $popularTopics,
 			"title" => $title
@@ -277,7 +272,7 @@ class Pizarra extends Service
 		$request->query = "";
 		// check the note ID is valid
 		$note = Connection::query("SELECT email FROM _pizarra_notes WHERE id='$noteId' AND active=1");
-		if(empty($note)) return $this->main($request); else $note = $note[0];
+		if(empty($note)) return $this->_main($request); else $note = $note[0];
 
 		$blocks=$this->isBlocked($request->email,$note->email);
 		if($blocks->blocked>0) return $this->main($request);
@@ -715,15 +710,16 @@ class Pizarra extends Service
 	private function getNotesByUsername($profile, $username)
 	{
 		$email = Utils::getEmailFromUsername($username);
-		$blocks=$this->isBlocked($profile->email,$email);
-		if($blocks->blocked>0 || $blocks->blockedByMe>0){
-			return array();
-		}
+
+		// check if the person is blocked
+		$blocks = $this->isBlocked($profile->email,$email);
+		if($blocks->blocked > 0 || $blocks->blockedByMe > 0) return [];
+
 		// get the last 50 records from the db
 		$listOfNotes = Connection::query("
 			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country,
 			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.email = '{$profile->email}' AND `action` = 'like') > 0 AS isliked,
-			(SELECT count(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments
+			(SELECT COUNT(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) AS comments
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.email = B.email

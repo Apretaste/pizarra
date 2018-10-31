@@ -1,21 +1,17 @@
 {include file="../includes/appmenu.tpl"}
 
 {if $isProfileIncomplete}
-<table width="100%">
-	<tr>
-		<td align="center" bgcolor="#F6CED8">
-			<p><small>Para usar pizarra al m&aacute;ximo, {if $notFromApp}{link href="PERFIL EDITAR" caption="complete su perfil"}{else}complete su perfil{/if}.</small></p>
-		</td>
-	</tr>
-</table>
+	<div class="message error">Para usar pizarra al m&aacute;ximo, {link href="PERFIL EDITAR" caption="complete su perfil"}</div>
 {/if}
+
+<div id="newNoteOk" class="message success hidden">Su nota ha sido publicada correctamente</div>
 
 <table width="100%">
 	<tr>
 		<td><h1 style="margin-bottom:0px;">{$title}</h1></td>
 		<td align="right" valign="top">
 			<nobr>
-			{button href="PIZARRA ESCRIBIR" desc="a:Escriba una nota*" caption="&#10010; Escribir" size="small" popup="true" wait="false"}
+			{button href="PIZARRA ESCRIBIR" desc="a:Escriba una nota*" caption="&#10010; Escribir" size="small" popup="true" wait="false" callback="addNote"}
 			{button href="PIZARRA" caption="🔍" size="icon" color="grey" popup="true" desc="Escriba un texto, @username o #tema*"}
 			</nobr>
 		</td>
@@ -56,12 +52,12 @@
 			</small>
 		</div>
 		<div class="card-action">
-			<span class="emoji">{link href="PIZARRA LIKE {$note['id']}" caption="&#128077; {$note['likes']}" wait="false"}</span>
-			<span class="emoji">{link href="PIZARRA UNLIKE {$note['id']}" caption="&#x1F44E; {$note['unlikes']}" wait="false"}</span>
-			<span class="emoji">{link href="PIZARRA NOTA {$note['id']}" caption="&#128172; {$note['comments']}"}</span>
+			<span class="emoji">{button id="like{$note@iteration}" href="PIZARRA LIKE {$note['id']}" caption="&#128077; <span id='likecounter{$note@iteration}'>{$note['likes']}</span>" wait="false" callback="update:like:{$note@iteration}"}</span>&nbsp;&nbsp;&nbsp;&nbsp;
+			<span class="emoji">{button id="unlike{$note@iteration}" href="PIZARRA UNLIKE {$note['id']}" caption="&#x1F44E; <span id='unlikecounter{$note@iteration}'>{$note['unlikes']}</span>" wait="false" callback="update:unlike:{$note@iteration}"}</span>&nbsp;&nbsp;
+			<span class="emoji">{link href="PIZARRA NOTA {$note['id']}" caption="&#128172; {$note['comments']}"}</span>&nbsp;&nbsp;&nbsp;&nbsp;
 			{if $note['canmodify']}
 				{if count($note['topics']) < 3}
-				<span><b>{link href="PIZARRA TEMIFICAR {$note['id']}" popup="true" wait="false" caption="#" desc="A que #tema pertenece esta nota?*"}</b></span>
+					<span><b>{link href="PIZARRA TEMIFICAR {$note['id']}" popup="true" wait="false" caption="#" desc="A que #tema pertenece esta nota?*"}</b></span>&nbsp;&nbsp;&nbsp;&nbsp;
 				{/if}
 				<span class="emoji">{link href="PIZARRA ELIMINAR {$note['id']}" caption="❌" wait="true"}</span>
 			{/if}
@@ -69,3 +65,12 @@
 	</div>
 </div>
 {/foreach}
+
+<script>
+	function addNote(values) { document.getElementById('newNoteOk').style.display = "block"; }
+	function update(values) { 
+		document.getElementById(values[0]+values[1]).style.color = "red";
+		var counter = document.getElementById(values[0]+'counter'+values[1]).innerHTML;
+		document.getElementById(values[0]+'counter'+values[1]).innerHTML = ++counter;
+	}
+</script>

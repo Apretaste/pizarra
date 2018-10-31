@@ -17,7 +17,9 @@
 					<nav>
 						<div class="nav-wrapper white">
 							<!--Logo-->
-							<span class="brand-logo left">{link href="PIZARRA" caption="<i><b style='color:#9E100A; font-size:40px; font-family:Times;'>P</b></i>"}</span>
+							<span class="brand-logo left">
+								<i><b style="color:#9E100A; font-size:40px; font-family:Times;">&nbsp; P</b></i>
+							</span>
 							<!--notifications & profile-->
 							<ul class="right emoji">
 								<li>{link href="PIZARRA" caption="📜" style="color:#9E100A;"}</li>
