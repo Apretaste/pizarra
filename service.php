@@ -180,7 +180,7 @@ class Pizarra extends Service
 		else return new Response();
 
 		//check if the user is blocked by the owner of the note
-		$blocks=$this->isBlocked($request->email,$result[0]->email);
+		$blocks=$this->isBlocked($request->userId,$result[0]->id_person);
 		if($blocks->blocked>0){
 			$response=new Response();
 			$response->subject="Lo sentimos, usted no puede ver esta nota";
@@ -265,7 +265,7 @@ class Pizarra extends Service
 		// notify users mentioned
 		$mentions = $this->findUsersMentionedOnText($text);
 		foreach ($mentions as $m) {
-			$blocks=$this->isBlocked($request->email,$m->email);
+			$blocks=$this->isBlocked($request->userId,$m->id);
 			if($blocks->blocked>0) continue;
 			Utils::addNotification($m->id, "PIZARRA", "El usuario @{$request->username} le ha mencionado en la pizarra", "PIZARRA NOTA $noteID");
 		}
@@ -296,7 +296,7 @@ class Pizarra extends Service
 		$note = Connection::query("SELECT email,`text`,id_person FROM _pizarra_notes WHERE id='$noteId' AND active=1");
 		if(empty($note)) return $this->_main($request); else $note = $note[0];
 
-		$blocks=$this->isBlocked($request->email,$note->email);
+		$blocks=$this->isBlocked($request->userId,$note->id_person);
 		if($blocks->blocked>0) return $this->main($request);
 
 		// save the comment
@@ -308,9 +308,9 @@ class Pizarra extends Service
 		// notify users mentioned
 		$mentions = $this->findUsersMentionedOnText($text);
 		foreach ($mentions as $m) {
-			$blocks=$this->isBlocked($request->email,$m->email);
+			$blocks=$this->isBlocked($request->userId,$m->id);
 			if($blocks->blocked>0) continue;
-			Utils::addNotification($m->email, "PIZARRA", "El usuario @{$request->username} le ha mencionado en la pizarra", "PIZARRA NOTA $noteId");
+			Utils::addNotification($m->id, "PIZARRA", "El usuario @{$request->username} le ha mencionado en la pizarra", "PIZARRA NOTA $noteId");
 		}
 
 		// send a notificaction to the owner of the note
@@ -402,7 +402,7 @@ class Pizarra extends Service
 		}
 
 		//check if the user is blocked
-		$blocks=$this->isBlocked($request->email,$person->email);
+		$blocks=$this->isBlocked($request->userId,$person->id);
 		$person->blocked=$blocks->blocked;
 		$person->blockedByMe=$blocks->blockedByMe;
 
@@ -664,36 +664,36 @@ class Pizarra extends Service
 	private function getNotesByTopic($profile, $topic)
 	{
 		// set the topic as default for the user
-		Connection::query("UPDATE _pizarra_users SET default_topic='$topic' WHERE email='{$profile->email}'");
+		Connection::query("UPDATE _pizarra_users SET default_topic='$topic' WHERE email='{$profile->id}'");
 
 		// get the records from the db
 		$listOfNotes = Connection::query("
 			SELECT
 				A.id, A.email, A.text, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
-				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country, B.online,
+				B.email, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country, B.online,
 				C.reputation,
 				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
-				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND email='{$profile->email}' AND action='like') > 0 AS isliked,
-				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND email='{$profile->email}' AND action='unlike') > 0 AS isunliked
+				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND id_person='{$profile->id}' AND action='like') > 0 AS isliked,
+				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND id_person='{$profile->id}' AND action='unlike') > 0 AS isunliked
 			FROM (
 				SELECT * FROM _pizarra_notes subq2 INNER JOIN (
 					SELECT max(id) as idx FROM _pizarra_notes
 					WHERE (topic1='$topic' OR topic2='$topic' OR topic3='$topic')
 					AND active=1
-					GROUP BY email
+					GROUP BY id_person
 					) subq
 				ON subq.idx = subq2.id
 				ORDER BY inserted DESC
 				LIMIT 500
 			) A
-			LEFT JOIN person B ON A.email = B.email 
-			JOIN _pizarra_users C ON A.email = C.email
-			WHERE A.email NOT IN(
-				SELECT user1 AS email FROM relations 
-				WHERE user2 = '$profile->email' 
+			LEFT JOIN person B ON A.id_person = B.id 
+			JOIN _pizarra_users C ON A.id_person = C.id_person
+			WHERE A.id_person NOT IN(
+				SELECT user1 AS id_person FROM relations 
+				WHERE user2 = '$profile->id' 
 				AND `type` = 'blocked' AND confirmed=1 UNION
-				SELECT user2 AS email FROM relations 
-				WHERE user1 = '$profile->email' 
+				SELECT user2 AS id_person FROM relations 
+				WHERE user1 = '$profile->id' 
 				AND `type` = 'blocked' AND confirmed=1
 			)");
 
@@ -732,19 +732,20 @@ class Pizarra extends Service
 	private function getNotesByUsername($profile, $username)
 	{
 		$email = Utils::getEmailFromUsername($username);
+		$id = Utils::personExist($email);
 
 		// check if the person is blocked
-		$blocks = $this->isBlocked($profile->email,$email);
+		$blocks = $this->isBlocked($profile->id,$id);
 		if($blocks->blocked > 0 || $blocks->blockedByMe > 0) return [];
 
 		// get the last 50 records from the db
 		$listOfNotes = Connection::query("
 			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country,
-			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.email = '{$profile->email}' AND `action` = 'like') > 0 AS isliked,
+			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$profile->id}' AND `action` = 'like') > 0 AS isliked,
 			(SELECT COUNT(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) AS comments
 			FROM _pizarra_notes A
 			LEFT JOIN person B
-			ON A.email = B.email
+			ON A.id_person = B.id
 			WHERE A.active=1 AND B.username = '$username'
 			ORDER BY inserted DESC
 			LIMIT 20");
@@ -776,18 +777,18 @@ class Pizarra extends Service
 		// get the last 50 records from the db
 		$listOfNotes = Connection::query("
 			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.online,
-			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.email = '{$profile->email}' AND `action` = 'like') > 0 AS isliked,
+			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person= '{$profile->id}' AND `action` = 'like') > 0 AS isliked,
 			(SELECT count(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments
 			FROM _pizarra_notes A
 			LEFT JOIN person B
-			ON A.email = B.email
+			ON A.id_person= B.id
 			WHERE A.active=1 AND A.text like '%$keyword%' AND 
-			A.email NOT IN(
-				SELECT user1 AS email FROM relations 
-				WHERE user2 = '$profile->email' 
+			A.id_person NOT IN(
+				SELECT user1 AS id_person FROM relations 
+				WHERE user2 = '$profile->id' 
 				AND `type` = 'blocked' AND confirmed=1 UNION
-				SELECT user2 AS email FROM relations 
-				WHERE user1 = '$profile->email' 
+				SELECT user2 AS id_person FROM relations 
+				WHERE user1 = '$profile->id' 
 				AND `type` = 'blocked' AND confirmed=1
 			)
 			ORDER BY inserted DESC
