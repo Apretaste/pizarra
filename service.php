@@ -12,7 +12,7 @@ class Pizarra extends Service
 	public function _main (Request $request)
 	{
 		// get the type of search
-		$search = $this->getSearchType($request->query, $request->email);
+		$search = $this->getSearchType($request->query, $request->userId);
 		$searchType = $search[0];
 		$searchValue = $search[1];
 
@@ -610,11 +610,11 @@ class Pizarra extends Service
 	 * @param String $search
 	 * @return Array ["type", "value"]
 	 */
-	private function getSearchType($keyword, $email)
+	private function getSearchType($keyword, $id)
 	{
 		// return topic selected by the user if blank
 		if(empty($keyword)) {
-			$topic = Connection::query("SELECT default_topic FROM _pizarra_users WHERE email='$email'");
+			$topic = Connection::query("SELECT default_topic FROM _pizarra_users WHERE id_person='$id'");
 			if(empty($topic[0]->default_topic)) $defaultTopic = "general";
 			else $defaultTopic = $topic[0]->default_topic;
 			return ["topic", $defaultTopic];
@@ -664,7 +664,7 @@ class Pizarra extends Service
 	private function getNotesByTopic($profile, $topic)
 	{
 		// set the topic as default for the user
-		Connection::query("UPDATE _pizarra_users SET default_topic='$topic' WHERE email='{$profile->id}'");
+		Connection::query("UPDATE _pizarra_users SET default_topic='$topic' WHERE id_person='{$profile->id}'");
 
 		// get the records from the db
 		$listOfNotes = Connection::query("
