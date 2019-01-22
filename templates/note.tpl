@@ -26,7 +26,7 @@
 			<span class="emoji">{button id="unlike" href="PIZARRA UNLIKE {$note['id']}" caption="&#x1F44E; <span id='unlikecounter'>{$note['unlikes']}</span>" wait="false" callback="update:unlike:"}</span>&nbsp;&nbsp;&nbsp;&nbsp;
 			{if $note['canmodify']}
 				{if count($note['topics']) < 3}
-					<span><b>{link href="PIZARRA TEMIFICAR {$note['id']}" popup="true" wait="false" caption="#" desc="A que #tema pertenece esta nota?*"}</b></span>&nbsp;&nbsp;&nbsp;&nbsp;
+					<span><b>{button href="PIZARRA TEMIFICAR {$note['id']}" popup="true" wait="false" id="temificar" caption="#" desc="A que #tema pertenece esta nota?*"}</b></span>&nbsp;&nbsp;&nbsp;&nbsp;
 				{/if}
 				<span class="emoji">{link href="PIZARRA ELIMINAR {$note['id']}" caption="❌" wait="true"}</span>
 			{/if}

@@ -57,7 +57,7 @@
 			<span class="emoji">{link href="PIZARRA NOTA {$note['id']}" caption="&#128172; {$note['comments']}"}</span>&nbsp;&nbsp;&nbsp;&nbsp;
 			{if $note['canmodify']}
 				{if count($note['topics']) < 3}
-					<span><b>{link href="PIZARRA TEMIFICAR {$note['id']}" popup="true" wait="false" caption="#" desc="A que #tema pertenece esta nota?*"}</b></span>&nbsp;&nbsp;&nbsp;&nbsp;
+					<span><b>{button href="PIZARRA TEMIFICAR {$note['id']}" id="temificar" popup="true" wait="false" caption="#" desc="A que #tema pertenece esta nota?*"}</b></span>&nbsp;&nbsp;&nbsp;&nbsp;
 				{/if}
 				<span class="emoji">{link href="PIZARRA ELIMINAR {$note['id']}" caption="❌" wait="true"}</span>
 			{/if}
