@@ -1,0 +1,22 @@
+.margin-5{
+    margin-left: 5px;
+}
+.col .row{
+    margin-bottom: 10px;
+}
+a > span{
+    color: #039be5;
+    font-size: 1.2em;
+}
+textarea{
+    border: none;
+    border-bottom: 1px;
+    overflow: auto;
+    outline: none;
+
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    box-shadow: none;
+
+    resize: none;
+}

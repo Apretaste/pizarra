@@ -1,7 +1,0 @@
-<service>
-	<serviceName>pizarra</serviceName>
-	<serviceDescription>Conecta miles de Cubanos entre ellos y con el mundo, y nos permite dejar un trazo de tiza en esta gran pizarra global</serviceDescription>
-	<creatorEmail>salvi@apretaste.com</creatorEmail>
-	<serviceCategory>social</serviceCategory>
-	<listed>1</listed>
-</service>
