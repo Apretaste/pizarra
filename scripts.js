@@ -18,6 +18,19 @@ function sendNote() {
     else showToast('Minimo 20 caracteres');
 }
 
+function sendComment() {
+    let comment = $('#comment').val().trim();
+    if(comment.length>=2){
+        apretaste.send({
+            'command':'PIZARRA COMENTAR',
+            'data':{'comment':comment,'note':note.id},
+            'redirect':false,
+            'callback':{'name':'sendCommentCallback','data':comment}
+        });
+    }
+    else showToast('Escriba algo');
+}
+
 function searchText(){
     let search = $('#search').val().trim();
     if(search.length>=2){
@@ -57,6 +70,12 @@ function noteLengthValidate() {
     else $('.helper-text').html('Limite excedido');
 }
 
+function commentLengthValidate() {
+    let comment = $('#comment').val().trim();
+    if(comment.length<=250) $('.helper-text').html('Restante: '+(250-comment.length));
+    else $('.helper-text').html('Limite excedido');
+}
+
 function like(id, type){
     apretaste.send({
         'command': 'PIZARRA '+type,
@@ -83,6 +102,21 @@ function likeCallback(data){
         $('#'+id+' a.'+counter).attr('onclick', "like('"+id+"','"+counter+"')");
     }
     $('#'+id+' a.'+type).removeAttr('onclick');
+}
+
+function sendCommentCallback(comment) {
+    if(myGender=="M") color="blue-text"; else if(myGender=="F") color="pink-text"; else color="black-text";
+    let element = `<li class="collection-item">
+        <a class="`+color+`" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@`+myUsername+`'}});">
+            <b>@`+myUsername+`</b>
+        </a>&middot;
+        <small class="grey-text">`+myLocation+`</small>&middot;
+        <small class="grey-text">`+new Date(Date.now()).toLocaleString()+`</small>
+        <p>`+comment+`</p>
+    </li>`;
+
+    $('#comments').append(element);
+    showToast('Comentario enviado');
 }
 
 function showToast(text){

@@ -102,10 +102,10 @@ class Service
 			UPDATE _pizarra_notes SET likes=likes+1 WHERE id='{$noteID}'");
 
 		$note = $note[0];
-		$note->text = substr($note->text,0,30);
+		$note->text = substr($note->text,0,30).'...';
 
 		// create notification for the creator
-		Utils::addNotification($note->id_person, 'pizarra', "El usuario @{$request->username} le dio like a tu nota en la Pizarra: {$note->text}", "PIZARRA NOTA {$noteID}");
+		if($request->person->id != $note->id_person) Utils::addNotification($note->id_person, 'pizarra', "El usuario @{$request->username} le dio like a tu nota en la Pizarra: {$note->text}", "PIZARRA NOTA {$noteID}");
 
 		// increase the author's reputation
 		Connection::query("UPDATE _pizarra_users SET reputation=reputation+2 WHERE id_person='{$note->id_person}'");
@@ -156,8 +156,8 @@ class Service
 	 * @param Request $request
 	 * @param Response $response
 	 */
-	public function _nota(Request $request, Response $response)
-	{
+	public function _nota(Request $request, Response $response){
+		$noteId = $request->input->data->note;
 		// get the records from the db
 		$result = Connection::query("
 			SELECT
@@ -166,19 +166,23 @@ class Service
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_notes A LEFT JOIN person B ON A.id_person = B.id
-			WHERE A.id = '$request->query' AND A.active=1");
+			WHERE A.id = '$noteId' AND A.active=1");
 
 		// format note
-		if ($result) $note = $this->formatNote($result[0],$request->email);
+		if ($result) $note = $this->formatNote($result[0], $request->person->id);
 		else return;
 
 		//check if the user is blocked by the owner of the note
-		$blocks=$this->isBlocked($request->person->id,$result[0]->id_person);
-		if($blocks->blocked>0){
-			$response=new Response();
-			$response->subject="Lo sentimos, usted no puede ver esta nota";
-			$response->createFromText("Lo sentimos, usted no tiene acceso a la nota solicitada");
-
+		$blocks = Social::isBlocked($request->person->id, $note['id_person']);
+		if($blocks->blocked || $blocks->blockedByMe){
+			$content = [
+				'username' => $note['username'],
+				'origin' => 'note', 
+				'num_notifications' => $request->person->notifications, 
+				'blocks' => $blocks,
+			];
+			$response->setTemplate('blocked.ejs', $content);
+			return;
 		}
 
 		// get note comments
@@ -187,25 +191,23 @@ class Service
 			FROM _pizarra_comments A
 			LEFT JOIN person B
 			ON A.id_person = B.id
-			WHERE note = '$request->query'");
+			WHERE note = '$noteId'");
 
 		// format comments
 		$comments = [];
-		if($cmts) foreach ($cmts as $c) $comments[] = $this->formatNote($c,$request->email);
+		if($cmts) foreach ($cmts as $c) $comments[] = $this->formatNote($c,$request->person->id);
 		$note['comments'] = $comments;
 
-		// get images for the web
-		$images = [];
-		if($request->environment == "web") {
-			$images[] = $note['picture'];
-			$images[] = $note['flag'];
-			foreach ($comments as $comment) {
-				$images[] = $comment['picture'];
-				$images[] = $comment['flag'];
-			}
-		}
+		$content = [
+			'note'=>$note, 
+			'num_notifications' => $request->person->notifications,
+			'myGender' => $request->person->gender,
+			'myUsername' => $request->person->username,
+			'myLocation' => $request->person->location
+		];
+
 		$response->setLayout('pizarra.ejs');
-		$response->SetTemplate("note.ejs", ["note"=>$note], $images);
+		$response->SetTemplate("note.ejs", $content);
 	}
 
 	/**
@@ -253,7 +255,7 @@ class Service
 		// notify users mentioned
 		$mentions = $this->findUsersMentionedOnText($text);
 		foreach ($mentions as $m) {
-			$blocks=$this->isBlocked($request->person->id,$m->id);
+			$blocks=Social::isBlocked($request->person->id,$m->id);
 			if($blocks->blocked>0) continue;
 			Utils::addNotification($m->id, "PIZARRA", "El usuario @{$request->username} le ha mencionado en la pizarra", "PIZARRA NOTA $noteID");
 		}
@@ -269,41 +271,36 @@ class Service
 	 * @param Request $request
 	 * @param Response $response
 	 */
-	public function _comentar(Request $request, Response $response)
-	{
-		// get ID and comment
-		$part = explode(" ", $request->query);
-		$noteId = array_shift($part);
-		$text = implode(" ", $part);
-		$text = strip_tags($text);
-		$request->query = "";
+	public function _comentar(Request $request, Response $response){
+		$comment = $request->input->data->comment;
+		$noteId = $request->input->data->note;
+
+		if(strlen($comment)<2) return;
+
 		// check the note ID is valid
 		$note = Connection::query("SELECT email,`text`,id_person FROM _pizarra_notes WHERE id='$noteId' AND active=1");
-		if(empty($note)) return $this->_main($request); else $note = $note[0];
+		if($note) $note = $note[0]; else return;
 
-		$blocks=$this->isBlocked($request->person->id,$note->id_person);
-		if($blocks->blocked>0) return $this->main($request);
+		$blocks = Social::isBlocked($request->person->id, $note->id_person);
+		if($blocks->blocked) return;
 
 		// save the comment
-		$text = Connection::escape(substr($text, 0, 200));
+		$comment = Connection::escape(substr($comment, 0, 200));
 		Connection::query("
-			INSERT INTO _pizarra_comments (id_person, note, text) VALUES ('{$request->person->id}', '$noteId', '$text');
-			UPDATE _pizarra_notes SET comments=comments+1 WHERE id=$noteId;");
+			INSERT INTO _pizarra_comments (id_person, note, text) VALUES ('{$request->person->id}', '$noteId', '$comment');
+			UPDATE _pizarra_notes SET comments = comments+1 WHERE id='$noteId';");
 
 		// notify users mentioned
-		$mentions = $this->findUsersMentionedOnText($text);
-		foreach ($mentions as $m) {
-			$blocks=$this->isBlocked($request->person->id,$m->id);
-			if($blocks->blocked>0) continue;
-			Utils::addNotification($m->id, "PIZARRA", "El usuario @{$request->username} le ha mencionado en la pizarra", "PIZARRA NOTA $noteId");
+		$mentions = $this->findUsersMentionedOnText($comment);
+		foreach ($mentions as $mention) {
+			$blocks = Social::isBlocked($request->person->id, $mention->id);
+			if($blocks->blocked || $blocks->blockedByMe) continue;
+			Utils::addNotification($mention->id, "PIZARRA", "El usuario @{$request->username} le ha mencionado en la pizarra", "PIZARRA NOTA $noteId");
 		}
 
 		// send a notificaction to the owner of the note
-		$note->text = substr($note->text,0,30);
-		if($request->person->id!=$note->id_person) Utils::addNotification($note->id_person, 'pizarra', "Han comentado en su nota: {$note->text}", "PIZARRA NOTA $noteId");
-		$request->query = $noteId;
-		// return the same note
-		return $this->_nota($request);
+		$note->text = substr($note->text,0,30).'...';
+		if($request->person->id != $note->id_person) Utils::addNotification($note->id_person, 'pizarra', "Han comentado en su nota: {$note->text}", "PIZARRA NOTA $noteId");
 	}
 
 	/**
@@ -367,52 +364,53 @@ class Service
 	 */
 	public function _perfil(Request $request, Response $response)
 	{
-		// get the user's profile
-		if(empty($request->query)) $email = $request->email;
-		else $email = Utils::getEmailFromUsername($request->query);
-		$person = Utils::getPerson($email);
-		$id = $person->id;
+		if(isset($request->input->data->username)){
+			$username = $request->input->data->username;
+			// get the user's profile
+			$person = Utils::getPerson($username);
 
-		// if user do not exist, message the requestor
-		if (empty($person)) {
-			$response->createFromText("No encontramos un perfil para este usuario, por favor intente con otro nombre de usuario o pruebe mas tarde.");
+			// if user do not exist, message the requestor
+			if (empty($person)) {
+				$response->createFromText("No encontramos un perfil para este usuario, por favor intente con otro nombre de usuario o pruebe mas tarde.");
 
+			}
+
+			//check if the user is blocked
+			$blocks = Social::isBlocked($request->person->id,$person->id);
+
+			if ($blocks->blocked || $blocks->blockedByMe) {
+				$content = [
+					'username'=> $person->username,
+					'origin' => 'profile', 
+					'num_notifications' => $request->person->notifications,
+					'blocks' => $blocks
+				];
+				$response->SetTemplate("blocked.ejs",$content);
+				return;
+			}
 		}
-
-		//check if the user is blocked
-		$blocks=$this->isBlocked($request->person->id,$person->id);
-		$person->blocked=$blocks->blocked;
-		$person->blockedByMe=$blocks->blockedByMe;
-
-		if ($person->blocked) {
-			$response->SetTemplate("blocked.ejs",['person'=>$person]);
-
-		}
+		else $person = $request->person;
 
 		// get user's reputation and default topic
-		$user = Connection::query("SELECT * FROM _pizarra_users WHERE id_person='$id'");
+		$user = Connection::query("SELECT * FROM _pizarra_users WHERE id_person='{$person->id}'");
 		$person->reputation = empty($user[0]) ? 0 : $user[0]->reputation;
 		$person->myTopic = empty($user[0]) ? "general" : $user[0]->default_topic;
 
 		// get user topics
 		$person->topics = [];
-		$topics = Connection::query("SELECT * FROM (SELECT `topic` FROM _pizarra_topics WHERE id_person='$id'  
+		$topics = Connection::query("SELECT * FROM (SELECT `topic` FROM _pizarra_topics WHERE id_person='{$person->id}'  
 		ORDER BY `created` DESC LIMIT 5) A GROUP BY `topic`");
 		if($topics) foreach($topics as $t) $person->topics[] = $t->topic;
 
 		// create data for the view
 		$content = [
 			"profile" => $person,
-			"isMyOwnProfile" => $person->email == $request->email
+			"isMyOwnProfile" => $person->id == $request->person->id,
+			"num_notifications" => $request->person->notifications
 		];
 
 		// get images for the web
-		$images = [$person->picture_internal];
-		if($request->environment == "web" && $person->country) {
-			$di = \Phalcon\DI\FactoryDefault::getDefault();
-			$wwwroot = $di->get('path')['root'];
-			$images[] = "$wwwroot/public/images/flags/".strtolower($person->country).".png";
-		}
+		$images = [$person->picture];
 
 		$response->setLayout('pizarra.ejs');
 		$response->SetTemplate("profile.ejs", $content, $images);
@@ -558,10 +556,9 @@ class Service
 	 * @param Request $request
 	 * @param Response $response
 	 */
-	public function _ayuda(Request $request, Response $response)
-	{
+	public function _ayuda(Request $request, Response $response){
 		$response->setLayout('pizarra.ejs');
-		$response->SetTemplate("help.ejs", []);
+		$response->SetTemplate("help.ejs");
 	}
 
 	/**
@@ -594,24 +591,6 @@ class Service
 
 		// else searching for words on a note
 		else return ["keyword", $keyword];
-	}
-
-	/**
-	 * Get the number of times a topic show
-	 *
-	 * @author salvipascual
-	 * @param String $topic
-	 * @return Integer
-	 */
-	private function getTimesTopicShow($topic)
-	{
-		$cache = Utils::getTempDir() . "pizarra_$topic" . date("YmdH") . ".cache";
-		if(file_exists($cache)) $count = file_get_contents($cache);
-		else {
-			$count = Connection::query("SELECT COUNT(id) as cnt FROM _pizarra_topics WHERE topic='$topic'")[0]->cnt;
-			file_put_contents($cache, $count);
-		}
-		return $count;
 	}
 
 	/**
@@ -696,7 +675,7 @@ class Service
 		$id = Utils::personExist($email);
 
 		// check if the person is blocked
-		$blocks = $this->isBlocked($profile->id,$id);
+		$blocks = Social::isBlocked($profile->id,$id);
 		if($blocks->blocked > 0 || $blocks->blockedByMe > 0) return [];
 
 		// get the last 50 records from the db
@@ -770,39 +749,13 @@ class Service
 	}
 
 	/**
-	 * Get if the user is blocked or has been blocked by
-	 * @author ricardo@apretaste.com
-	 * @param String $user1
-	 * @param String $user2
-	 * @return Object
-	 */
-	private function isBlocked(String $user1, String $user2){
-		$res=new stdClass();
-		$res->blocked = false;
-		$res->blockedByMe = false;
-
-		$r = Connection::query("SELECT * 
-		FROM ((SELECT COUNT(user1) AS blockedByMe FROM relations 
-				WHERE user1 = '$user1' AND user2 = '$user2' 
-				AND `type` = 'blocked' AND confirmed=1) AS A,
-				(SELECT COUNT(user1) AS blocked FROM relations 
-				WHERE user1 = '$user2' AND user2 = '$user1' 
-				AND `type` = 'blocked' AND confirmed=1) AS B)");
-
-		$res->blocked=($r[0]->blocked>0)?true:false;
-		$res->blockedByMe=($r[0]->blockedByMe>0)?true:false;
-		
-		return $res;
-	}
-
-	/**
 	 * Format note to be send to the view
 	 *
 	 * @author salvipascual
 	 * @param Object $note
 	 * @return Array
 	 */
-	private function formatNote($note,$email)
+	private function formatNote($note, $id)
 	{
 		// get the location
 		if (empty($note->province)) $location = "Cuba";
@@ -810,9 +763,9 @@ class Service
 
 		// crate topics array
 		$topics = [];
-		if(isset($note->topic1) && $note->topic1) $topics[] = ["name"=>$note->topic1, "count"=>$this->getTimesTopicShow($note->topic1)];
-		if(isset($note->topic2) && $note->topic2) $topics[] = ["name"=>$note->topic2, "count"=>$this->getTimesTopicShow($note->topic2)];
-		if(isset($note->topic3) && $note->topic3) $topics[] = ["name"=>$note->topic3, "count"=>$this->getTimesTopicShow($note->topic3)];
+		if(isset($note->topic1) && $note->topic1) $topics[] = $note->topic1;
+		if(isset($note->topic2) && $note->topic2) $topics[] = $note->topic2;
+		if(isset($note->topic3) && $note->topic3) $topics[] = $note->topic3;
 
 		// get the path to the root
 		$di = \Phalcon\DI\FactoryDefault::getDefault();
@@ -830,24 +783,25 @@ class Service
 		// add the text to the array
 		$newNote = [
 			"id" => $note->id,
+			"id_person" => $note->id_person,
 			"username" => $note->username,
 			"location" => $location,
 			"gender" => $note->gender,
 			"picture" => empty($note->picture) ? "$wwwroot/public/images/user.jpg" : "$wwwroot/public/profile/{$note->picture}.jpg",
 			"text" => $note->text,
-			"inserted" => date("Y-m-d H:i:s", strtotime($note->inserted)),
+			"inserted" => date_format((new DateTime($note->inserted)),'d/m/Y - h:i a'),
 			"likes" => isset($note->likes) ? $note->likes : 0,
 			"unlikes" => isset($note->unlikes) ? $note->unlikes : 0,
 			"comments" => isset($note->comments) ? $note->comments : 0,
-			"likecolor" => isset($note->isliked) && $note->isliked ? "#9E100A" : "black",
-			"unlikecolor" => isset($note->isunliked) && $note->isunliked ? "#9E100A" : "black",
+			"liked" => isset($note->isliked) && $note->isliked,
+			"unliked" => isset($note->isunliked) && $note->isunliked,
 			"ad" => isset($note->ad) ? $note->ad : false,
-			"online" => isset($note->online) ? $note->online : 0,
+			"online" => isset($note->online) ? $note->online : false,
 			"country" => $country,
 			"flag" => $flag,
 			'email' => $note->email,
 			"topics" => $topics,
-			'canmodify' => ($note->email==$email)?true:false
+			'canmodify' => $note->id_person == $id
 		];
 
 		return $newNote;

@@ -29,8 +29,8 @@
 			<p><%=note.text%></p>
 			<small class="topics">
 				<%note.topics.forEach((topic) =>{%>
-				<a class="grey-text text-darken-2" onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'<%=topic.name%>'}})">
-					#<%=topic.name%>
+				<a class="grey-text text-darken-2" onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'<%=topic%>'}})">
+					#<%=topic%>
 				</a>&nbsp;
 				<%});%>
 			</small>
@@ -81,41 +81,5 @@
 	<div class="modal-footer">
 		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
 		<a onclick="sendNote()" class="modal-close waves-effect waves-green btn-flat">Publicar</a>
-	</div>
-</div>
-
-<div id="searchModal" class="modal bottom-sheet">
-	<div class="modal-content">
-		<div class="input-field">
-          <input type="text" id="search" class="validate">
-          <label for="search">Buscar</label>
-    	</div>
-	</div>	
-	<div class="modal-footer">
-		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
-		<a onclick="searchText()" class="waves-effect waves-green btn-flat">Buscar</a>
-	</div>
-</div>
-
-<div id="themifyModal" class="modal bottom-sheet">
-	<div class="modal-content">
-		<div class="input-field">
-          <input type="text" id="theme" class="validate">
-          <label for="theme">Asignar tema</label>
-    	</div>
-	</div>	
-	<div class="modal-footer">
-		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
-		<a onclick="themifyNote()" class="modal-close waves-effect waves-green btn-flat">Asignar</a>
-	</div>
-</div>
-
-<div id="deleteConfirmModal" class="modal bottom-sheet">
-	<div class="modal-content">
-	<p>¿Esta seguro de eliminar su nota?</p>
-	</div>	
-	<div class="modal-footer">
-		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
-		<a onclick="deleteNote()" class="modal-close waves-effect waves-green btn-flat">Eliminar</a>
 	</div>
 </div>
