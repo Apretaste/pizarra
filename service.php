@@ -12,7 +12,7 @@ class Service
 	public function _main (Request $request, Response $response)
 	{
 		// get the type of search
-		$keyword = isset($request->input->search) ? $request->input->search : "";
+		$keyword = isset($request->input->data->search) ? $request->input->data->search : "";
 		$search = $this->getSearchType($keyword, $request->person->id);
 		$searchType = $search[0];
 		$searchValue = $search[1];
@@ -43,15 +43,17 @@ class Service
 
 		// get most popular topics of last 7 days
 		$popularTopics = Connection::query("
-			SELECT topic AS name, COUNT(id) AS cnt FROM _pizarra_topics
+			SELECT topic FROM _pizarra_topics
 			WHERE created > DATE_ADD(NOW(), INTERVAL -7 DAY)
-			GROUP BY topic ORDER BY cnt DESC LIMIT 10");
+			GROUP BY topic ORDER BY COUNT(id) DESC LIMIT 10");
 
-		// create variables for the template
+		$topics = [];
+		foreach($popularTopics as $topic) $topics[] = $topic->topic;
+ 		// create variables for the template
 		$content = [
 			"isProfileIncomplete" => $profile->completion < 70,
 			"notes" => $notes,
-			"popularTopics" => $popularTopics,
+			"popularTopics" => $topics,
 			"title" => $title,
 			"num_notifications" => $profile->notifications
 		];
@@ -158,11 +160,12 @@ class Service
 	 */
 	public function _nota(Request $request, Response $response){
 		$noteId = $request->input->data->note;
+		
 		// get the records from the db
 		$result = Connection::query("
 			SELECT
 				A.id, A.id_person, A.text, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
-				B.email, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country,
+				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_notes A LEFT JOIN person B ON A.id_person = B.id
@@ -170,7 +173,11 @@ class Service
 
 		// format note
 		if ($result) $note = $this->formatNote($result[0], $request->person->id);
-		else return;
+		else {
+			$response->setLayout('pizarra.ejs');
+			$response->setTemplate('notFound.ejs',['origin' => 'note','num_notifications' => $request->person->notifications]);
+			return;
+		}
 
 		//check if the user is blocked by the owner of the note
 		$blocks = Social::isBlocked($request->person->id, $note['id_person']);
@@ -317,7 +324,7 @@ class Service
 			SELECT topic AS name, COUNT(id) AS cnt FROM _pizarra_topics
 			WHERE created > DATE_ADD(NOW(), INTERVAL -30 DAY)
 			AND topic <> 'general'
-			GROUP BY topic ORDER BY cnt DESC LIMIT 100");
+			GROUP BY topic ORDER BY cnt DESC LIMIT 50");
 
 		// get params for the algorith
 		$maxLetterSize = 30;
@@ -362,8 +369,7 @@ class Service
 	 * @param Request $request
 	 * @param Response $response
 	 */
-	public function _perfil(Request $request, Response $response)
-	{
+	public function _perfil(Request $request, Response $response){
 		if(isset($request->input->data->username)){
 			$username = $request->input->data->username;
 			// get the user's profile
@@ -371,8 +377,9 @@ class Service
 
 			// if user do not exist, message the requestor
 			if (empty($person)) {
-				$response->createFromText("No encontramos un perfil para este usuario, por favor intente con otro nombre de usuario o pruebe mas tarde.");
-
+				$response->setLayout('pizarra.ejs');
+				$response->setTemplate('notFound.ejs',['origin' => 'profile','num_notifications' => $request->person->notifications]);
+				return;
 			}
 
 			//check if the user is blocked
@@ -388,6 +395,7 @@ class Service
 				$response->SetTemplate("blocked.ejs",$content);
 				return;
 			}
+			$person = Social::prepareUserProfile($person);
 		}
 		else $person = $request->person;
 
@@ -445,19 +453,18 @@ class Service
 	}
 
 	/**
-	 * @author ricardo
+	 * @author ricardo@apretaste.org
 	 * @param Request
-	 * @return Response
+	 * @param Response
 	 */
 
 	 public function _eliminar(Request $request, Response $response){
+		 $noteId = $request->input->data->note;
 		 $note=Connection::query("SELECT * FROM _pizarra_notes 
-		 WHERE id='$request->query' AND id_person='$request->person->id'");
+		 WHERE id='$noteId' AND id_person='$request->person->id'");
 		 
 		 if(!empty($note)) Connection::query("UPDATE _pizarra_notes SET active=0 
-		 WHERE id='$request->query'");
-
-		 return;
+		 WHERE id='$noteId'");
 	 }
 
 	/**
@@ -609,8 +616,8 @@ class Service
 		// get the records from the db
 		$listOfNotes = Connection::query("
 			SELECT
-				A.id, A.email, A.text, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
-				B.email, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country, B.online,
+				A.id, A.id_person, A.text, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
+				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country, B.online,
 				C.reputation,
 				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND id_person='{$profile->id}' AND action='like') > 0 AS isliked,
@@ -671,12 +678,12 @@ class Service
 	 */
 	private function getNotesByUsername($profile, $username)
 	{
-		$email = Utils::getEmailFromUsername($username);
-		$id = Utils::personExist($email);
+		$user = Utils::getPerson($username);
+		if(!$user) return [];
 
 		// check if the person is blocked
-		$blocks = Social::isBlocked($profile->id,$id);
-		if($blocks->blocked > 0 || $blocks->blockedByMe > 0) return [];
+		$blocks = Social::isBlocked($profile->id, $user->id);
+		if($blocks->blocked || $blocks->blockedByMe) return [];
 
 		// get the last 50 records from the db
 		$listOfNotes = Connection::query("
@@ -686,13 +693,13 @@ class Service
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.id_person = B.id
-			WHERE A.active=1 AND B.username = '$username'
+			WHERE A.active=1 AND B.id = '$user->id'
 			ORDER BY inserted DESC
 			LIMIT 20");
 
 		// format the array of notes
 		$notes = array();
-		foreach ($listOfNotes as $note) $notes[] = $this->formatNote($note,$profile->email);
+		foreach ($listOfNotes as $note) $notes[] = $this->formatNote($note,$profile->id);
 
 		// mark all notes as viewed
 		$viewed = array();
@@ -799,7 +806,6 @@ class Service
 			"online" => isset($note->online) ? $note->online : false,
 			"country" => $country,
 			"flag" => $flag,
-			'email' => $note->email,
 			"topics" => $topics,
 			'canmodify' => $note->id_person == $id
 		];

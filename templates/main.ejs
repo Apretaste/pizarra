@@ -3,8 +3,8 @@
 <div class="margin-5">
 	<span class="grey-text">Temas populares:</span>
 	<%popularTopics.forEach((topic)=>{%>
-		<div class="chip" onclick="apretaste.send({'command':'PIZARRA','data':{'search':'<%=topic.name%>'}});">
-		<%=topic.name%>
+		<div class="chip" onclick="apretaste.send({'command':'PIZARRA','data':{'search':'<%=topic%>'}});">
+		<%=topic%>
 		</div>
 	<%});%>
 </div>
@@ -16,7 +16,7 @@
 <div class="row" id="<%=note.id%>">
 	<div class="card <%=bgcolor%>">
 		<div class="card-content">
-			<a class="<%=color%>" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%=note.username%>'}});">
+			<a class="<%=color%>" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'<%=note.username%>'}});">
 				<b>@<%=note.username%></b>
 			</a>
 			<%if(note.online){%>

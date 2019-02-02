@@ -1,6 +1,30 @@
 $(document).ready(function(){
     $('.fixed-action-btn').floatingActionButton();
     $('.modal').modal();
+    M.FloatingActionButton.init($('.click-to-toggle'), {
+        direction: 'left',
+        hoverEnabled: false
+    });
+
+    //For main profile
+    if (typeof profile!="undefined" && typeof isMyOwnProfile!="undefined") {
+        if(isMyOwnProfile){
+            $("#editar").click(function() {
+                return apretaste.send({"command": "PERFIL EDITAR"})
+            });
+        }else{
+            $("#chat").click(function() {
+                apretaste.send({"command": 'CHAT', data: {"username":profile.username}});
+            });
+
+            $("#bloquear").click(function() {
+                apretaste.send({"command": 'PERFIL BLOQUEAR', data: {"username":profile.username}});
+            });
+        }
+        $("#notas").click(function() {
+            apretaste.send({"command": 'PIZARRA', data: {"search":'@'+profile.username}});
+        });
+    }
 });
 
 var activeNote;
