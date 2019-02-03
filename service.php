@@ -317,7 +317,7 @@ class Service
 	 * @param Request $request
 	 * @param Response $response
 	 */
-	public function _temas(Request $request, Response $response)
+	public function _populares(Request $request, Response $response)
 	{
 		// get list of topics
 		$ts = Connection::query("
@@ -339,27 +339,25 @@ class Service
 		foreach ($ts as $t) {
 			$topic = new stdClass();
 			$topic->name = $t->name;
-			$topic->count = $t->cnt;
-			$topic->fontSize = (($t->cnt - $minTopicMentions) / $rate) + $minLetterSize;
-			$topic->color = "#000000";
+			$topic->size = (($t->cnt - $minTopicMentions) / $rate) + $minLetterSize;
 			$topics[] = $topic;
 		}
 
 		// set topics in random order
-		shuffle ($topics);
+		shuffle($topics);
 
 		// get the list of most popular users
 		$users = [];
 		$images = [];
-		$popuplar = Connection::query("SELECT id_person, reputation FROM _pizarra_users ORDER BY reputation DESC LIMIT 9");
+		$popuplar = Connection::query("SELECT id_person, reputation FROM _pizarra_users ORDER BY reputation DESC LIMIT 10");
 		foreach ($popuplar as $p) {
-			$user = Utils::getPerson($p->id_person);
+			$user = Social::prepareUserProfile((Utils::getPerson($p->id_person)));
 			$user->reputation = $p->reputation;
 			$users[] = $user;
-			if($user->picture) $images[] = $user->picture_internal;
+			if($user->picture) $images[] = $user->picture;
 		}
 		$response->setLayout('pizarra.ejs');
-		$response->SetTemplate("topics.ejs", ["topics"=>$topics, "users"=>$users], $images);
+		$response->SetTemplate("topics.ejs", ["topics"=>$topics, "users"=>$users, "num_notifications" => $request->person->notifications], $images);
 	}
 
 	/**
@@ -468,95 +466,6 @@ class Service
 	 }
 
 	/**
-	 * Denounce users
-	 *
-	 * @author salvipascual
-	 * @param Request $request
-	 * @param Response $response
-	 */
-	public function _denunciar(Request $request, Response $response)
-	{
-		// get @username and text
-		$parts = explode(" ", $request->query);
-		$username = array_shift($parts);
-		$text = implode(" ", $parts);
-
-		// get the email
-		$email = Utils::getEmailFromUsername($username);
-		if(empty($email)) return;
-
-		// only allow to report a person once a week
-		$reportedByYou = Connection::query("SELECT id FROM _pizarra_denounce WHERE email='$email' AND denouncer='{$request->email}' AND inserted > (NOW()-INTERVAL 7 DAY)");
-		if($reportedByYou) return;
-
-		// get code from text
-		$reason = "OTHER";
-		if(php::exists($text, "info falsa")) $reason = "FAKE_PROFILE";
-		if(php::exists($text, "imperso")) $reason = "PERSONIFICATION";
-		if(php::exists($text, "ofensiv")) $reason = "OFFENSIVE";
-		if(php::exists($text, "notas falsa")) $reason = "FAKE_NOTES";
-		if(php::exists($text, "temas")) $reason = "WRONG_TOPIC";
-		if(php::exists($text, "ilegal")) $reason = "ILLEGAL";
-		if(php::exists($text, "inmoral")) $reason = "IMMORAL";
-
-		// save into the database
-		$text = Connection::escape($text, 500);
-		Connection::query("INSERT INTO _pizarra_denounce (email,denouncer,reason,`text`) VALUES ('$email','{$request->email}','$reason','$text')");
-
-		// substract 50 to reputation when a user receives 5+ denounces a week
-		$weeklyTimesReported = Connection::query("SELECT COUNT(id) AS cnt FROM _pizarra_denounce WHERE email='$email' AND inserted > (NOW()-INTERVAL 7 DAY)")[0]->cnt;
-		if($weeklyTimesReported > 4) Connection::query("UPDATE _pizarra_users SET reputation=reputation-50 WHERE email='$email'");
-
-		// respond empty variable
-		return;
-	}
-
-	/**
-	 * Check the list of opens chats or chat with somebody
-	 *
-	 * @author salvipascual
-	 * @param Request $request
-	 * @param Response $response
-	 */
-	public function _chat(Request $request, Response $response)
-	{
-		// get person to chat
-		$social = new Social();
-		$friendId = Utils::getIdFromUsername($request->query);
-
-		// show notes of the conversation with a person
-		if($friendId) {
-			// get the list of people chating with you
-			$chats = $social->chatConversation($request->person->id, $friendId);
-
-			// send information to the view
-			$response->setLayout('pizarra.ejs');
-			$response->SetTemplate("conversation.ejs", ["username"=>str_replace("@", "", $request->query), "chats"=>$chats]);
-
-		}
-
-		// get open chats
-		$chats = $social->chatsOpen($request->person->id);
-
-		// get the path to the root
-		$di = \Phalcon\DI\FactoryDefault::getDefault();
-		$wwwroot = $di->get('path')['root'];
-
-		// get images for the web
-		$images = [];
-		if($request->environment == "web") {
-			foreach ($chats as $chat) {
-				$images[] = $chat->profile->picture_internal;
-				$images[] = "$wwwroot/public/images/flags/".strtolower($chat->profile->country).".png";
-			}
-		}
-
-		// send info to the view
-		$response->setLayout('pizarra.ejs');
-		$response->SetTemplate("chats.ejs", ["chats"=>$chats], $images);
-	}
-
-	/**
 	 * Display the help document
 	 *
 	 * @author salvipascual
@@ -654,7 +563,7 @@ class Service
 		// format the array of notes
 		$notes = [];
 		foreach ($listOfNotes as $note) {
-			$notes[] = $this->formatNote($note,$profile->email); // format the array of notes
+			$notes[] = $this->formatNote($note,$profile->id); // format the array of notes
 			if(count($notes) > 50) break; // only parse the first 50 notes
 		}
 

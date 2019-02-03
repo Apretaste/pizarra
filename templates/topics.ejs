@@ -1,0 +1,129 @@
+<h4 class="center-align">Usuarios mas populares</h4>
+<div class="col s12">
+	<div class="col s4 offset-s4">
+		<div class="center-align">
+			<%if(users[0].picture!=""){%>
+			<img class="responsive-img materialboxed" id="pic" src="{{APP_IMAGE_PATH}}<%=users[0].picture%>">
+			<%}else{%>
+			<img src="{{APP_RESOURCES}}/image/user.jpg">
+			<%}%>
+			<a onclick="apretaste.send({'command':'PIZARRA PERFIL','data':{'username':'<%=users[0].username%>'}})"><%=users[0].username%></a>
+			<br><b><%=users[0].reputation%></b>
+		</div>
+	</div>
+</div>
+
+<div class="col s12">
+	<div class="col s3 offset-s2">
+		<div class="center-align">
+			<%if(users[1].picture!=""){%>
+			<img class="responsive-img materialboxed" id="pic" src="{{APP_IMAGE_PATH}}<%=users[1].picture%>">
+			<%}else{%>
+			<img src="{{APP_RESOURCES}}/image/user.jpg">
+			<%}%>
+			<a onclick="apretaste.send({'command':'PIZARRA PERFIL','data':{'username':'<%=users[1].username%>'}})"><%=users[1].username%></a>
+			<br><b><%=users[1].reputation%></b>
+		</div>
+	</div>
+	<div class="col s3 offset-s2">
+		<div class="center-align">
+			<%if(users[2].picture!=""){%>
+			<img class="responsive-img materialboxed" id="pic" src="{{APP_IMAGE_PATH}}<%=users[2].picture%>">
+			<%}else{%>
+			<img src="{{APP_RESOURCES}}/image/user.jpg">
+			<%}%>
+			<a onclick="apretaste.send({'command':'PIZARRA PERFIL','data':{'username':'<%=users[2].username%>'}})"><%=users[2].username%></a>
+			<br><b><%=users[2].reputation%></b>
+		</div>
+	</div>
+</div>
+
+<div class="col s12">
+	<div class="col s3 offset-s1">
+		<div class="center-align">
+			<%if(users[3].picture!=""){%>
+			<img class="responsive-img materialboxed" id="pic" src="{{APP_IMAGE_PATH}}<%=users[3].picture%>">
+			<%}else{%>
+			<img src="{{APP_RESOURCES}}/image/user.jpg">
+			<%}%>
+			<a onclick="apretaste.send({'command':'PIZARRA PERFIL','data':{'username':'<%=users[3].username%>'}})"><%=users[3].username%></a>
+			<br><b><%=users[3].reputation%></b>
+		</div>
+	</div>
+	<div class="col s3 offset-s1">
+		<div class="center-align">
+			<%if(users[4].picture!=""){%>
+			<img class="responsive-img materialboxed" id="pic" src="{{APP_IMAGE_PATH}}<%=users[4].picture%>">
+			<%}else{%>
+			<img src="{{APP_RESOURCES}}/image/user.jpg">
+			<%}%>
+			<a onclick="apretaste.send({'command':'PIZARRA PERFIL','data':{'username':'<%=users[4].username%>'}})"><%=users[4].username%></a>
+			<br><b><%=users[4].reputation%></b>
+		</div>
+	</div>
+	<div class="col s3 offset-s1">
+		<div class="center-align">
+			<%if(users[5].picture!=""){%>
+			<img class="responsive-img materialboxed" id="pic" src="{{APP_IMAGE_PATH}}<%=users[5].picture%>">
+			<%}else{%>
+			<img src="{{APP_RESOURCES}}/image/user.jpg">
+			<%}%>
+			<a onclick="apretaste.send({'command':'PIZARRA PERFIL','data':{'username':'<%=users[5].username%>'}})"><%=users[5].username%></a>
+			<br><b><%=users[5].reputation%></b>
+		</div>
+	</div>
+</div>
+
+<div class="col s12">
+	<div class="col s2">
+		<div class="center-align">
+			<%if(users[6].picture!=""){%>
+			<img class="responsive-img materialboxed" id="pic" src="{{APP_IMAGE_PATH}}<%=users[6].picture%>">
+			<%}else{%>
+			<img src="{{APP_RESOURCES}}/image/user.jpg">
+			<%}%>
+			<a onclick="apretaste.send({'command':'PIZARRA PERFIL','data':{'username':'<%=users[6].username%>'}})"><%=users[6].username%></a>
+			<br><b><%=users[6].reputation%></b>
+		</div>
+	</div>
+	<div class="col s2 offset-s1">
+		<div class="center-align">
+			<%if(users[7].picture!=""){%>
+			<img class="responsive-img materialboxed" id="pic" src="{{APP_IMAGE_PATH}}<%=users[7].picture%>">
+			<%}else{%>
+			<img src="{{APP_RESOURCES}}/image/user.jpg">
+			<%}%>
+			<a onclick="apretaste.send({'command':'PIZARRA PERFIL','data':{'username':'<%=users[7].username%>'}})"><%=users[7].username%></a>
+			<br><b><%=users[7].reputation%></b>
+		</div>
+	</div>
+	<div class="col s2 offset-s2">
+		<div class="center-align">
+			<%if(users[8].picture!=""){%>
+			<img class="responsive-img materialboxed" id="pic" src="{{APP_IMAGE_PATH}}<%=users[8].picture%>">
+			<%}else{%>
+			<img src="{{APP_RESOURCES}}/image/user.jpg">
+			<%}%>
+			<a onclick="apretaste.send({'command':'PIZARRA PERFIL','data':{'username':'<%=users[8].username%>'}})"><%=users[8].username%></a>
+			<br><b><%=users[8].reputation%></b>
+		</div>
+	</div>
+	<div class="col s2 offset-s1">
+		<div class="center-align">
+			<%if(users[9].picture!=""){%>
+			<img class="responsive-img materialboxed" id="pic" src="{{APP_IMAGE_PATH}}<%=users[9].picture%>">
+			<%}else{%>
+			<img src="{{APP_RESOURCES}}/image/user.jpg">
+			<%}%>
+			<a onclick="apretaste.send({'command':'PIZARRA PERFIL','data':{'username':'<%=users[9].username%>'}})"><%=users[9].username%></a>
+			<br><b><%=users[9].reputation%></b>
+		</div>
+	</div>
+</div>
+
+<h4 class="center-align">Temas populares</h4>
+<div>
+	<%topics.forEach(topic => {%>
+	<a style="font-size: <%=topic.size%>px;" onclick="apretaste.send({'command':'PIZARRA','data':{'search':'<%=topic.name%>'}})"><%=topic.name%>  </a>
+	<%});%>
+</div>

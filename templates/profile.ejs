@@ -1,43 +1,47 @@
 <%if(profile.gender=="M") color="blue-text"; else if(profile.gender=="F") color="pink-text"; else color="black-text"%>
 <div class="card col s12 m10 offset-m1">
-	<div class="card-image">
-		<%if(profile.picture!=""){%>
-		<img src="{{APP_IMAGE_PATH}}/<%=profile.picture%>">
-		<%}else{%>
-		<img src="{{APP_IMAGE_PATH}}/<%=profile.picture%>">
-		<%}%>
-		<div class="fixed-action-btn click-to-toggle" style="position: absolute; right: 16px; bottom: -28px;">
-			<a class="btn-floating btn-large red">
-				<i class="large material-icons">menu</i>
-			</a>
-		<%if(isMyOwnProfile){%>
-			<ul>
-				<li><a class="btn-floating red" id="editar"><i class="material-icons">edit</i></a></li>
-				<li><a class="btn-floating red" id="notas"><i class="material-icons">notes</i></a></li>
-			</ul>
-		<%}else{%>
-			<ul>
-				<li><a class="btn-floating red" id="chat"><i class="material-icons">message</i></a></li>
-				<li><a class="btn-floating red" id="bloquear"><i class="material-icons">block</i></a></li>
-				<li><a class="btn-floating red" id="notas"><i class="material-icons">notes</i></a></li>
-			</ul>
-		<%}%>
+	<div class="card-image row">
+		<div class="col s12 m8 offset-m2">
+			<div class="card">
+				<div class="card-image">
+					<%if(profile.picture!=""){%>
+					<img class="materialboxed" id="pic" src="{{APP_IMAGE_PATH}}<%=profile.picture%>">
+					<%}else{%>
+					<img src="{{APP_RESOURCES}}/image/user.jpg">
+					<%}%>
+					<div class="fixed-action-btn click-to-toggle" style="position: absolute; right: 16px; bottom: -28px;">
+						<a class="btn-floating btn-large red">
+							<i class="large material-icons">menu</i>
+						</a>
+						<%if(isMyOwnProfile){%>
+						<ul>
+							<li><a class="btn-floating red" id="editar"><i class="material-icons">edit</i></a></li>
+							<li><a class="btn-floating red" id="notas"><i class="material-icons">notes</i></a></li>
+						</ul>
+						<%}else{%>
+						<ul>
+							<li><a class="btn-floating red" id="chat"><i class="material-icons">message</i></a></li>
+							<li><a class="btn-floating red" id="bloquear"><i class="material-icons">block</i></a></li>
+							<li><a class="btn-floating red" id="notas"><i class="material-icons">notes</i></a></li>
+						</ul>
+						<%}%>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
 	<div class="card-content">
 		<% name=(profile.first_name=="")?'@'+profile.username:profile.first_name%>
 		<h6><b class="<%=color%>">@<%=profile.username%></b> - <%=profile.location%></h6>
 		<%profile.topics.forEach((topic)=>{%>
-		<div class="chip small blue lighten-3" onclick="apretaste.send({'command':'PIZARRA','data':{'search':'<%=topic%>'}});">
-			#<%=topic%>
-		</div>
+			<div class="chip small blue lighten-3" onclick="apretaste.send({'command':'PIZARRA','data':{'search':'<%=topic%>'}});">
+				#<%=topic%>
+			</div>
 		<%});%>
 		<p><%=profile.about_me%></p>
 		<h6 class="center-align"><b>Mis intereses</b></h6>
 		<%profile.interests.forEach((interest)=>{%>
-		<div class="chip">
-			<%=interest%>
-		</div>
+			<div class="chip"><%=interest%></div>
 		<%});%>
 	</div>
 </div>

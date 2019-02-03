@@ -1,6 +1,7 @@
 $(document).ready(function(){
     $('.fixed-action-btn').floatingActionButton();
     $('.modal').modal();
+    $('.materialboxed').materialbox();
     M.FloatingActionButton.init($('.click-to-toggle'), {
         direction: 'left',
         hoverEnabled: false

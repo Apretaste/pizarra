@@ -4,6 +4,10 @@
 .col .row{
     margin-bottom: 10px;
 }
+
+.card.col{
+    padding: 0;
+}
 a > span{
     color: #039be5;
     font-size: 1.2em;
