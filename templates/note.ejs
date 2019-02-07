@@ -11,7 +11,7 @@
 		<small class="grey-text text-darken-2"><%=note.location%></small>&middot;
 		<small class="grey-text text-darken-2"><%=note.inserted%></small>
 		<div class="divider"></div>
-		<p><%=note.text%></p>
+		<p><%-note.text%></p>
 		<small class="topics">
 			<%note.topics.forEach((topic) =>{%>
 			<a class="grey-text text-darken-2" onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'<%=topic%>'}})">
@@ -31,7 +31,7 @@
 		</a>
 		<%if(note.canmodify){%>
 			<%if(note.topics.length < 3){%>
-			<a class="modal-trigger" href="#themifyModal" onclick="activeNote = '<%=note.id%>';">
+			<a class="modal-trigger themifyButton" href="#themifyModal" onclick="activeNote = '<%=note.id%>';">
 				<span><b>#</b></span>
 			</a>
 			<%}%>
@@ -52,7 +52,7 @@
 		</a>&middot;
 		<small class="grey-text"><%=comment.location%></small>&middot;
 		<small class="grey-text"><%=comment.inserted%></small>
-		<p><%=comment.text%></p>
+		<p><%-comment.text%></p>
 		</li>
 	<%});%>
 </ul>
@@ -66,9 +66,8 @@
 <div id="newCommentModal" class="modal bottom-sheet">
 	<div class="modal-content">
 		<div class="input-field">
-          <textarea id="comment" class="validate" oninput="commentLengthValidate()"></textarea>
+          <textarea id="comment" class="materialize-textarea" oninput="commentLengthValidate()"></textarea>
 		  <label for="comment">Escriba su comentario</label>
-		  <div class="divider"></div>
 		  <span class="helper-text">Restante: 250</span>
     	</div>
 	</div>	

@@ -12,21 +12,30 @@ a > span{
     color: #039be5;
     font-size: 1.2em;
 }
-textarea{
-    border: none;
-    border-bottom: 1px;
-    overflow: auto;
-    outline: none;
-
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
-    box-shadow: none;
-
-    resize: none;
-}
 
 .chip.small{
     height: 20px;
     line-height: 20px;
     padding: 0 8px;
+}
+
+p{
+    word-break: break-word;
+}
+td img{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+tr:first-child td{
+    padding-bottom: 0;
+}
+tr:last-child td{
+    padding-top: 0;
+}
+#first{
+    max-width: 40%;
+}
+#second-row img{
+    max-width: 80%;
 }
