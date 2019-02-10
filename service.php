@@ -113,7 +113,7 @@ class Service
 		$note->text = substr($note->text,0,30).'...';
 
 		// create notification for the creator
-		if($request->person->id != $note->id_person) Utils::addNotification($note->id_person, 'pizarra', "El usuario @{$request->username} le dio like a tu nota en la Pizarra: {$note->text}", "PIZARRA NOTA {$noteId}");
+		if($request->person->id != $note->id_person) Utils::addNotification($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteID'}","thumb_up");
 
 		// increase the author's reputation
 		Connection::query("UPDATE _pizarra_users SET reputation=reputation+2 WHERE id_person='{$note->id_person}'");
@@ -271,11 +271,11 @@ class Service
 		foreach ($mentions as $m) {
 			$blocks=Social::isBlocked($request->person->id,$m->id);
 			if($blocks->blocked>0) continue;
-			Utils::addNotification($m->id, "PIZARRA", "El usuario @{$request->username} le ha mencionado en la pizarra", "PIZARRA NOTA $noteID");
+			Utils::addNotification($m->id, "El usuario @{$request->username} le ha mencionado en la pizarra", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteID'}","comment");
 		}
 
 		// send a notificaction
-		Utils::addNotification($request->person->id, 'PIZARRA', 'Su nota ha sido publicada en la Pizarra', "PIZARRA NOTA $noteID");
+		Utils::addNotification($request->person->id, 'Su nota ha sido publicada en la Pizarra', "{'command':'PIZARRA NOTA', 'data':{'note':'$noteID'}","comment");
 	}
 
 	/**
@@ -309,12 +309,12 @@ class Service
 		foreach ($mentions as $mention) {
 			$blocks = Social::isBlocked($request->person->id, $mention->id);
 			if($blocks->blocked || $blocks->blockedByMe) continue;
-			Utils::addNotification($mention->id, "PIZARRA", "El usuario @{$request->username} le ha mencionado en la pizarra", "PIZARRA NOTA $noteId");
+			Utils::addNotification($mention->id, "El usuario @{$request->username} le ha mencionado en la pizarra", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}","comment");
 		}
 
 		// send a notificaction to the owner of the note
 		$note->text = substr($note->text,0,30).'...';
-		if($request->person->id != $note->id_person) Utils::addNotification($note->id_person, 'pizarra', "Han comentado en su nota: {$note->text}", "PIZARRA NOTA $noteId");
+		if($request->person->id != $note->id_person) Utils::addNotification($note->id_person, "Han comentado en su nota: {$note->text}", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}","comment");
 	}
 
 	/**
