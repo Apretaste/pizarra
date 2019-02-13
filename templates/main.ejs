@@ -1,67 +1,68 @@
-<h5 class="margin-5 blue-text"><%=title%></h5>
+<h5 class="blue-text"><%=title%></h5>
 
-<div class="margin-5">
+<div>
 	<span class="grey-text">Temas populares:</span>
 	<%popularTopics.forEach((topic)=>{%>
-		<div class="chip" onclick="apretaste.send({'command':'PIZARRA','data':{'search':'<%=topic%>'}});">
+		<a onclick="apretaste.send({'command':'PIZARRA','data':{'search':'<%=topic%>'}});">
 		<%=topic%>
-		</div>
+		</a>
 	<%});%>
 </div>
 
-<%var bgcolor;%>
-<%notes.forEach((note) => {%>
-<%if(note.gender=="M") color="blue-text"; else if(note.gender=="F") color="pink-text"; else color="black-text"%>
-<%if(bgcolor=="white") bgcolor="grey lighten-4"; else bgcolor="white";%>
-<div class="row" id="<%=note.id%>">
-	<div class="card <%=bgcolor%>">
-		<div class="card-content">
-			<a class="<%=color%>" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'<%=note.username%>'}});">
-				<b>@<%=note.username%></b>
-			</a>
-			<%if(note.online){%>
-				&nbsp;<i class="tiny material-icons green-text">brightness_1</i>
-			<%}%>
-			&middot;
-			<small class="grey-text text-darken-2"><%=note.location%></small>&middot;
-			<small class="grey-text text-darken-2"><%=note.inserted%></small>
-			<div class="divider"></div>
-			<p><%-note.text%></p>
-			<small class="topics">
-				<%note.topics.forEach((topic) =>{%>
-				<a class="grey-text text-darken-2" onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'<%=topic%>'}})">
-					#<%=topic%>
-				</a>&nbsp;
-				<%});%>
-			</small>
-		</div>
-		<div class="card-action">
-			<a class="like" onclick="like('<%=note.id%>','like');">
-				<i class="material-icons tiny">thumb_up</i>
-				<span ><%=note.likes%></span>
-			</a>
-			<a class="unlike" onclick="like('<%=note.id%>','unlike')">
-				<i class="material-icons tiny">thumb_down</i>
-				<span><%=note.unlikes%></span>	
-			</a>
-			<a onclick="apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'<%=note.id%>'}});">
-				<i class="material-icons tiny">comment</i>
-				<span><%=note.comments%></span>
-			</a>
-			<%if(note.canmodify){%>
-				<%if(note.topics.length < 3){%>
-				<a class="modal-trigger themifyButton" href="#themifyModal" onclick="activeNote = '<%=note.id%>';">
-					<span><b>#</b></span>
+<div id="notes">
+	<%var bgcolor;%>
+	<%notes.forEach((note) => {%>
+	<%if(note.gender=="M") color="blue-text"; else if(note.gender=="F") color="pink-text"; else color="black-text"%>
+	<%if(bgcolor=="white") bgcolor="grey lighten-4"; else bgcolor="white";%>
+	<div class="row" id="<%=note.id%>">
+		<div class="card <%=bgcolor%>">
+			<div class="card-content">
+				<a class="<%=color%>" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'<%=note.username%>'}});">
+					<b>@<%=note.username%></b>
+				</a>
+				<%if(note.online=="1"){%>
+					<i class="material-icons green-text" style="font-size:10px;">brightness_1</i>
+				<%}%>
+				<small class="grey-text text-darken-2"><%=note.location%></small>&middot;
+				<small class="grey-text text-darken-2"><%=note.inserted%></small>
+				<div class="divider"></div>
+				<p><%-note.text%></p>
+				<small class="topics">
+					<%note.topics.forEach((topic) =>{%>
+					<a class="grey-text text-darken-2" onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'<%=topic%>'}})">
+						#<%=topic%>
+					</a>&nbsp;
+					<%});%>
+				</small>
+			</div>
+			<div class="card-action">
+				<a class="like" onclick="like('<%=note.id%>','like');">
+					<i class="material-icons tiny">thumb_up</i>
+					<span ><%=note.likes%></span>
+				</a>
+				<a class="unlike" onclick="like('<%=note.id%>','unlike')">
+					<i class="material-icons tiny">thumb_down</i>
+					<span><%=note.unlikes%></span>	
+				</a>
+				<a onclick="apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'<%=note.id%>'}});">
+					<i class="material-icons tiny">comment</i>
+					<span><%=note.comments%></span>
+				</a>
+				<%if(note.canmodify){%>
+					<%if(note.topics.length < 3){%>
+					<a class="modal-trigger themifyButton" href="#themifyModal" onclick="activeNote = '<%=note.id%>';">
+						<span><b>#</b></span>
+					</a>
+					<%}%>
+				<a class="modal-trigger" href="#deleteConfirmModal" onclick="activeNote = '<%=note.id%>';">
+					<i class="material-icons tiny">cancel</i>
 				</a>
 				<%}%>
-			<a class="modal-trigger" href="#deleteConfirmModal" onclick="activeNote = '<%=note.id%>';">
-				<i class="material-icons tiny">cancel</i>
-			</a>
-			<%}%>
+			</div>
 		</div>
 	</div>
+	<%});%>
 </div>
-<%});%>
 
 <div class="fixed-action-btn">
 	<a href="#newNoteModal" class="btn-floating btn-large waves-effect waves-light modal-trigger">

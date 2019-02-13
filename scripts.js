@@ -147,6 +147,10 @@ function sendCommentCallback(comment) {
 
     $('#comments').append(element);
     showToast('Comentario enviado');
+
+    $('html, body').animate({
+        scrollTop: $("li:last-of-type").offset().top
+    }, 1000);
 }
 
 function sendNoteCallback(note) {
@@ -158,8 +162,7 @@ function sendNoteCallback(note) {
                 <a class="`+color+`" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'`+myUsername+`'}});">
                     <b>@`+myUsername+`</b>
                 </a>
-                &nbsp;<i class="tiny material-icons green-text">brightness_1</i>
-                &middot;
+                <i class="material-icons green-text" style="font-size:10px;">brightness_1</i>
                 <small class="grey-text text-darken-2">`+myLocation+`</small>&middot;
                 <small class="grey-text text-darken-2">`+new Date(Date.now()).toLocaleString()+`</small>
                 <div class="divider"></div>
@@ -196,6 +199,10 @@ function sendNoteCallback(note) {
 
     $('#notes').prepend(element);
     showToast('Nota publicada');
+
+    $('html, body').animate({
+        scrollTop: $("#last").offset().top
+    }, 1000);
 }
 
 function themifyCallback(theme){

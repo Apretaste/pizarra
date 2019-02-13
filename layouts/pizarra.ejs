@@ -1,4 +1,4 @@
-<div class="col s12 m10 l8 offset-m1 offset-l2">
+<div class="container">
 	<!-- MENU -->
 	<div class="row">
 		<nav>
@@ -32,19 +32,21 @@
 			</div>
 		</nav>
 	</div>
+</div>
 
-	<!-- CONTENT -->
-	<div class="row" id="notes">
+<!-- CONTENT -->
+<div class="container">
+	<div class="row">
 		{{APP_TEMPLATE_CODE}}
 	</div>
+</div>
 
-	<!-- FOOTER -->
-	<div class="row center-align">
-		<a href="#!" onclick="apretaste.send({'command':'SOPORTE'});">Ayuda con Pizarra</a>
-		<div class="divider"></div>
-		Pizarra &copy;
-		<%=(new Date).getFullYear()%>; All rights reserved.
-	</div>
+<!-- FOOTER -->
+<div class="row center-align">
+	<a href="#!" onclick="apretaste.send({'command':'SOPORTE'});">Ayuda con Pizarra</a>
+	<div class="divider"></div>
+	Pizarra &copy;
+	<%=(new Date).getFullYear()%>; All rights reserved.
 </div>
 
 <!-- MODALS -->

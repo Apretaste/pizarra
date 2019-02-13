@@ -4,10 +4,9 @@
 		<a class="<%=color%>" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%=note.username%>'}});">
 			<b>@<%=note.username%></b>
 		</a>
-		<%if(note.online){%>
-			&nbsp;<i class="tiny material-icons green-text">brightness_1</i>
+		<%if(note.online=="1"){%>
+			<i class="material-icons green-text" style="font-size:10px;">brightness_1</i>
 		<%}%>
-		&middot;
 		<small class="grey-text text-darken-2"><%=note.location%></small>&middot;
 		<small class="grey-text text-darken-2"><%=note.inserted%></small>
 		<div class="divider"></div>

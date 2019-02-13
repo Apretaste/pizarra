@@ -237,10 +237,6 @@ class Service
 		// only post notes with real content
 		if(strlen($text) < 20) return;
 
-		//$text = Utils::removeTildes($request->query);
-		// shorten and clean the text
-		$text = Connection::escape(substr($text, 0, 300));
-
 		// get the current topic
 		$defaultTopic = Connection::query("SELECT default_topic FROM _pizarra_users WHERE id_person='{$request->person->id}'")[0]->default_topic;
 
@@ -299,7 +295,7 @@ class Service
 		if($blocks->blocked) return;
 
 		// save the comment
-		$comment = Connection::escape(substr($comment, 0, 200));
+		$comment = Connection::escape($comment, 200);
 		Connection::query("
 			INSERT INTO _pizarra_comments (id_person, note, text) VALUES ('{$request->person->id}', '$noteId', '$comment');
 			UPDATE _pizarra_notes SET comments = comments+1 WHERE id='$noteId';");
