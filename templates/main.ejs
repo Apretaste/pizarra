@@ -1,21 +1,21 @@
-<h5 class="blue-text"><%=title%></h5>
-
-<div>
-	<span class="grey-text">Temas populares:</span>
-	<%popularTopics.forEach((topic)=>{%>
-		<a onclick="apretaste.send({'command':'PIZARRA','data':{'search':'<%=topic%>'}});">
-		<%=topic%>
-		</a>
-	<%});%>
+<div class="row">
+	<div class="col s12">
+		<h5 class="blue-text"><%=title%></h5>
+		<span class="grey-text">Temas populares:</span>
+		<%popularTopics.forEach((topic)=>{%>
+			<a onclick="apretaste.send({'command':'PIZARRA','data':{'search':'<%=topic%>'}});">
+			<%=topic%>
+			</a>
+		<%});%>
+	</div>
 </div>
 
-<div id="notes">
+<div class="row" id="notes">
 	<%var bgcolor;%>
 	<%notes.forEach((note) => {%>
-	<%if(note.gender=="M") color="blue-text"; else if(note.gender=="F") color="pink-text"; else color="black-text"%>
-	<%if(bgcolor=="white") bgcolor="grey lighten-4"; else bgcolor="white";%>
-	<div class="row" id="<%=note.id%>">
-		<div class="card <%=bgcolor%>">
+		<%if(note.gender=="M") color="blue-text"; else if(note.gender=="F") color="pink-text"; else color="black-text"%>
+		<%if(bgcolor=="white") bgcolor="grey lighten-4"; else bgcolor="white";%>
+		<div class="card <%=bgcolor%>" id="<%=note.id%>">
 			<div class="card-content">
 				<a class="<%=color%>" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'<%=note.username%>'}});">
 					<b>@<%=note.username%></b>
@@ -60,7 +60,6 @@
 				<%}%>
 			</div>
 		</div>
-	</div>
 	<%});%>
 </div>
 

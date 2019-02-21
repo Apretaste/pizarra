@@ -477,7 +477,7 @@ class Service
 	 */
 	public function _ayuda(Request $request, Response $response){
 		$response->setLayout('pizarra.ejs');
-		$response->SetTemplate("help.ejs");
+		$response->SetTemplate("help.ejs",["num_notifications" => $profile->notifications]);
 	}
 
 	/**
