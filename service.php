@@ -699,6 +699,8 @@ class Service
 		$note->text = str_replace("\'", "'", $note->text);
 		$note->text = str_replace("\\n", "<br>", $note->text);
 
+		while(json_encode($note->text)=="") $note->text = substr($note->text, 0, strlen($note->text)-2);
+
 		// add the text to the array
 		$newNote = [
 			"id" => $note->id,
