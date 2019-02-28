@@ -3,6 +3,10 @@ a > span{
     font-size: 1.2em;
 }
 
+.text-medium {
+    font-size: 1em;
+}
+
 .chip.small{
     height: 20px;
     line-height: 20px;
@@ -47,4 +51,26 @@ tr:last-child td{
 }
 #second-row img{
     max-width: 80%;
+}
+
+nav.nav-center ul {
+    text-align: center;
+}
+nav.nav-center ul li {
+    display: inline;
+    float: none;
+}
+nav.nav-center ul li a {
+    display: inline-block;
+}
+input[type="text"]:focus:not(.browser-default):focus:not([readonly]),
+textarea.materialize-textarea:focus:not([readonly])
+{
+    border-bottom: #339900;
+    box-shadow: 0 1px 0 0 #339900;
+}
+
+input[type="text"]:not(.browser-default):focus:not([readonly]) + label,
+textarea.materialize-textarea:focus:not([readonly]) + label {
+    color: #339900;
 }

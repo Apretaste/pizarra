@@ -27,13 +27,12 @@
 				<small class="grey-text text-darken-2"><%=note.inserted%></small>
 				<div class="divider"></div>
 				<p><%-note.text%></p>
-				<small class="topics">
-					<%note.topics.forEach((topic) =>{%>
-					<a class="grey-text text-darken-2" onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'<%=topic%>'}})">
+                    <br/>
+					<% note.topics.forEach((topic) => { %>
+					<a class="grey-text text-darken-2 text-medium" onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'<%=topic%>'}})">
 						#<%=topic%>
 					</a>&nbsp;
 					<%});%>
-				</small>
 			</div>
 			<div class="card-action">
 				<a class="like" onclick="like('<%=note.id%>','like');">
@@ -64,7 +63,7 @@
 </div>
 
 <div class="fixed-action-btn">
-	<a href="#newNoteModal" class="btn-floating btn-large waves-effect waves-light modal-trigger">
+	<a href="#newNoteModal" class="btn-floating btn-large waves-effect waves-light modal-trigger green">
 		<i class="large material-icons">create</i>
 	</a>
 </div>

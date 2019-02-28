@@ -1,82 +1,84 @@
 <!-- MENU -->
-<div class="row">
-	<nav>
-		<div class="nav-wrapper white">
-			<!--Logo-->
-			<span class="brand-logo left hide-on-small-only">
-				<i><b style="color:#9E100A; font-size:40px; font-family:Times;">&nbsp; P</b></i>
-			</span>
-			<!--notifications & profile-->
-			<%if(num_notifications>0) noti_icon = "notifications_active"; else noti_icon = "notifications";%>
-			<ul class="right">
-				<li><a href="#!" class="black-text" onclick="apretaste.send({'command':'PIZARRA'})">
-						<i class="material-icons">assignment</i>
-					</a></li>
-				<li><a href="#!" class="black-text" onclick="apretaste.send({'command':'PIZARRA PERFIL'})">
-						<i class="material-icons">account_box</i>
-					</a></li>
-				<li><a href="#!" class="black-text" onclick="apretaste.send({'command':'PIZARRA CHAT'})">
-						<i class="material-icons">chat</i>
-					</a></li>
-				<li><a href="#!" class="black-text" onclick="apretaste.send({'command':'PIZARRA POPULARES'})">
-						<i class="material-icons">stars</i>
-					</a></li>
-				<li><a href="#searchModal" class="black-text modal-trigger">
-						<i class="material-icons">search</i>
-					</a></li>
-				<li class="hide-on-small-only"><a href="#!" class="black-text" onclick="apretaste.send({'command':'NOTIFICACIONES','data':{'filter':['pizarra','nota','chat']}})">
-						<i class="material-icons">
-							<%=noti_icon%></i>
-					</a></li>
-			</ul>
-		</div>
-	</nav>
-</div>
+<div class="container">
+    <div class="row">
+        <nav class="nav-center">
+            <div class="nav-wrapper white">
+                <!--Logo-->
+                <span class="brand-logo left hide-on-small-only">
+                    <i><b style="color:#9E100A; font-size:40px; font-family:Times;">&nbsp; P</b></i>
+                </span>
+                <!--notifications & profile-->
+                <%if(num_notifications>0) noti_icon = "notifications_active"; else noti_icon = "notifications";%>
+                <ul>
+                    <li><a href="#!" class="black-text" onclick="apretaste.send({'command':'PIZARRA'})">
+                            <i class="material-icons">assignment</i>
+                        </a></li>
+                    <li><a href="#!" class="black-text" onclick="apretaste.send({'command':'PIZARRA PERFIL'})">
+                            <i class="material-icons">account_box</i>
+                        </a></li>
+                    <li><a href="#!" class="black-text" onclick="apretaste.send({'command':'CHAT'})">
+                            <i class="material-icons">chat</i>
+                        </a></li>
+                    <li><a href="#!" class="black-text" onclick="apretaste.send({'command':'PIZARRA POPULARES'})">
+                            <i class="material-icons">stars</i>
+                        </a></li>
+                    <li><a href="#searchModal" class="black-text modal-trigger">
+                            <i class="material-icons">search</i>
+                        </a></li>
+                    <li class="hide-on-small-only"><a href="#!" class="black-text" onclick="apretaste.send({'command':'NOTIFICACIONES','data':{'filter':['pizarra','nota','chat']}})">
+                            <i class="material-icons">
+                                <%=noti_icon%></i>
+                        </a></li>
+                </ul>
+            </div>
+        </nav>
+    </div>
 
-<!-- CONTENT -->
-{{APP_TEMPLATE_CODE}}
+    <!-- CONTENT -->
+    {{APP_TEMPLATE_CODE}}
 
-<!-- FOOTER -->
-<div class="row center-align">
-	<a href="#!" onclick="apretaste.send({'command':'PIZARRA AYUDA'});">Ayuda con Pizarra</a>
-	<div class="divider"></div>
-	Pizarra &copy;
-	<%=(new Date).getFullYear()%>; All rights reserved.
-</div>
+    <!-- FOOTER -->
+    <div class="row center-align">
+        <a href="#!" onclick="apretaste.send({'command':'PIZARRA AYUDA'});">Ayuda con Pizarra</a>
+        <div class="divider"></div>
+        Pizarra &copy;
+        <%=(new Date).getFullYear()%>; All rights reserved.
+    </div>
 
-<!-- MODALS -->
-<div id="searchModal" class="modal bottom-sheet">
-	<div class="modal-content">
-		<div class="input-field">
-          <input type="text" id="search" class="validate">
-          <label for="search">Buscar</label>
-    	</div>
-	</div>	
-	<div class="modal-footer">
-		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
-		<a onclick="searchText()" class="waves-effect waves-green btn-flat">Buscar</a>
-	</div>
-</div>
+    <!-- MODALS -->
+    <div id="searchModal" class="modal bottom-sheet">
+        <div class="modal-content">
+            <div class="input-field">
+              <input type="text" id="search" class="validate">
+              <label for="search">Buscar</label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
+            <a onclick="searchText()" class="waves-effect waves-green btn-flat">Buscar</a>
+        </div>
+    </div>
 
-<div id="themifyModal" class="modal bottom-sheet">
-	<div class="modal-content">
-		<div class="input-field">
-          <input type="text" id="theme" class="validate">
-          <label for="theme">Asignar tema</label>
-    	</div>
-	</div>	
-	<div class="modal-footer">
-		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
-		<a onclick="themifyNote()" class="modal-close waves-effect waves-green btn-flat">Asignar</a>
-	</div>
-</div>
+    <div id="themifyModal" class="modal bottom-sheet">
+        <div class="modal-content">
+            <div class="input-field">
+              <input type="text" id="theme" class="validate">
+              <label for="theme">Asignar tema</label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
+            <a onclick="themifyNote()" class="modal-close waves-effect waves-green btn-flat">Asignar</a>
+        </div>
+    </div>
 
-<div id="deleteConfirmModal" class="modal bottom-sheet">
-	<div class="modal-content">
-	<p>¿Esta seguro de eliminar su nota?</p>
-	</div>	
-	<div class="modal-footer">
-		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
-		<a onclick="deleteNote()" class="modal-close waves-effect waves-green btn-flat">Eliminar</a>
-	</div>
+    <div id="deleteConfirmModal" class="modal bottom-sheet">
+        <div class="modal-content">
+        <p>¿Esta seguro de eliminar su nota?</p>
+        </div>
+        <div class="modal-footer">
+            <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
+            <a onclick="deleteNote()" class="modal-close waves-effect waves-green btn-flat">Eliminar</a>
+        </div>
+    </div>
 </div>
