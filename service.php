@@ -11,7 +11,7 @@ class Service
 	 * @param Request $request
 	 * @param Response $response
 	 */
-	public function _main(Request $request, Response $response)
+	public function _main(Request $request, Response &$response)
 	{
 		// get the type of search
 		$keyword = isset($request->input->data->search) ? $request->input->data->search : "";
@@ -294,7 +294,7 @@ class Service
 	 * @param Request $request
 	 * @param Response $response
 	 */
-	public function _escribir(Request $request, Response $response)
+	public function _escribir(Request $request, Response &$response)
 	{
 		$text = strip_tags($request->input->data->text);
 
