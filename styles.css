@@ -74,3 +74,8 @@ input[type="text"]:not(.browser-default):focus:not([readonly]) + label,
 textarea.materialize-textarea:focus:not([readonly]) + label {
     color: #339900;
 }
+
+img.responsive-img, video.responsive-video {
+  max-width: 100%;
+  max-height: 160px;
+}
