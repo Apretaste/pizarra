@@ -3,7 +3,7 @@
 		<%if(profile.gender=="M") color="blue-text"; else if(profile.gender=="F") color="pink-text"; else color="black-text"%>
 		<div class="img-wrap">
 			<%if(profile.picture!=""){%>
-			<img class="fullscreen z-depth-2" id="pic" src="<%=profile.picture%>">
+			<img class="fullscreen z-depth-2" id="pic" src="{{APP_IMAGE_PATH}}<%=profile.picture%>">
 			<%}else{%>
 			<img src="{{APP_RESOURCES}}/images/user.jpg">
 			<%}%>
