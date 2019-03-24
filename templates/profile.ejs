@@ -3,7 +3,7 @@
 		<%if(profile.gender=="M") color="blue-text"; else if(profile.gender=="F") color="pink-text"; else color="black-text"%>
 		<div class="img-wrap">
 			<%if(profile.picture!=""){%>
-			<img class="fullscreen z-depth-2" id="pic" src="{{APP_IMAGE_PATH}}<%=profile.picture%>">
+			<img class="fullscreen z-depth-2" id="pic" src="<%=profile.picture%>">
 			<%}else{%>
 			<img src="{{APP_RESOURCES}}/images/user.jpg">
 			<%}%>
@@ -31,14 +31,14 @@
 		</a>
 		<%if(isMyOwnProfile){%>
 		<ul>
-			<li><a class="btn-floating red" id="editar"><i class="material-icons">edit</i></a></li>
-			<li><a class="btn-floating red" id="notas"><i class="material-icons">notes</i></a></li>
+			<li><a class="btn-floating green" id="editar"><i class="material-icons">edit</i></a></li>
+			<li><a class="btn-floating green" id="notas"><i class="material-icons">notes</i></a></li>
 		</ul>
 		<%}else{%>
 		<ul>
-			<li><a class="btn-floating red" id="chat"><i class="material-icons">message</i></a></li>
-			<li><a class="btn-floating red" id="bloquear"><i class="material-icons">block</i></a></li>
-			<li><a class="btn-floating red" id="notas"><i class="material-icons">notes</i></a></li>
+			<li><a class="btn-floating green" id="chat"><i class="material-icons">message</i></a></li>
+			<li><a class="btn-floating green" id="bloquear"><i class="material-icons">block</i></a></li>
+			<li><a class="btn-floating green" id="notas"><i class="material-icons">notes</i></a></li>
 		</ul>
 		<%}%>
 	</div>
