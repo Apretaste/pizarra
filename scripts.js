@@ -138,13 +138,14 @@ function like(id, type) {
     'data': {'note': id},
     'callback': {
       'name': 'likeCallback',
-      'data': {'id': id, 'type': type}
+      'data': JSON.stringify({'id': id, 'type': type})
     },
     'redirect': false
   });
 }
 
 function likeCallback(data) {
+  data = JSON.parse(data)
   id = data.id;
   type = data.type;
   counter = type == 'like' ? 'unlike' : 'like';
