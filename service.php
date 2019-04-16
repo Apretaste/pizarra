@@ -600,14 +600,10 @@ class Service
 	public function _eliminar(Request $request, Response $response)
 	{
 		$noteId = $request->input->data->note;
-		$note = Connection::query("SELECT * FROM _pizarra_notes 
-		 WHERE id='$noteId' AND id_person='$request->person->id'");
-
-		if( ! empty($note))
-		{
-			Connection::query("UPDATE _pizarra_notes SET active=0 
-		 WHERE id='$noteId'");
-		}
+		Connection::query(
+			"UPDATE _pizarra_notes SET active=0 
+			WHERE id='$noteId' AND id_person='{$request->person->id}'"
+			);
 	}
 
 	/**
@@ -621,7 +617,7 @@ class Service
 	public function _ayuda(Request $request, Response $response)
 	{
 		$response->setLayout('pizarra.ejs');
-		$response->SetTemplate("help.ejs", ["num_notifications" => $profile->notifications]);
+		$response->SetTemplate("help.ejs", ["num_notifications" => $request->person->notifications]);
 	}
 
 	/**
