@@ -339,7 +339,7 @@ class Service
 			{
 				continue;
 			}
-			Utils::addNotification($m->id, "El usuario @{$request->username} le ha mencionado en la pizarra", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteID'}", "comment");
+			Utils::addNotification($m->id, "El usuario @{$request->person->username} le ha mencionado en la pizarra", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteID'}", "comment");
 		}
 
 		// send a notificaction
