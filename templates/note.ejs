@@ -13,7 +13,7 @@
 			<div class="divider"></div>
 			<p><%-note.text%></p>
 			<small class="topics">
-				<%note.topics.forEach((topic) =>{%>
+				<%note.topics.forEach(function(topic){%>
 				<a class="grey-text text-darken-2" onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'<%=topic%>'}})">
 					#<%=topic%>
 				</a>&nbsp;
@@ -46,7 +46,7 @@
 <div class="row">
 	<ul class="collection" id="comments">
 		<%var color;%>
-		<%note.comments.forEach(comment => {%>
+		<%note.comments.forEach(function(comment){%>
 		<%if(comment.gender=="M") color="blue-text"; else if(comment.gender=="F") color="pink-text"; else color="black-text"%>
 			<li class="collection-item">
 			<a class="<%=color%>" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%=comment.username%>'}});">

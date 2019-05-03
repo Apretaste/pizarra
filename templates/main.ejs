@@ -2,7 +2,7 @@
 	<div class="col s12">
 		<h5 class="blue-text"><%=title%></h5>
 		<span class="grey-text">Temas populares:</span>
-		<%popularTopics.forEach((topic)=>{%>
+		<%popularTopics.forEach(function(topic){%>
 			<a onclick="apretaste.send({'command':'PIZARRA','data':{'search':'<%=topic%>'}});">
 			<%=topic%>
 			</a>
@@ -12,7 +12,7 @@
 
 <div class="row" id="notes">
 	<%var bgcolor;%>
-	<%notes.forEach((note) => {%>
+	<%notes.forEach(function(note){%>
 		<%if(note.gender=="M") color="blue-text"; else if(note.gender=="F") color="pink-text"; else color="black-text"%>
 		<%if(bgcolor=="white") bgcolor="grey lighten-4"; else bgcolor="white";%>
 		<div class="card <%=bgcolor%>" id="<%=note.id%>">
@@ -28,7 +28,7 @@
 				<div class="divider"></div>
 				<p><%-note.text%></p>
                     <br/>
-					<% note.topics.forEach((topic) => { %>
+					<% note.topics.forEach(function(topic){ %>
 					<a class="grey-text text-darken-2 text-medium" onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'<%=topic%>'}})">
 						#<%=topic%>
 					</a>&nbsp;

@@ -152,7 +152,7 @@
 
         <h4 class="center-align">Temas populares</h4>
         <div class="row center-align">
-            <% topics.forEach(topic => { %>
+            <% topics.forEach(function(topic){ %>
             <a style="font-size: <%= topic.size+3 %>px;"
                onclick="apretaste.send({'command':'PIZARRA','data':{'search':'#<%= topic.name %>'}})">#<%= topic.name %>  </a>
             <% }); %>

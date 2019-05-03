@@ -12,13 +12,13 @@
 		<h6 class="black-text">
 			<b class="<%=color%>">@<%=profile.username%></b> - <%if (profile.age!=""){%><%=profile.age%> años - <%}%><%=profile.location%>
 		</h6>
-		<%profile.topics.forEach((topic)=>{%>
+		<%profile.topics.forEach(function(topic){%>
 		<div class="chip small blue lighten-3" onclick="apretaste.send({'command':'PIZARRA','data':{'search':'<%=topic%>'}});">
 			#<%=topic%>
 		</div>
 		<%});%>
 		<p><%=profile.about_me%></p>
-		<%profile.interests.forEach((interest)=>{%>
+		<%profile.interests.forEach(function(interest){%>
 		<div class="chip">
 			<%=interest%>
 		</div>
