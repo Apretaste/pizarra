@@ -400,10 +400,9 @@ class Service
 		}
 
 		// send a notificaction to the owner of the note
-		$note->text = substr($note->text, 0, 30) . '...';
-		if($request->person->id != $note->id_person)
-		{
-			Utils::addNotification($note->id_person, "Han comentado en su nota: {$note->text}", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}", "comment");
+		$note->text = substr($note->text, 0, 20) . '...';
+		if($request->person->id != $note->id_person){
+			Utils::addNotification($note->id_person, "El usuario @{$request->person->username} ha comentado en su nota: {$note->text}", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}", "comment");
 		}
 	}
 
