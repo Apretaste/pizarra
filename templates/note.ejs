@@ -1,13 +1,10 @@
 <div class="row">
-	<%if(note.gender=="M") color="blue-text"; else if(note.gender=="F") color="pink-text"; else color="black-text"%>
+	<%if(note.gender=="M") color="pizarra-color-text"; else if(note.gender=="F") color="pink-text"; else color="black-text"%>
 	<div class="card" id="<%=note.id%>">
 		<div class="card-content">
 			<a class="<%=color%>" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%=note.username%>'}});">
 				<b>@<%=note.username%></b>
 			</a>
-			<%if(note.online=="1"){%>
-				<i class="material-icons green-text" style="font-size:10px;">brightness_1</i>
-			<%}%>
 			<small class="grey-text text-darken-2"><%=note.location%></small>&middot;
 			<small class="grey-text text-darken-2"><%=note.inserted%></small>
 			<div class="divider"></div>
@@ -47,7 +44,7 @@
 	<ul class="collection" id="comments">
 		<%var color;%>
 		<%note.comments.forEach(function(comment){%>
-		<%if(comment.gender=="M") color="blue-text"; else if(comment.gender=="F") color="pink-text"; else color="black-text"%>
+		<%if(comment.gender=="M") color="pizarra-color-text"; else if(comment.gender=="F") color="pink-text"; else color="black-text"%>
 			<li class="collection-item">
 			<a class="<%=color%>" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%=comment.username%>'}});">
 				<b>@<%=comment.username%></b>

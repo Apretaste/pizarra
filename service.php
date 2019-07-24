@@ -1,5 +1,7 @@
 <?php
 
+use Phalcon\DI\FactoryDefault;
+
 class Service
 {
 
@@ -22,25 +24,23 @@ class Service
 		// get the user's profile
 		$profile = $request->person;
 
-		// create the user in the table if do not exist
-		Connection::query("INSERT IGNORE INTO _pizarra_users (id_person) VALUES ('{$request->person->id}')");
+		$myUser = $this->prepareMyUser($request->person);
 
-		// get notes if serached by topic
+		// get notes if searched by topic
 		if($searchType == "topic")
 		{
 			$notes = $this->getNotesByTopic($profile, $searchValue);
 			$title = "#$searchValue";
-			$defaultTopic = $title;
 		}
 
-		// get notes if serached by username
+		// get notes if searched by username
 		if($searchType == "username")
 		{
 			$notes = $this->getNotesByUsername($profile, $searchValue);
 			$title = "Notas de @$searchValue";
 		}
 
-		// get notes if serached by keyword
+		// get notes if searched by keyword
 		if($searchType == "keyword")
 		{
 			$notes = $this->getNotesByKeyword($profile, $searchValue);
@@ -65,22 +65,13 @@ class Service
 			"popularTopics" => $topics,
 			"title" => $title,
 			"num_notifications" => $profile->notifications,
-			'myGender' => $request->person->gender,
-			'myUsername' => $request->person->username,
-			'myLocation' => $request->person->location,
-			'defaultTopic' => isset($defaultTopic) ? $defaultTopic : Connection::query("SELECT default_topic FROM _pizarra_users WHERE id_person='{$request->person->id}'")[0]->default_topic,
+			"myUser" => $myUser,
+			'activeIcon' => 1
 		];
 
-		// get images for the web
+		$pathToService = Utils::getPathToService($response->serviceName);
 		$images = [];
-		if($request->input->environment == "web")
-		{
-			foreach($notes as $note)
-			{
-				$images[] = $note['picture'];
-				$images[] = $note['flag'];
-			}
-		}
+		foreach ($notes as $note) $images[] = "$pathToService/images/{$note->avatar}.png";
 
 		// create the response
 		$response->setLayout('pizarra.ejs');
@@ -276,10 +267,7 @@ class Service
 
 		$content = [
 			'note' => $note,
-			'num_notifications' => $request->person->notifications,
-			'myGender' => $request->person->gender,
-			'myUsername' => $request->person->username,
-			'myLocation' => $request->person->location,
+			'myUser' => $this->prepareMyUser($request->person)
 		];
 
 		$response->setLayout('pizarra.ejs');
@@ -304,12 +292,8 @@ class Service
 			return;
 		}
 
-		// get the current topic
-		$defaultTopic = Connection::query("SELECT default_topic FROM _pizarra_users WHERE id_person='{$request->person->id}'")[0]->default_topic;
-
 		// get all the topics from the post
 		preg_match_all('/#\w*/', $text, $topics);
-		$topics = array_merge($topics[0], [$defaultTopic]);
 		$topic1 = isset($topics[0]) ? str_replace("#", "", $topics[0]) : "";
 		$topic2 = isset($topics[1]) ? str_replace("#", "", $topics[1]) : "";
 		$topic3 = isset($topics[2]) ? str_replace("#", "", $topics[2]) : "";
@@ -341,9 +325,6 @@ class Service
 			}
 			Utils::addNotification($m->id, "El usuario @{$request->person->username} le ha mencionado en la pizarra", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteID'}", "comment");
 		}
-
-		// send a notificaction
-		Utils::addNotification($request->person->id, 'Su nota ha sido publicada en la Pizarra', "{'command':'PIZARRA NOTA', 'data':{'note':'$noteID'}", "comment");
 	}
 
 	/**
@@ -409,10 +390,11 @@ class Service
 	/**
 	 * Show extense list of topics as a web cloud
 	 *
-	 * @author salvipascual
-	 *
 	 * @param Request $request
 	 * @param Response $response
+	 * @throws Exception
+	 * @author salvipascual
+	 *
 	 */
 	public function _populares(Request $request, Response $response)
 	{
@@ -465,7 +447,7 @@ class Service
 		$response->SetTemplate("topics.ejs", [
 			"topics" => $topics,
 			"users" => $users,
-			"num_notifications" => $request->person->notifications,
+			'myUser' => $this->prepareMyUser($request->person)
 		], $images);
 	}
 
@@ -540,7 +522,7 @@ class Service
 		$content = [
 			"profile" => $person,
 			"isMyOwnProfile" => $person->id == $request->person->id,
-			"num_notifications" => $request->person->notifications,
+			'myUser' => $this->prepareMyUser($request->person)
 		];
 
 		// get images for the web
@@ -633,7 +615,8 @@ class Service
 		// return topic selected by the user if blank
 		if(empty($keyword))
 		{
-			$topic = Connection::query("SELECT default_topic FROM _pizarra_users WHERE id_person='$id'");
+			return ["topic", "general"];
+			/*$topic = Connection::query("SELECT default_topic FROM _pizarra_users WHERE id_person='$id'");
 			if(empty($topic[0]->default_topic))
 			{
 				$defaultTopic = "general";
@@ -644,6 +627,7 @@ class Service
 			}
 
 			return ["topic", $defaultTopic];
+			*/
 		}
 
 		// get the number of words passed
@@ -682,23 +666,23 @@ class Service
 	 */
 	private function getNotesByTopic($profile, $topic)
 	{
+		$where = $topic != "general" ? "WHERE (topic1='$topic' OR topic2='$topic' OR topic3='$topic') AND active=1" : "WHERE active=1";
 		// set the topic as default for the user
-		Connection::query("UPDATE _pizarra_users SET default_topic='$topic' WHERE id_person='{$profile->id}'");
+		// Connection::query("UPDATE _pizarra_users SET default_topic='$topic' WHERE id_person='{$profile->id}'");
 
 		// get the records from the db
 		$listOfNotes = Connection::query("
 			SELECT
 				A.id, A.id_person, A.text, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country, B.online,
-				C.reputation,
+				C.reputation, C.avatar,
 				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$profile->id}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$profile->id}' AND action='unlike') > 0 AS isunliked
 			FROM (
 				SELECT * FROM _pizarra_notes subq2 INNER JOIN (
 					SELECT max(id) as idx FROM _pizarra_notes
-					WHERE (topic1='$topic' OR topic2='$topic' OR topic3='$topic')
-					AND active=1
+					$where
 					GROUP BY id_person
 					) subq
 				ON subq.idx = subq2.id
@@ -862,6 +846,22 @@ class Service
 		return $notes;
 	}
 
+	private function prepareMyUser($profile){
+		$myUser = q("SELECT reputation, avatar FROM _pizarra_users WHERE id_person='{$profile->id}'");
+		if(empty($myUser)){
+			// create the user in the table if do not exist
+			q("INSERT IGNORE INTO _pizarra_users (id_person) VALUES ('{$profile->id}')");
+			$myUser = q("SELECT reputation, avatar FROM _pizarra_users WHERE id_person='{$profile->id}'")[0];
+		} else $myUser = $myUser[0];
+
+		$myUser->username = $profile->username;
+		$myUser->gender = $profile->gender;
+		$myUser->location = empty($profile->province) ? "Cuba" : ucwords(strtolower(str_replace("_", " ", $profile->province)));
+		$myUser->avatar = empty($myUser->avatar) ? ($myUser->gender == "M" ? "man" : ($myUser->gender == "F" ? "woman" : "user")) : $myUser->avatar;
+
+		return $myUser;
+	}
+
 	/**
 	 * Format note to be send to the view
 	 *
@@ -898,13 +898,10 @@ class Service
 			$topics[] = $note->topic3;
 		}
 
-		// get the path to the root
-		$di = \Phalcon\DI\FactoryDefault::getDefault();
-		$wwwroot = $di->get('path')['root'];
+		$avatar = empty($note->avatar) ? ($note->gender == "M" ? "man" : ($note->gender == "F" ? "woman" : "user")) : $note->avatar;
 
 		// get the country and flag
 		$country = empty(trim($note->country)) ? "cu" : strtolower($note->country);
-		$flag = "$wwwroot/public/images/flags/$country.png";
 
 		// remove \" and \' from the note
 		$note->text = str_replace('\"', '"', $note->text);
@@ -920,9 +917,8 @@ class Service
 			"username" => $note->username,
 			"location" => $location,
 			"gender" => $note->gender,
-			"picture" => empty($note->picture) ? "$wwwroot/public/images/user.jpg" : "$wwwroot/public/profile/{$note->picture}.jpg",
 			"text" => $note->text,
-			"inserted" => date_format((new DateTime($note->inserted)), 'd/m/Y - h:i a'),
+			"inserted" => date_format((new DateTime($note->inserted)), 'd/m/Y · h:i a'),
 			"likes" => isset($note->likes) ? $note->likes : 0,
 			"unlikes" => isset($note->unlikes) ? $note->unlikes : 0,
 			"comments" => isset($note->comments) ? $note->comments : 0,
@@ -931,7 +927,7 @@ class Service
 			"ad" => isset($note->ad) ? $note->ad : false,
 			"online" => isset($note->online) ? $note->online : false,
 			"country" => $country,
-			"flag" => $flag,
+			"avatar" => $avatar,
 			"topics" => $topics,
 			'canmodify' => $note->id_person == $id,
 		];

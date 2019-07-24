@@ -1,6 +1,109 @@
-a > span{
-    color: #039be5;
-    font-size: 1.2em;
+.pizarra-color{
+	background: #285da0;
+}
+
+.pizarra-color-text{
+	color: #285da0;
+}
+
+a, a > span{
+	color: #285da0 !important;
+}
+
+#notes .col{
+	padding: 0 1.5rem;
+}
+
+#notes .col .row{
+	margin-left: -1.5rem;
+	margin-right: -1.5rem;
+}
+
+#notes img{
+	left: 0;
+}
+
+#note-actions, #note-actions *{
+	padding-left: 0 !important;
+}
+
+#note-actions i{
+	font-size: 1.25rem;
+}
+
+.collection, .collection-item{
+	border: none !important;
+}
+
+.collection-item.avatar{
+	padding: 10px 38px 10px 46px !important;
+}
+
+.collection-item.avatar p {
+	margin: 3px 0 !important;
+}
+
+b{
+	font-weight: 500 !important;
+}
+
+.footer{
+	position: fixed;
+	bottom: 0;
+}
+
+.footer > .row{
+	margin: 0;
+}
+
+#top-avatar{
+	border-radius: 50%;
+	height: 32px;
+	width: 32px;
+	vertical-align: sub;
+	margin-left: 14px;
+}
+
+#avatar-info{
+	position: absolute;
+	left: 67px;
+	font-size: 16px;
+	line-height: 16px;
+	top: 14px;
+}
+
+#writeModal{
+	position: fixed;
+	bottom: 0;
+	z-index: 999;
+	height: 100%;
+	background: white;
+}
+
+#writeModal textarea{
+	width: calc(100% - 28px);
+	border: none;
+}
+
+#writeModal > .row{
+	height: 100%;
+}
+
+#writeModal > .row > .col{
+	height: calc(100% - 40px);
+}
+
+#writeModal > .row > i:first-child{
+	position: absolute;
+	top: 10px;
+	right: 10px;
+}
+
+#writeModal .actions{
+	position: absolute;
+	width: 100%;
+	padding: 10px;
+	bottom: 0;
 }
 
 .text-medium {
