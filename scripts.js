@@ -1,7 +1,8 @@
 $(document).ready(function () {
 	$('.fixed-action-btn').floatingActionButton();
 	$('.modal').modal();
-	$('.materialboxed').materialbox();
+	$('select').formSelect();
+
 	M.FloatingActionButton.init($('.click-to-toggle'), {
 		direction: 'left',
 		hoverEnabled: false
@@ -13,8 +14,8 @@ $(document).ready(function () {
 			$("#editar").click(function () {
 				return apretaste.send({"command": "PERFIL EDITAR"})
 			});
-		}
-		else {
+			$('.footer').addClass('hide');
+		} else {
 			$("#chat").click(function () {
 				apretaste.send({
 					"command": 'CHAT',
@@ -37,26 +38,74 @@ $(document).ready(function () {
 		});
 	}
 
-	if(typeof activeIcon != "undefined"){
-		var menuItem = $($('.footer i')[activeIcon-1]);
+	if (typeof activeIcon != "undefined") {
+		var menuItem = $($('.footer i')[activeIcon - 1]);
 		menuItem.removeClass('grey-text');
 		menuItem.removeClass('text-darken-3');
 		menuItem.addClass('pizarra-color-text');
 	}
 
-	if($('.container:not(#writeModal) > .row').length == 3){
-		var h = $('.container:not(#writeModal) > .row')[2].clientHeight+8;
-		$('.fixed-action-btn').css('bottom', h+'px');
+	$(window).resize(() => resizeImg());
+
+	if ($('.container:not(#writeModal) > .row').length == 3) {
+		var h = $('.container:not(#writeModal) > .row')[2].clientHeight + 8;
+		$('.fixed-action-btn').css('bottom', h + 'px');
 	}
+
+	$('#uploadPhoto').click((e) => loadFileToBase64());
+
+	var resizeInterval = setInterval(function(){ // check until the img has the correct size
+		resizeImg();
+		if($('#profile-rounded-img').css('background-size') != 'auto') clearTimeout(resizeInterval);
+	}, 1);
+
+	if(typeof notes != "undefined" || typeof chats != "undefined") $('#searchButton').removeClass('hide');
+	if(typeof chats != "undefined" || typeof chat != "undefined") $('#chatButton').addClass('hide');
+
+	$('#chat-row').parent().css('margin-bottom','0');
 });
+
+function resizeImg() {
+	if (typeof profile == "undefined") return;
+
+	if($('.container:not(#writeModal) > .row').length == 3) $('.container:not(#writeModal) > .row:first-child').css('margin-bottom','0');
+
+	var img = $('#profile-rounded-img');
+	var size = $(window).height() / 4; // picture must be 1/4 of the screen
+	img.height(size);
+	img.width(size);
+
+	var src = img.css('background-image');
+	src = src.search('url') == 0 ? src.replace('url("', '').replace('")', '') : src;
+	var bg = new Image;
+	bg.src = src;
+	if (bg.height >= bg.width) {
+		var scale = bg.height / bg.width;
+		img.css('background-size', size + 'px ' + (size * scale) + 'px');
+	} else {
+		var scale = bg.width / bg.height;
+		img.css('background-size', (size * scale) + 'px ' + size + 'px');
+	}
+
+	img.css('top', (-4 - $(window).height() / 8) + 'px'); // align the picture with the div
+	$('#edit-fields').css('margin-top', (5 - $(window).height() / 8) + 'px'); // move the row before to the top to fill the empty space
+	$('#img-pre').height(img.height() * 0.8); // set the height of the colored div after the photo
+}
+
+function getYears() {
+	var year = new Date().getFullYear();
+	var years = [];
+	for (let i = year - 15; i >= year - 90; i--) years.push(i);
+	return years;
+}
 
 function toggleWriteModal() {
 	var status = $('#writeModal').attr('status');
 
-	if(status == "closed") {
-		if($('.container:not(#writeModal) > .row').length == 3){
+	if (status == "closed") {
+		if ($('.container:not(#writeModal) > .row').length == 3) {
 			var h = $('.container:not(#writeModal) > .row')[0].clientHeight;
-			$('#writeModal').css('height', 'calc(100% - '+h+'px)');
+			$('#writeModal').css('height', 'calc(100% - ' + h + 'px)');
 		}
 
 		$('#writeModal').slideToggle({direction: "up"}).attr('status', 'opened'); //, () => resizeImg() // add this to resize then opened or closed
@@ -72,12 +121,11 @@ function sendNote() {
 	if (note.length >= 20) {
 		apretaste.send({
 			'command': 'PIZARRA ESCRIBIR',
-			'data': {'text': note},
+			'data': {'text': note, 'image': notePicture},
 			'redirect': false,
 			'callback': {'name': 'sendNoteCallback', 'data': note}
 		});
-	}
-	else {
+	} else {
 		showToast('Minimo 20 caracteres');
 	}
 }
@@ -91,8 +139,7 @@ function sendComment() {
 			'redirect': false,
 			'callback': {'name': 'sendCommentCallback', 'data': comment}
 		});
-	}
-	else {
+	} else {
 		showToast('Escriba algo');
 	}
 }
@@ -104,8 +151,7 @@ function searchText() {
 			'command': 'PIZARRA',
 			'data': {'search': search}
 		});
-	}
-	else {
+	} else {
 		showToast('Ingrese algo');
 	}
 }
@@ -133,18 +179,40 @@ function themifyNote() {
 			'redirect': false,
 			'callback': {'name': 'themifyCallback', 'data': theme}
 		});
-	}
-	else {
+	} else {
 		showToast('Ingrese algo');
 	}
+}
+
+// submit the profile informacion
+function submitProfileData() {
+	if(!isMyOwnProfile) return;
+	// get the array of fields and
+	var fields = ['first_name', 'username', 'about_me','gender','year_of_birth', 'highest_school_level','occupation','country','province','usstate','city','religion'];
+
+	// create the JSON of data
+	var data = new Object;
+	fields.forEach(function(field) {
+		var value = $('#'+field).val();
+		if(value && value.trim() != '') data[field] = value;
+	});
+
+	// save information in the backend
+	apretaste.send({
+		"command": "PERFIL UPDATE",
+		"data": data,
+		"redirect": false
+	});
+
+	// show confirmation text
+	M.toast({html: 'Su informacion se ha salvado correctamente'});
 }
 
 function noteLengthValidate() {
 	let note = $('#note').val().trim();
 	if (note.length <= 300) {
 		$('.helper-text').html('Restante: ' + (300 - note.length));
-	}
-	else {
+	} else {
 		$('.helper-text').html('Limite excedido');
 	}
 }
@@ -153,8 +221,7 @@ function commentLengthValidate() {
 	let comment = $('#comment').val().trim();
 	if (comment.length <= 250) {
 		$('.helper-text').html('Restante: ' + (250 - comment.length));
-	}
-	else {
+	} else {
 		$('.helper-text').html('Limite excedido');
 	}
 }
@@ -165,7 +232,7 @@ function like(id, type) {
 		'data': {'note': id},
 		'callback': {
 			'name': 'likeCallback',
-			'data': JSON.stringify({'id': id, 'type': type})
+			'data': {'id': id, 'type': type}
 		},
 		'redirect': false
 	});
@@ -189,69 +256,78 @@ function likeCallback(data) {
 }
 
 function sendCommentCallback(comment) {
-	if (myUser.gender == "M") {
-		color = "pizarra-color-text";
-	}
-	else if (myUser.gender == "F") {
-		color = "pink-text";
-	}
-	else {
-		color = "black-text";
-	}
-	let element = `<li class="collection-item">
-        <a class="` + color + `" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@` + myUser.username + `'}});">
-            <b>@` + myUser.username + `</b>
-        </a>&middot;
-        <small class="grey-text">` + myLocation + `</small>&middot;
-        <small class="grey-text">` + new Date(Date.now()).toLocaleString() + `</small>
-        <p>` + comment + `</p>
-    </li>`;
+	var color = myUser.gender == "M" ? "pizarra-color-text" : color = myUser.gender == "F" ? "pink-text" : "black-text";
+
+	let serviceImgPath = $('serviceImgPath').attr('data');
+
+	let element = `
+	<li class="collection-item avatar row" id="last">
+		<div class="col s12">
+			<img src="` + serviceImgPath + myUser.avatar + `.png" alt="Avatar" class="circle">
+			<span class="title">
+				<a class="` + color + `" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'` + myUser.username + `'}});">
+					<b>@` + myUser.username + `</b>
+				</a>
+				<small class="grey-text text-darken-3">` + myUser.location + ` · ` + new Date(Date.now()).toLocaleString() + `</small>
+			</span>
+			
+			<p>` + comment + `</p>
+				<div class="col s10" id="note-actions">
+					<div class="col s4">
+						<a class="like" onclick="like('last','like');">
+							<i class="material-icons">thumb_up</i>
+							<span>0</span>
+						</a>
+					
+					</div>
+						<div class="col s4">
+							<a class="unlike" onclick="like('last','unlike')">
+								<i class="material-icons">thumb_down</i>
+								<span>o</span>
+							</a>
+						</div>
+				</div>
+			</div>
+		</li>`;
 
 	$('#comments').append(element);
-	showToast('Comentario enviado');
+
+	$('#comment').val('');
 
 	$('html, body').animate({
-		scrollTop: $("li:last-of-type").offset().top
+		scrollTop: $("#last").offset().top
 	}, 1000);
 }
 
 function sendNoteCallback(note) {
-	if (myUser.gender == "M") {
-		color = "pizarra-color-text";
-	}
-	else if (myUser.gender == "F") {
-		color = "pink-text";
-	}
-	else {
-		color = "black-text";
-	}
+	var color = myUser.gender == "M" ? "pizarra-color-text" : color = myUser.gender == "F" ? "pink-text" : "black-text";
 
 	let serviceImgPath = $('serviceImgPath').attr('data');
 	let topics = note.match(/(^|\B)#(?![0-9_]+\b)([a-zA-Z0-9_]{1,30})(\b|\r)/g);
 	let htmlTopics = "";
 	topics = topics.splice(0, 3);
 
-	topics.forEach(function(topic){
-		topic = topic.replace('#','');
+	topics.forEach(function (topic) {
+		topic = topic.replace('#', '');
 		htmlTopics += `
-			<a onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'`+topic+`'}})">
-				<b>#`+topic+`</b>
+			<a onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'` + topic + `'}})">
+				<b>#` + topic + `</b>
 			</a>&nbsp;`;
 	});
 
 	let element = `
 	<li class="collection-item avatar row" id="last">
-		<img src="`+serviceImgPath+myUser.avatar+`.png" alt="Avatar" class="circle">
+		<img src="` + serviceImgPath + myUser.avatar + `.png" alt="Avatar" class="circle">
 		<span class="title">
-			<a class="`+color+`" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'`+myUser.username+`'}});">
-				<b>@`+myUser.username+`</b>
+			<a class="` + color + `" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'` + myUser.username + `'}});">
+				<b>@` + myUser.username + `</b>
 			</a>
-			<small class="grey-text text-darken-3">`+myUser.location+` · `+new Date(Date.now()).toLocaleString()+`</small>
+			<small class="grey-text text-darken-3">` + myUser.location + ` · ` + new Date(Date.now()).toLocaleString() + `</small>
 		</span>
 		
 		<p>` + note + `</p>
 		<p>
-			`+htmlTopics+`
+			` + htmlTopics + `
 			</p>
 			
 			<div class="col s10" id="note-actions">
@@ -299,6 +375,202 @@ function themifyCallback(theme) {
 	}
 }
 
+var notePicture;
+
+function sendFile(base64File) {
+	notePicture = base64File;
+	var notePictureSrc = "data:image/jpg;base64," + base64File;
+	if ($('#notePicture').length == 0) {
+		$('#writeModal > .row > .col').append('<img id="notePicture" class="responsive-img"/>');
+	}
+
+	$('#notePicture').attr('src', notePictureSrc);
+}
+
 function showToast(text) {
 	M.toast({html: text});
+}
+
+String.prototype.firstUpper = function () {
+	return this.charAt(0).toUpperCase() + this.substr(1).toLowerCase();
+};
+
+String.prototype.replaceAll = function (search, replacement) {
+	return this.split(search).join(replacement);
+};
+
+// get list of countries to display
+function getCountries() {
+	return [
+		{code: 'cu', name: 'Cuba'},
+		{code: 'us', name: 'Estados Unidos'},
+		{code: 'es', name: 'Espana'},
+		{code: 'it', name: 'Italia'},
+		{code: 'mx', name: 'Mexico'},
+		{code: 'br', name: 'Brasil'},
+		{code: 'ec', name: 'Ecuador'},
+		{code: 'ca', name: 'Canada'},
+		{code: 'vz', name: 'Venezuela'},
+		{code: 'al', name: 'Alemania'},
+		{code: 'co', name: 'Colombia'},
+		{code: 'OTRO', name: 'Otro'}
+	];
+}
+
+///////// CHAT SCRIPTS /////////
+
+var optionsModalActive = false;
+var moved = false;
+var activeChat;
+var activeMessage;
+var activeUsername;
+var timer;
+
+$(() => {
+	if (typeof messages != "undefined") {
+		resizeChat();
+		$(window).resize(() => resizeChat());
+		if(messages.length > 0) $('.chat').scrollTop($('.bubble:last-of-type').offset().top);
+		$('#message').focus();
+		activeChat = id;
+		activeUsername = username;
+
+		setMessagesEventListener();
+		$('.footer').addClass('hide');
+	}
+
+	$('.modal').modal();
+	$('.openchat')
+		.on("touchstart", event => { runTimer(); activeChat = event.currentTarget.id; activeName = event.currentTarget.getAttribute('name'); })
+		.on("touchmove", event => { clearTimeout(timer); moved = true; })
+		.on("touchend", event => { openChat() });
+
+	$('.openchat')
+		.on("mousedown", event => { runTimer(); activeChat = event.currentTarget.id; activeName = event.currentTarget.getAttribute('name'); })
+		.on("mouseup", event => { openChat() });
+});
+
+function openChat() {
+	if (!optionsModalActive && !moved){
+		var firstName = $('#'+activeChat+' .name').html();
+		apretaste.send({ 'command': 'PIZARRA CONVERSACION', 'data': { 'userId': activeChat, 'firstName': firstName }})
+	};
+
+	optionsModalActive = false;
+	moved = false;
+	clearTimeout(timer);
+}
+
+function viewProfile() {
+	apretaste.send({ 'command': 'PIZARRA PERFIL', 'data': { 'id': activeChat } });
+}
+
+function writeModalOpen() {
+	optionsModalActive = false;
+	M.Modal.getInstance($('#optionsModal')).close();
+	M.Modal.getInstance($('#writeMessageModal')).open();
+}
+
+function deleteModalOpen() {
+	optionsModalActive = false;
+	M.Modal.getInstance($('#optionsModal')).close();
+	if(typeof messages == "undefined") $('#deleteModal p').html('¿Esta seguro de eliminar su chat con '+ activeName.trim() +'?');
+	M.Modal.getInstance($('#deleteModal')).open();
+}
+
+function deleteChat(){
+	apretaste.send({
+		'command': 'CHAT BORRAR',
+		'data':{'id':activeChat, 'type': 'chat'},
+		'redirect': false,
+		'callback':{'name':'deleteChatCallback','data':activeChat}
+	})
+}
+
+function deleteMessage(){
+	apretaste.send({
+		'command': 'CHAT BORRAR',
+		'data':{'id':activeMessage, 'type': 'message'},
+		'redirect': false,
+		'callback':{'name':'deleteMessageCallback','data':activeMessage}
+	})
+}
+
+function deleteChatCallback(chatId){
+	$('#'+chatId).remove();
+	showToast('Chat eliminado');
+}
+
+function deleteMessageCallback(messageId){
+	$('#'+messageId).remove();
+	showToast('Mensaje eliminado');
+}
+
+function runTimer() {
+	timer = setTimeout(function () {
+		optionsModalActive = true;
+		M.Modal.getInstance($('#optionsModal')).open();
+	}, 800);
+}
+
+function sendMessage(toService) {
+	var message = $('#message').val().trim();
+	if (message.length > 0) {
+		apretaste.send({
+			'command': "CHAT ESCRIBIR",
+			'data': { 'id': activeChat, 'message': message },
+			'redirect': false,
+			'callback': { 'name': 'sendMessageCallback', 'data': message }
+		});
+	}
+}
+
+function deleteMatchModalOpen(id, name){
+	$('#deleteModal .name').html(name);
+	activeId = id;
+	M.Modal.getInstance($('#deleteModal')).open();
+}
+
+function sendMessageCallback(message) {
+	if (typeof messages != "undefined") {
+		if (messages.length == 0) {
+			// Jquery Bug, fixed in 1.9, insertBefore or After deletes the element and inserts nothing
+			// $('#messageField').insertBefore("<div class=\"chat\"></div>");
+
+			$('#nochats').remove();
+			$('#chat-row').append("<div class=\"chat\"></div>");
+		}
+
+		$('.chat').append(
+			"<div class=\"bubble me\" id=\"last\">" +
+			message +
+			"<br>"+
+			"<small>"+(new Date()).toLocaleString('es-ES')+"</small>"+
+			"</div>"
+		);
+	}
+	else{
+		if(message.length > 70) message = message.substr(0, 70)+'...';
+		$('#'+activeChat+' msg').html(message)
+	}
+	$('#message').val('')
+	setMessagesEventListener();
+}
+
+function resizeChat(){
+	if($('.row').length == 3){
+		$('.chat').height($(window).height() - $($('.row')[0]).outerHeight(true) - $('#messageField').outerHeight(true)-20);
+	}
+	else $('.chat').height($(window).height() - $('#messageField').outerHeight(true)-20);
+}
+
+function setMessagesEventListener(){
+	$('.bubble')
+		.on("touchstart", event => { runTimer(); activeMessage = event.currentTarget.id; })
+		.on("touchmove", event => { clearTimeout(timer); moved = true; })
+		.on("touchend", event => { clearTimeout(timer); });
+
+	$('.bubble')
+		.on("mousedown", event => { runTimer(); activeMessage = event.currentTarget.id; })
+		.on("mouseup", event => { clearTimeout(timer); });
 }

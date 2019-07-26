@@ -24,7 +24,7 @@ class Service
 		// get the user's profile
 		$profile = $request->person;
 
-		$myUser = $this->prepareMyUser($request->person);
+		$myUser = $this->preparePizarraUser($request->person);
 
 		// get notes if searched by topic
 		if($searchType == "topic")
@@ -267,7 +267,8 @@ class Service
 
 		$content = [
 			'note' => $note,
-			'myUser' => $this->prepareMyUser($request->person)
+			'myUser' => $this->preparePizarraUser($request->person),
+			'activeIcon' => 1
 		];
 
 		$response->setLayout('pizarra.ejs');
@@ -447,17 +448,18 @@ class Service
 		$response->SetTemplate("topics.ejs", [
 			"topics" => $topics,
 			"users" => $users,
-			'myUser' => $this->prepareMyUser($request->person)
+			'myUser' => $this->preparePizarraUser($request->person)
 		], $images);
 	}
 
 	/**
 	 * Show the user profile
 	 *
-	 * @author salvipascual
-	 *
 	 * @param Request $request
 	 * @param Response $response
+	 * @throws Exception
+	 * @author salvipascual
+	 *
 	 */
 	public function _perfil(Request $request, Response $response)
 	{
@@ -472,8 +474,7 @@ class Service
 			{
 				$response->setLayout('pizarra.ejs');
 				$response->setTemplate('notFound.ejs', [
-					'origin' => 'profile',
-					'num_notifications' => $request->person->notifications,
+					'origin' => 'profile'
 				]);
 
 				return;
@@ -496,33 +497,17 @@ class Service
 			}
 			$person = Social::prepareUserProfile($person);
 		}
-		else
-		{
-			$person = $request->person;
-		}
+		else $person = $request->person;
 
-		// get user's reputation and default topic
-		$user = Connection::query("SELECT * FROM _pizarra_users WHERE id_person='{$person->id}'");
-		$person->reputation = empty($user[0]) ? 0 : $user[0]->reputation;
-		$person->myTopic = empty($user[0]) ? "general" : $user[0]->default_topic;
-
-		// get user topics
-		$person->topics = [];
-		$topics = Connection::query("SELECT * FROM (SELECT `topic` FROM _pizarra_topics WHERE id_person='{$person->id}'  
-		ORDER BY `created` DESC LIMIT 5) A GROUP BY `topic`");
-		if($topics)
-		{
-			foreach($topics as $t)
-			{
-				$person->topics[] = $t->topic;
-			}
-		}
+		$user = $this->preparePizarraUser($person);
+		$person->avatar = $user->avatar;
 
 		// create data for the view
 		$content = [
 			"profile" => $person,
 			"isMyOwnProfile" => $person->id == $request->person->id,
-			'myUser' => $this->prepareMyUser($request->person)
+			'myUser' => $this->preparePizarraUser($request->person),
+			'activeIcon' => 1
 		];
 
 		// get images for the web
@@ -530,6 +515,95 @@ class Service
 
 		$response->setLayout('pizarra.ejs');
 		$response->SetTemplate("profile.ejs", $content, $images);
+	}
+
+	/**
+	 * Chats lists with matches filter
+	 *
+	 * @author ricardo
+	 * @param Request
+	 * @param Response
+	 */
+
+	public function _chat(Request $request, Response $response)
+	{
+		// get the list of people chating with you
+		$chats = Social::chatsOpen($request->person->id);
+
+		// if no matches, let the user know
+		if(empty($chats)) {
+			$content = [
+				"header"=>"No tiene conversaciones",
+				"icon"=>"sentiment_very_dissatisfied",
+				"text" => "Aún no ha hablado con nadie.",
+				"button" => ["href"=>"PIZARRA", "caption"=>"Inicio"],
+				"title" => "chats",
+				"activeIcon" => 1];
+
+			$response->setLayout('pizarra.ejs');
+			$response->setTemplate('message.ejs', $content);
+			return;
+		}
+
+		foreach ($chats as $chat) {
+			$chat->last_sent = explode(' ', $chat->last_sent)[0];
+			$chat->avatar = $this->preparePizarraUser($chat)->avatar;
+			unset($chat->picture);
+			unset($chat->first_name);
+		}
+
+		$content = [
+			"chats" => $chats,
+			"myUser" => $this->preparePizarraUser($request->person),
+			"activeIcon" => 1
+		];
+
+		$images = [];
+		$pathToService = Utils::getPathToService($response->serviceName);
+		foreach ($chats as $chat) $images[] = "$pathToService/images/{$chat->avatar}.png";
+
+		$response->setLayout('pizarra.ejs');
+		$response->setTemplate("chats.ejs", $content, $images);
+	}
+
+	public function _conversacion(Request $request, Response $response){
+		// get the username of the note
+		$user = Utils::getPerson($request->input->data->userId);
+
+		// check if the username is valid
+		if(!$user){
+			$response->setTemplate("notFound.ejs");
+			return;
+		}
+
+		$messages = Social::chatConversation($request->person->id, $user->id);
+
+		$chats = [];
+
+		foreach ($messages as $message) {
+			$chat = new stdClass();
+			$chat->id = $message->note_id;
+			$chat->username = $message->username;
+			$chat->text = $message->text;
+			$chat->sent = date_format((new DateTime($message->sent)), 'd/m/Y h:i a');
+			$chat->read = date('d/m/Y h:i a', strtotime($message->read));
+			$chat->readed = $message->readed;
+			$chats[] = $chat;
+		}
+
+		$content =  [
+			"messages" => $chats,
+			"username" => $user->username,
+			"myusername" => $request->person->username,
+			"id" => $user->id,
+			"online" => $user->online,
+			"last" => date('d/m/Y h:i a', strtotime($user->last_access)),
+			"title" => $user->first_name,
+			"myUser" => $this->preparePizarraUser($user)
+		];
+
+		$response->setlayout('pizarra.ejs');
+		$response->setTemplate("conversation.ejs", $content);
 	}
 
 	/**
@@ -846,7 +920,7 @@ class Service
 		return $notes;
 	}
 
-	private function prepareMyUser($profile){
+	private function preparePizarraUser($profile){
 		$myUser = q("SELECT reputation, avatar FROM _pizarra_users WHERE id_person='{$profile->id}'");
 		if(empty($myUser)){
 			// create the user in the table if do not exist
@@ -854,6 +928,7 @@ class Service
 			$myUser = q("SELECT reputation, avatar FROM _pizarra_users WHERE id_person='{$profile->id}'")[0];
 		} else $myUser = $myUser[0];
 
+		$myUser->id = $profile->id;
 		$myUser->username = $profile->username;
 		$myUser->gender = $profile->gender;
 		$myUser->location = empty($profile->province) ? "Cuba" : ucwords(strtolower(str_replace("_", " ", $profile->province)));

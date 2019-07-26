@@ -3,7 +3,7 @@
     <nav>
         <div class="nav-wrapper pizarra-color">
             <!--Logo-->
-            <span class="brand-logo left" onclick="apretaste.send({'command':'PIZARRA PERFIL'})">
+            <span class="brand-logo left" onclick="apretaste.send({'command':'PIZARRA PERFIL', 'data':{'username': myUser.username}})">
                 <img src="{{APP_SERVICE_PATH}}/images/<%= myUser.avatar %>.png" alt="Avatar" id="top-avatar">
             </span>
             <span id="avatar-info">
@@ -15,13 +15,13 @@
             </span>
             <!--notifications & profile-->
             <ul class="right">
-                <li>
+                <li class="hide" id="searchButton">
                     <a href="#searchModal" class="black-text modal-trigger">
                         <i class="material-icons white-text">search</i>
                     </a>
                 </li>
-                <li>
-                    <a href="#!" class="black-text" onclick="apretaste.send({'command':'CHAT'})">
+                <li id="chatButton">
+                    <a href="#!" class="black-text" onclick="apretaste.send({'command':' PIZARRA CHAT'})">
                         <i class="material-icons white-text">chat</i>
                     </a>
                 </li>

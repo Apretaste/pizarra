@@ -6,41 +6,66 @@
 	color: #285da0;
 }
 
+.btn-floating:hover{
+	background-color:  #285da0;
+}
+
 a, a > span{
 	color: #285da0 !important;
 }
 
-#notes .col{
+.notes .col{
 	padding: 0 1.5rem;
 }
 
-#notes .col .row{
+.notes .col .row{
 	margin-left: -1.5rem;
 	margin-right: -1.5rem;
 }
 
-#notes img{
-	left: 0;
+.notes img{
+	left: 0 !important;
 }
 
-#note-actions, #note-actions *{
+.notes .actions, .notes .actions *{
 	padding-left: 0 !important;
 }
 
-#note-actions i{
+.notes .actions i{
 	font-size: 1.25rem;
 }
 
-.collection, .collection-item{
+.notes .collection, .notes .collection-item{
 	border: none !important;
 }
 
-.collection-item.avatar{
+.notes .collection-item.avatar{
 	padding: 10px 38px 10px 46px !important;
 }
 
-.collection-item.avatar p {
+.notes .collection-item.avatar p {
 	margin: 3px 0 !important;
+}
+
+#note, #comments > li{
+	padding-right: 0 !important;
+}
+
+#comments{
+	padding: 0 1px;
+	margin-bottom: 56px;
+}
+
+#comments li{
+	border-top: 1px solid #e0e0e0 !important;
+}
+
+#comments img{
+	left: 21px !important;
+}
+
+.divider{
+	width: 100%;
 }
 
 b{
@@ -50,6 +75,7 @@ b{
 .footer{
 	position: fixed;
 	bottom: 0;
+	z-index: 999;
 }
 
 .footer > .row{
@@ -105,6 +131,175 @@ b{
 	padding: 10px;
 	bottom: 0;
 }
+
+img.responsive-img{
+	max-height: 60%;
+}
+
+#profile-rounded-img{
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	position: relative;
+	margin: auto;
+	border: 4px solid white;
+}
+
+#picture-upload-btn{
+	position: absolute;
+	bottom: 5px;
+	right: 0px;
+}
+
+#edit-fields{
+	margin-bottom: 60px;
+}
+
+#edit-fields .input-field:first-child > input{
+	text-align: center;
+	font-size: 1.8rem;
+}
+
+#edit-fields .input-field:first-child > label{
+	width: auto;
+	left: 50%;
+	margin-left: -45px;
+}
+
+/* CHATS */
+
+#chats-list img{
+	width: 48px;
+	height: 48px;
+	left: 23px;
+	top: 20%;
+}
+
+#chats-list .collection-item.avatar {
+	min-height: 65px !important;
+}
+
+#chats-list li:not(:last-child){
+	border-bottom: 1px solid grey;
+}
+
+#chats-list, #noti-list{
+	border: none;
+}
+
+p#nochats{
+	position: absolute;
+	top: 50%;
+	left: calc(50% - 160px);
+}
+
+#chats-list .secondary-content{
+	right: 20px;
+	top: 20px;
+}
+
+.online-icon{
+	font-size:12px;
+	position: absolute;
+	left: 60px;bottom: 8px;
+	color: #1af10b;
+}
+
+msg{
+	word-break: break-word;
+}
+
+.chat {
+	overflow:auto;
+	margin: 10px 0;
+}
+
+html {
+	overflow-x: hidden;
+}
+
+.bubble{
+	display: inline-block;
+	padding: 5px 9px;
+	position: relative;
+	vertical-align: top;
+	clear: both;
+	word-break: break-word;
+	max-width: 75%;
+}
+
+.bubble::before {
+	content: "\00a0";
+	display: block;
+	height: 16px;
+	position: absolute;
+	top: 0;
+	width:  20px;
+	z-index: -1;
+}
+
+.bubble small{
+	float: right;
+}
+
+.you {
+	float: left;
+	margin: 5px 45px 5px 20px;
+	background-color: #688cbc;
+}
+
+.you::before {
+	left: -4px;
+	background-color: #688cbc;
+	transform:             rotate( 54deg ) skew( -35deg );
+	-moz-transform:    rotate( 54deg ) skew( -35deg );
+	-ms-transform:     rotate( 54deg ) skew( -35deg );
+	-o-transform:      rotate( 54deg ) skew( -35deg );
+	-webkit-transform: rotate( 54deg ) skew( -35deg );
+}
+
+.me {
+	float: right;
+	margin: 5px 20px 5px 45px;
+	background-color: #e5e5e5;
+}
+
+.me::before {
+	right: -4px;
+	background-color: #e5e5e5;
+	transform:             rotate( 0deg ) skew( -35deg );
+	-moz-transform:    rotate( 0deg ) skew( -35deg );
+	-ms-transform:     rotate( 0deg ) skew( -35deg );
+	-o-transform:      rotate( 0deg ) skew( -35deg );
+	-webkit-transform: rotate( 0deg ) skew( -35deg );
+}
+
+#messageField, #messageField textarea, #chat-row{
+	margin-bottom: 0;
+}
+
+#messageField{
+	position: absolute;
+	bottom: 0;
+	box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14),
+	0 3px 1px -2px rgba(0,0,0,0.12),
+	0 1px 5px 0 rgba(0,0,0,0.2);
+}
+
+#messageField textarea{
+	border: none;
+}
+
+.noselect {
+	-webkit-touch-callout: none; /* iOS Safari */
+	-webkit-user-select: none; /* Safari */
+	-khtml-user-select: none; /* Konqueror HTML */
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* Internet Explorer/Edge */
+	user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome and Opera */
+}
+
+/* HERE */
 
 .text-medium {
     font-size: 1em;
@@ -176,9 +371,4 @@ textarea.materialize-textarea:focus:not([readonly])
 input[type="text"]:not(.browser-default):focus:not([readonly]) + label,
 textarea.materialize-textarea:focus:not([readonly]) + label {
     color: #339900;
-}
-
-img.responsive-img, video.responsive-video {
-  max-width: 100%;
-  max-height: 160px;
 }
