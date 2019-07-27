@@ -538,6 +538,7 @@ class Service
 				"text" => "Aún no ha hablado con nadie.",
 				"button" => ["href"=>"PIZARRA", "caption"=>"Inicio"],
 				"title" => "chats",
+				"myUser" => $this->preparePizarraUser($request->person),
 				"activeIcon" => 1];
 
 			$response->setLayout('pizarra.ejs');
