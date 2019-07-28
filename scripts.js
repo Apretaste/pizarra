@@ -120,6 +120,10 @@ function toggleWriteModal() {
 	}
 }
 
+function openSearchModal() {
+	M.Modal.getInstance($('#searchModal')).open();
+}
+
 var activeNote;
 
 function sendNote() {
