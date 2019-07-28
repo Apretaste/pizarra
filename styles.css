@@ -133,7 +133,7 @@ b{
 }
 
 img.responsive-img{
-	max-height: 60%;
+	max-height: 45vh;
 }
 
 #profile-rounded-img{
@@ -163,6 +163,30 @@ img.responsive-img{
 	width: auto;
 	left: 50%;
 	margin-left: -45px;
+}
+
+/* Notifications */
+
+#noti-list .secondary-content{
+	top: 32%;
+	right: 20px;
+}
+
+#noti-list li{
+	padding: 5px 42px 5px 64px;
+}
+
+#noti-list .collection-item.avatar{
+	min-height: 65px !important;
+}
+
+#noti-list > li > i{
+	position: absolute;
+	left: 24px !important
+}
+
+#noti-list i{
+	top: 32%;
 }
 
 /* CHATS */
@@ -213,8 +237,9 @@ msg{
 	margin: 10px 0;
 }
 
-html {
+html, body {
 	overflow-x: hidden;
+	height: 100%;
 }
 
 .bubble{
@@ -299,10 +324,56 @@ html {
                                     supported by Chrome and Opera */
 }
 
+#profile-table td{
+	padding: 5px;
+}
+
+#profile-table tr{
+	border: none;
+}
+
+#profile-table td:first-child{
+	width: 24px;
+	padding-left: 0;
+}
+
+.mini-card img{
+	width: 50px;
+	height: 50px;
+}
+
+.mini-card{
+	height: 140px;
+	border-radius: 10%;
+	box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
+	padding: 8px;
+}
+
+.col.s6:nth-child(odd) > .mini-card{
+	margin: 17px 8px 17px 13px;
+
+}
+
+.col.s6:nth-child(even) > .mini-card{
+	margin: 17px 13px 17px 8px;
+}
+
+#populars-nav{
+	height: 48px;
+	margin-bottom: 1rem;
+}
+
+.vdivider{
+	position: absolute;
+	width: 1px;
+	height: 48px;
+	background-color: #e5e5e5;
+	left: 50%;
+}
 /* HERE */
 
 .text-medium {
-    font-size: 1em;
+    font-size: 1.3em;
 }
 
 .chip.small{

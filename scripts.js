@@ -50,6 +50,8 @@ $(document).ready(function () {
 	if ($('.container:not(#writeModal) > .row').length == 3) {
 		var h = $('.container:not(#writeModal) > .row')[2].clientHeight + 8;
 		$('.fixed-action-btn').css('bottom', h + 'px');
+
+		$('#writeModal .actions').css('bottom', (h-8)+'px');
 	}
 
 	$('#uploadPhoto').click((e) => loadFileToBase64());
@@ -61,6 +63,10 @@ $(document).ready(function () {
 
 	if(typeof notes != "undefined" || typeof chats != "undefined") $('#searchButton').removeClass('hide');
 	if(typeof chats != "undefined" || typeof chat != "undefined") $('#chatButton').addClass('hide');
+	if(typeof populars != "undefined"){
+		if($('.container > .row').length == 3) $('.container> .row:first-child').css('margin-bottom','0');
+		else $('.container> .row:first-child').css('margin-bottom','15px');
+	}
 
 	$('#chat-row').parent().css('margin-bottom','0');
 });
@@ -88,7 +94,7 @@ function resizeImg() {
 	}
 
 	img.css('top', (-4 - $(window).height() / 8) + 'px'); // align the picture with the div
-	$('#edit-fields').css('margin-top', (5 - $(window).height() / 8) + 'px'); // move the row before to the top to fill the empty space
+	$('#edit-fields').css('margin-top', (-10 - $(window).height() / 8) + 'px'); // move the row before to the top to fill the empty space
 	$('#img-pre').height(img.height() * 0.8); // set the height of the colored div after the photo
 }
 
@@ -272,7 +278,7 @@ function sendCommentCallback(comment) {
 			</span>
 			
 			<p>` + comment + `</p>
-				<div class="col s10" id="note-actions">
+				<div class="col s10 actions">
 					<div class="col s4">
 						<a class="like" onclick="like('last','like');">
 							<i class="material-icons">thumb_up</i>
@@ -330,7 +336,7 @@ function sendNoteCallback(note) {
 			` + htmlTopics + `
 			</p>
 			
-			<div class="col s10" id="note-actions">
+			<div class="col s10 actions">
 				<div class="col s4">
 					<a class="like" onclick="like('last','like');">
 						<i class="material-icons">thumb_up</i>
@@ -341,7 +347,7 @@ function sendNoteCallback(note) {
 					<div class="col s4">
 						<a class="unlike" onclick="like('last','unlike')">
 							<i class="material-icons">thumb_down</i>
-							<span>o</span>
+							<span>0</span>
 						</a>
 					</div>
 				<div class="col s4">
@@ -353,7 +359,7 @@ function sendNoteCallback(note) {
 			</div>
 		</li>`;
 
-	$('#notes .collection').prepend(element);
+	$('.notes .collection').prepend(element);
 	showToast('Nota publicada');
 
 	$('#note').val('');
@@ -372,6 +378,39 @@ function themifyCallback(theme) {
 
 	if ($('#' + activeNote + ' .topics').children().length == 3) {
 		$('#' + activeNote + ' .themifyButton').remove();
+	}
+}
+
+function togglePopularsMenu() {
+	var option1 = $('#populars-nav div:nth-child(1) h5');
+	var option2 = $('#populars-nav div:nth-child(2) h5');
+	var option1content = $('#popular-users');
+	var option2content = $('#popular-topics');
+
+	if(option1.hasClass('pizarra-color-text')){
+		option1.removeClass('pizarra-color-text');
+		option1.addClass('black-text');
+
+		option2.attr('onclick','');
+		option1.attr('onclick','togglePopularsMenu()');
+
+		option2.removeClass('black-text');
+		option2.addClass('pizarra-color-text');
+
+		option1content.fadeOut();
+		option2content.fadeIn();
+	}else{
+		option2.removeClass('pizarra-color-text');
+		option2.addClass('black-text');
+
+		option1.attr('onclick','');
+		option2.attr('onclick','togglePopularsMenu()');
+
+		option1.removeClass('black-text');
+		option1.addClass('pizarra-color-text');
+
+		option2content.fadeOut();
+		option1content.fadeIn();
 	}
 }
 
@@ -513,11 +552,11 @@ function runTimer() {
 	}, 800);
 }
 
-function sendMessage(toService) {
+function sendMessage() {
 	var message = $('#message').val().trim();
 	if (message.length > 0) {
 		apretaste.send({
-			'command': "CHAT ESCRIBIR",
+			'command': "PIZARRA MENSAJE",
 			'data': { 'id': activeChat, 'message': message },
 			'redirect': false,
 			'callback': { 'name': 'sendMessageCallback', 'data': message }

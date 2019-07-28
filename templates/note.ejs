@@ -17,6 +17,11 @@
                 <p>
                     <%- note.text %>
                 </p>
+                <div class="center-align">
+                    <%if(note.image){%>
+                    <img id="notePicture" class="responsive-img" src="{{APP_IMAGE_PATH}}/<%=note.image%>"/>
+                    <%}%>
+                </div>
                 <p>
                     <% note.topics.forEach(function(topic){ %>
                         <a onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'<%= topic %>'}})">

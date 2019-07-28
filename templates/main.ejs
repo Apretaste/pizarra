@@ -24,6 +24,9 @@
                     <p>
                         <%- note.text %>
                     </p>
+                    <%if(note.image){%>
+                        <img class="responsive-img" src="{{APP_SERVICE_PATH}}/images/img-prev.png" onclick="apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'<%= note.id %>'}});">
+                    <%}%>
                     <p>
                         <% note.topics.forEach(function(topic){ %>
                             <a onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'<%= topic %>'}})">

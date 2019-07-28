@@ -8,10 +8,10 @@ class Service
 	/**
 	 * To list lastest notes or post a new note
 	 *
-	 * @author salvipascual
-	 *
 	 * @param Request $request
 	 * @param Response $response
+	 * @author salvipascual
+	 *
 	 */
 	public function _main(Request $request, Response &$response)
 	{
@@ -27,22 +27,19 @@ class Service
 		$myUser = $this->preparePizarraUser($request->person);
 
 		// get notes if searched by topic
-		if($searchType == "topic")
-		{
+		if ($searchType == "topic") {
 			$notes = $this->getNotesByTopic($profile, $searchValue);
 			$title = "#$searchValue";
 		}
 
 		// get notes if searched by username
-		if($searchType == "username")
-		{
+		if ($searchType == "username") {
 			$notes = $this->getNotesByUsername($profile, $searchValue);
 			$title = "Notas de @$searchValue";
 		}
 
 		// get notes if searched by keyword
-		if($searchType == "keyword")
-		{
+		if ($searchType == "keyword") {
 			$notes = $this->getNotesByKeyword($profile, $searchValue);
 			$title = $searchValue;
 		}
@@ -54,10 +51,19 @@ class Service
 			GROUP BY topic ORDER BY COUNT(id) DESC LIMIT 10");
 
 		$topics = [];
-		foreach($popularTopics as $topic)
-		{
+		foreach ($popularTopics as $topic) {
 			$topics[] = $topic->topic;
 		}
+
+		$pathToService = Utils::getPathToService($response->serviceName);
+		$images = [];
+		foreach ($notes as &$note) {
+			$note['image'] = !!$note['image'];
+			$images[] = "$pathToService/images/{$note['avatar']}.png";
+		}
+		$images[] = "$pathToService/images/{$myUser->avatar}.png";
+		$images[] = "$pathToService/images/img-prev.png";
+
 		// create variables for the template
 		$content = [
 			"isProfileIncomplete" => $profile->completion < 70,
@@ -69,10 +75,6 @@ class Service
 			'activeIcon' => 1
 		];
 
-		$pathToService = Utils::getPathToService($response->serviceName);
-		$images = [];
-		foreach ($notes as $note) $images[] = "$pathToService/images/{$note->avatar}.png";
-
 		// create the response
 		$response->setLayout('pizarra.ejs');
 		$response->SetTemplate("main.ejs", $content, $images);
@@ -81,40 +83,34 @@ class Service
 	/**
 	 * The user likes a note
 	 *
-	 * @author salvipascual
-	 *
 	 * @param Request $request
 	 * @param Response $response
+	 * @author salvipascual
+	 *
 	 */
 	public function _like(Request $request, Response &$response)
 	{
 		$noteId = $request->input->data->note;
-		if($noteId == "last")
-		{
+		if ($noteId == "last") {
 			$noteId = Connection::query("SELECT MAX(id) AS id FROM _pizarra_notes WHERE id_person = '{$request->person->id}'")[0]->id;
 		}
 		// check if the user already liked this note
 		$res = Connection::query("SELECT * FROM _pizarra_actions WHERE id_person={$request->person->id} AND note='{$noteId}'");
 		$note = Connection::query("SELECT id_person, `text` FROM _pizarra_notes WHERE id='{$noteId}'");
 
-		if(empty($note))
-		{
+		if (empty($note)) {
 			return;
 		}
 
-		if( ! empty($res))
-		{
-			if($res[0]->action == 'unlike')
-			{
+		if (!empty($res)) {
+			if ($res[0]->action == 'unlike') {
 				// delete previos vote and add new vote
 				Connection::query("
 				UPDATE _pizarra_actions SET `action`='like' WHERE id_person='{$request->person->id}' AND note='{$noteId}';
 				UPDATE _pizarra_notes SET likes=likes+1, unlikes=unlikes-1 WHERE id='{$noteId}'");
 
 				return;
-			}
-			else
-			{
+			} else {
 				return;
 			}
 		}
@@ -128,8 +124,7 @@ class Service
 		$note->text = substr($note->text, 0, 30) . '...';
 
 		// create notification for the creator
-		if($request->person->id != $note->id_person)
-		{
+		if ($request->person->id != $note->id_person) {
 			Utils::addNotification($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}", "thumb_up");
 		}
 
@@ -140,40 +135,34 @@ class Service
 	/**
 	 * The user unlikes a note
 	 *
-	 * @author salvipascual
-	 *
 	 * @param Request $request
 	 * @param Response $response
+	 * @author salvipascual
+	 *
 	 */
 	public function _unlike(Request $request, Response $response)
 	{
 		$noteId = $request->input->data->note;
-		if($noteId == "last")
-		{
+		if ($noteId == "last") {
 			$noteId = Connection::query("SELECT MAX(id) AS id FROM _pizarra_notes WHERE id_person = '{$request->person->id}'")[0]->id;
 		}
 		// chekc if the user already liked this note
 		$res = Connection::query("SELECT * FROM _pizarra_actions WHERE id_person={$request->person->id} AND note='{$noteId}'");
 		$note = Connection::query("SELECT id_person, `text` FROM _pizarra_notes WHERE id='{$noteId}'");
 
-		if(empty($note))
-		{
+		if (empty($note)) {
 			return;
 		}
 
-		if( ! empty($res))
-		{
-			if($res[0]->action == 'like')
-			{
+		if (!empty($res)) {
+			if ($res[0]->action == 'like') {
 				// delete previos vote and add new vote
 				Connection::query("
 				UPDATE _pizarra_actions SET `action`='unlike' WHERE id_person='{$request->person->id}' AND note='{$noteId}';
 				UPDATE _pizarra_notes SET likes=likes-1, unlikes=unlikes+1 WHERE id='{$noteId}'");
 
 				return;
-			}
-			else
-			{
+			} else {
 				return;
 			}
 		}
@@ -192,23 +181,22 @@ class Service
 	/**
 	 * NOTA subservice
 	 *
-	 * @author salvipascual
-	 *
 	 * @param Request $request
 	 * @param Response $response
+	 * @author salvipascual
+	 *
 	 */
 	public function _nota(Request $request, Response $response)
 	{
 		$noteId = $request->input->data->note;
-		if($noteId == "last")
-		{
+		if ($noteId == "last") {
 			$noteId = Connection::query("SELECT MAX(id) AS id FROM _pizarra_notes WHERE id_person = '{$request->person->id}'")[0]->id;
 		}
 
 		// get the records from the db
 		$result = Connection::query("
 			SELECT
-				A.id, A.id_person, A.text, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
+				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
@@ -216,12 +204,9 @@ class Service
 			WHERE A.id = '$noteId' AND A.active=1");
 
 		// format note
-		if($result)
-		{
+		if ($result) {
 			$note = $this->formatNote($result[0], $request->person->id);
-		}
-		else
-		{
+		} else {
 			$response->setLayout('pizarra.ejs');
 			$response->setTemplate('notFound.ejs', [
 				'origin' => 'note',
@@ -233,8 +218,7 @@ class Service
 
 		//check if the user is blocked by the owner of the note
 		$blocks = Social::isBlocked($request->person->id, $note['id_person']);
-		if($blocks->blocked || $blocks->blockedByMe)
-		{
+		if ($blocks->blocked || $blocks->blockedByMe) {
 			$content = [
 				'username' => $note['username'],
 				'origin' => 'note',
@@ -256,58 +240,78 @@ class Service
 
 		// format comments
 		$comments = [];
-		if($cmts)
-		{
-			foreach($cmts as $c)
-			{
+		if ($cmts) {
+			foreach ($cmts as $c) {
 				$comments[] = $this->formatNote($c, $request->person->id);
 			}
 		}
 		$note['comments'] = $comments;
 
+		$myUser = $this->preparePizarraUser($request->person);
+
+		$images = [];
+		$pathToService = Utils::getPathToService($response->serviceName);
+		$images[] = "$pathToService/images/{$note['avatar']}.png";
+		$images[] = "$pathToService/images/{$myUser->avatar}.png";
+		if($note['image']) $images[] = $note['image'];
+
 		$content = [
 			'note' => $note,
-			'myUser' => $this->preparePizarraUser($request->person),
+			'myUser' => $myUser,
 			'activeIcon' => 1
 		];
 
 		$response->setLayout('pizarra.ejs');
-		$response->SetTemplate("note.ejs", $content);
+		$response->SetTemplate("note.ejs", $content, $images);
 	}
 
 	/**
 	 * Post a new note to the public feed
 	 *
-	 * @author salvipascual
-	 *
 	 * @param Request $request
 	 * @param Response $response
+	 * @author salvipascual
+	 *
 	 */
 	public function _escribir(Request $request, Response &$response)
 	{
 		$text = strip_tags($request->input->data->text);
+		$image = isset($request->input->data->image) ? $request->input->data->image : false;
+
+		if($image){
+			// get the image name and path
+			$wwwroot  = FactoryDefault::getDefault()->get('path')['root'];
+			$fileName = Utils::generateRandomHash();
+			$filePath = "$wwwroot/public/content/$fileName.jpg";
+
+			// save the optimized image on the user folder
+			file_put_contents($filePath, base64_decode($image));
+			Utils::optimizeImage($filePath);
+		} else $fileName = 'NULL';
 
 		// only post notes with real content
-		if(strlen($text) < 20)
-		{
+		if (strlen($text) < 20) {
 			return;
 		}
 
 		// get all the topics from the post
 		preg_match_all('/#\w*/', $text, $topics);
+		$topics = $topics[0];
 		$topic1 = isset($topics[0]) ? str_replace("#", "", $topics[0]) : "";
 		$topic2 = isset($topics[1]) ? str_replace("#", "", $topics[1]) : "";
 		$topic3 = isset($topics[2]) ? str_replace("#", "", $topics[2]) : "";
 
 		// save note to the database
 		$cleanText = Connection::escape($text, 300);
+
+
 		$noteID = Connection::query("
-			INSERT INTO _pizarra_notes (id_person, `text`, topic1, topic2, topic3)
-			VALUES ('{$request->person->id}', '$cleanText', '$topic1', '$topic2', '$topic3')");
+		INSERT INTO _pizarra_notes (id_person, `text`, image, topic1, topic2, topic3)
+		VALUES ('{$request->person->id}', '$cleanText', '$fileName', '$topic1', '$topic2', '$topic3')");
+
 
 		// save the topics to the topics table
-		foreach($topics as $topic)
-		{
+		foreach ($topics as $topic) {
 			$topic = str_replace("#", "", $topic);
 			$topic = Connection::escape($topic, 20);
 			Connection::query("
@@ -317,51 +321,43 @@ class Service
 
 		// notify users mentioned
 		$mentions = $this->findUsersMentionedOnText($text);
-		foreach($mentions as $m)
-		{
+		$color = $request->person->gender == "M" ? "pizarra-color-text" : ($request->person->gender == "F" ? "pink-text" : "black-text");
+		foreach ($mentions as $m) {
 			$blocks = Social::isBlocked($request->person->id, $m->id);
-			if($blocks->blocked > 0)
-			{
+			if ($blocks->blocked > 0) {
 				continue;
 			}
-			Utils::addNotification($m->id, "El usuario @{$request->person->username} le ha mencionado en la pizarra", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteID'}", "comment");
+			Utils::addNotification($m->id, "<span class='$color'>@{$request->person->username}</span> le ha mencionado", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteID'}", "comment");
 		}
 	}
 
 	/**
 	 * Post a new note to the public feed
 	 *
-	 * @author salvipascual
-	 *
 	 * @param Request $request
 	 * @param Response $response
+	 * @author salvipascual
+	 *
 	 */
 	public function _comentar(Request $request, Response $response)
 	{
 		$comment = $request->input->data->comment;
 		$noteId = $request->input->data->note;
 
-		if(strlen($comment) < 2)
-		{
+		if (strlen($comment) < 2) {
 			return;
 		}
 
 		// check the note ID is valid
 		$note = Connection::query("SELECT email,`text`,id_person FROM _pizarra_notes WHERE id='$noteId' AND active=1");
-		if($note)
-		{
+		if ($note) {
 			$note = $note[0];
-		}
-		else
-		{
+		} else {
 			return;
 		}
 
 		$blocks = Social::isBlocked($request->person->id, $note->id_person);
-		if($blocks->blocked)
-		{
-			return;
-		}
+		if ($blocks->blocked) return;
 
 		// save the comment
 		$comment = Connection::escape($comment, 200);
@@ -371,20 +367,18 @@ class Service
 
 		// notify users mentioned
 		$mentions = $this->findUsersMentionedOnText($comment);
-		foreach($mentions as $mention)
-		{
+		foreach ($mentions as $mention) {
 			$blocks = Social::isBlocked($request->person->id, $mention->id);
-			if($blocks->blocked || $blocks->blockedByMe)
-			{
+			if ($blocks->blocked || $blocks->blockedByMe) {
 				continue;
 			}
 			Utils::addNotification($mention->id, "El usuario @{$request->person->username} le ha mencionado en la pizarra", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}", "comment");
 		}
 
 		// send a notificaction to the owner of the note
-		$note->text = substr($note->text, 0, 20) . '...';
-		if($request->person->id != $note->id_person){
-			Utils::addNotification($note->id_person, "El usuario @{$request->person->username} ha comentado en su nota: {$note->text}", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}", "comment");
+		$color = $request->person->gender == "M" ? "pizarra-color-text" : ($request->person->gender == "F" ? "pink-text" : "black-text");
+		if ($request->person->id != $note->id_person) {
+			Utils::addNotification($note->id_person, "<span class='$color'>@{$request->person->username}</span> ha comentado tu publicación", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}", "comment");
 		}
 	}
 
@@ -406,21 +400,19 @@ class Service
 			AND topic <> 'general'
 			GROUP BY topic ORDER BY cnt DESC LIMIT 50");
 
-		// get params for the algorith
+		// get params for the algorithm
 		$maxLetterSize = 30;
 		$minLetterSize = 10;
 		$maxTopicMentions = $ts[0]->cnt;
 		$minTopicMentions = $ts[count($ts) - 1]->cnt;
 		$rate = ($maxTopicMentions - $minTopicMentions) / ($maxLetterSize - $minLetterSize);
-		if($rate === 0)
-		{
+		if ($rate === 0) {
 			$rate = 1;
 		} // avoid divisions by zero
 
 		// get topics letter size and color
 		$topics = [];
-		foreach($ts as $t)
-		{
+		foreach ($ts as $t) {
 			$topic = new stdClass();
 			$topic->name = $t->name;
 			$topic->size = (($t->cnt - $minTopicMentions) / $rate) + $minLetterSize;
@@ -430,26 +422,78 @@ class Service
 		// set topics in random order
 		shuffle($topics);
 
+		$myUser = $this->preparePizarraUser($request->person);
+
 		// get the list of most popular users
-		$users = [];
+		$populars = Connection::query("SELECT A.id_person, A.reputation, A.avatar, B.username, B.gender, B.online FROM _pizarra_users A JOIN person B ON A.id_person = B.id ORDER BY reputation DESC LIMIT 10");
+		$pathToService = Utils::getPathToService($response->serviceName);
 		$images = [];
-		$popuplar = Connection::query("SELECT id_person, reputation FROM _pizarra_users ORDER BY reputation DESC LIMIT 10");
-		foreach($popuplar as $p)
-		{
-			$user = Social::prepareUserProfile((Utils::getPerson($p->id_person)));
-			$user->reputation = $p->reputation;
-			$users[] = $user;
-			if($user->picture)
-			{
-				$images[] = $user->picture;
-			}
+		foreach ($populars as $popular){
+			$popular->avatar = empty($popular->avatar) ? ($popular->gender == "M" ? "man" : ($popular->gender == "F" ? "woman" : "user")) : $popular->avatar;
+			$images[] = "$pathToService/images/{$popular->avatar}.png";
 		}
+
+		$images[] = "$pathToService/images/{$myUser->avatar}.png";
+
 		$response->setLayout('pizarra.ejs');
-		$response->SetTemplate("topics.ejs", [
+		$response->SetTemplate("populars.ejs", [
 			"topics" => $topics,
-			"users" => $users,
-			'myUser' => $this->preparePizarraUser($request->person)
+			"populars" => $populars,
+			'myUser' => $myUser,
+			'activeIcon' => 2
 		], $images);
+	}
+
+	/**
+	 * Show a list of notifications
+	 *
+	 * @author salvipascual
+	 * @param Request
+	 * @param Response
+	 */
+	public function _notificaciones (Request $request, Response $response)
+	{
+		// get all unread notifications
+		$notifications = Connection::query("
+			SELECT id,icon,`text`,link,inserted
+			FROM notification
+			WHERE `to` = {$request->person->id} 
+			AND service = 'pizarra'
+			AND `read` IS NULL
+			ORDER BY inserted DESC");
+
+		$myUser = $this->preparePizarraUser($request->person);
+		$pathToService = Utils::getPathToService($response->serviceName);
+		$images = ["$pathToService/images/{$myUser->avatar}.png"];
+
+		// if no notifications, let the user know
+		if(empty($notifications)) {
+			$content = [
+				"header"=>"Nada por leer",
+				"icon"=>"notifications_off",
+				"text" => "Por ahora usted no tiene ninguna notificación por leer.",
+				"button" => ["href"=>"PIZARRA", "caption"=>"Inicio"],
+				"activeIcon" => 3,
+				"myUser" => $myUser
+			];
+
+			$response->setLayout('pizarra.ejs');
+			return $response->setTemplate('message.ejs', $content, $images);
+		}
+
+		foreach($notifications as $noti) $noti->inserted = strtoupper(date('d/m/Y h:ia', strtotime(($noti->inserted))));
+
+		// prepare content for the view
+		$content = [
+			"notifications" => $notifications,
+			"title" => "Notificaciones",
+			"activeIcon" => 3,
+			"myUser" => $myUser
+		];
+
+		// build the response
+		$response->setLayout('pizarra.ejs');
+		$response->setTemplate('notifications.ejs', $content, $images);
 	}
 
 	/**
@@ -463,19 +507,22 @@ class Service
 	 */
 	public function _perfil(Request $request, Response $response)
 	{
-		if(isset($request->input->data->username))
-		{
+		$myUser = $this->preparePizarraUser($request->person);
+		$pathToService = Utils::getPathToService($response->serviceName);
+		$images = ["$pathToService/images/{$myUser->avatar}.png"];
+
+		if (isset($request->input->data->username) && $request->input->data->username != $request->person->username) {
 			$username = $request->input->data->username;
 			// get the user's profile
 			$person = Utils::getPerson($username);
 
 			// if user do not exist, message the requestor
-			if(empty($person))
-			{
+			if (empty($person)) {
 				$response->setLayout('pizarra.ejs');
 				$response->setTemplate('notFound.ejs', [
-					'origin' => 'profile'
-				]);
+					'origin' => 'profile', 'myUser' => $myUser,
+					'activeIcon' => 1
+				], $images);
 
 				return;
 			}
@@ -483,66 +530,78 @@ class Service
 			//check if the user is blocked
 			$blocks = Social::isBlocked($request->person->id, $person->id);
 
-			if($blocks->blocked || $blocks->blockedByMe)
-			{
+			if ($blocks->blocked || $blocks->blockedByMe) {
 				$content = [
 					'username' => $person->username,
 					'origin' => 'profile',
 					'num_notifications' => $request->person->notifications,
 					'blocks' => $blocks,
+					'myUser' => $myUser,
+					'activeIcon' => 1
 				];
-				$response->SetTemplate("blocked.ejs", $content);
+				$response->SetTemplate("blocked.ejs", $content, $images);
 
 				return;
 			}
 			$person = Social::prepareUserProfile($person);
-		}
-		else $person = $request->person;
+		} else $person = $request->person;
 
 		$user = $this->preparePizarraUser($person);
 		$person->avatar = $user->avatar;
+		$person->reputation = $user->reputation;
 
 		// create data for the view
 		$content = [
 			"profile" => $person,
-			"isMyOwnProfile" => $person->id == $request->person->id,
 			'myUser' => $this->preparePizarraUser($request->person),
 			'activeIcon' => 1
 		];
 
 		// get images for the web
-		$images = [$person->picture];
+		$pathToService = Utils::getPathToService($response->serviceName);
+		$images = ["$pathToService/images/{$person->avatar}.png"];
 
-		$response->setLayout('pizarra.ejs');
-		$response->SetTemplate("profile.ejs", $content, $images);
+		if ($person->id == $request->person->id) {
+			$response->setLayout('pizarra.ejs');
+			$response->SetTemplate("ownProfile.ejs", $content, $images);
+		} else {
+			$this->getTags($person);
+
+			$response->setLayout('pizarra.ejs');
+			$response->SetTemplate("profile.ejs", $content, $images);
+		}
 	}
 
 	/**
 	 * Chats lists with matches filter
 	 *
-	 * @author ricardo
 	 * @param Request
 	 * @param Response
+	 * @author ricardo
 	 */
 
 	public function _chat(Request $request, Response $response)
 	{
+		$myUser = $this->preparePizarraUser($request->person);
+		$pathToService = Utils::getPathToService($response->serviceName);
+		$images = ["$pathToService/images/{$myUser->avatar}.png"];
+
 		// get the list of people chating with you
 		$chats = Social::chatsOpen($request->person->id);
 
 		// if no matches, let the user know
-		if(empty($chats)) {
+		if (empty($chats)) {
 			$content = [
-				"header"=>"No tiene conversaciones",
-				"icon"=>"sentiment_very_dissatisfied",
+				"header" => "No tiene conversaciones",
+				"icon" => "sentiment_very_dissatisfied",
 				"text" => "Aún no ha hablado con nadie.",
-				"button" => ["href"=>"PIZARRA", "caption"=>"Inicio"],
+				"button" => ["href" => "PIZARRA", "caption" => "Inicio"],
 				"title" => "chats",
 				"myUser" => $this->preparePizarraUser($request->person),
 				"activeIcon" => 1];
 
 			$response->setLayout('pizarra.ejs');
-			$response->setTemplate('message.ejs', $content);
+			$response->setTemplate('message.ejs', $content, $images);
 			return;
 		}
 
@@ -555,11 +614,10 @@ class Service
 
 		$content = [
 			"chats" => $chats,
-			"myUser" => $this->preparePizarraUser($request->person),
+			"myUser" => $myUser,
 			"activeIcon" => 1
 		];
 
-		$images = [];
 		$pathToService = Utils::getPathToService($response->serviceName);
 		foreach ($chats as $chat) $images[] = "$pathToService/images/{$chat->avatar}.png";
 
@@ -567,15 +625,22 @@ class Service
 		$response->setTemplate("chats.ejs", $content, $images);
 	}
 
-	public function _conversacion(Request $request, Response $response){
+	public function _conversacion(Request $request, Response $response)
+	{
 		// get the username of the note
 		$user = Utils::getPerson($request->input->data->userId);
 
 		// check if the username is valid
-		if(!$user){
-			$response->setTemplate("notFound.ejs");
+		if (!$user) {
+			$myUser = $this->preparePizarraUser($request->person);
+			$pathToService = Utils::getPathToService($response->serviceName);
+			$images = ["$pathToService/images/{$user->avatar}.png"];
+
+			$response->setTemplate("notFound.ejs", ['myUser' => $myUser], $images);
 			return;
 		}
+
+		$avatar = $this->preparePizarraUser($user)->avatar;
 
 		$messages = Social::chatConversation($request->person->id, $user->id);
 
@@ -592,7 +657,10 @@ class Service
 			$chats[] = $chat;
 		}
 
-		$content =  [
+		$pathToService = Utils::getPathToService($response->serviceName);
+		$images = ["$pathToService/images/{$avatar}.png"];
+
+		$content = [
 			"messages" => $chats,
 			"username" => $user->username,
 			"myusername" => $request->person->username,
@@ -600,20 +668,59 @@ class Service
 			"online" => $user->online,
 			"last" => date('d/m/Y h:i a', strtotime($user->last_access)),
 			"title" => $user->first_name,
-			"myUser" => $this->preparePizarraUser($user)
+			"myUser" => $avatar
 		];
 
 		$response->setlayout('pizarra.ejs');
-		$response->setTemplate("conversation.ejs", $content);
+		$response->setTemplate("conversation.ejs", $content, $images);
+	}
+
+	/**
+	 *
+	 * @author salvipascual
+	 * @param Request
+	 * @param Response
+	 */
+	public function _mensaje(Request $request, Response $response)
+	{
+		if(!isset($request->input->data->id)) return;
+		$userTo = Utils::getPerson($request->input->data->id);
+		if(!$userTo) return;
+		$message = $request->input->data->message;
+
+		$blocks = Social::isBlocked($request->person->id ,$userTo->id);
+		if ($blocks->blocked>0 || $blocks->blockedByMe>0){
+			Utils::addNotification(
+				$request->person->id,
+				"Su mensaje para @{$userTo->username} no pudo ser entregado, es posible que usted haya sido bloqueado por esa persona.",
+				"{}",
+				'error'
+			);
+			return;
+		}
+
+		// store the note in the database
+		$message = Connection::escape($message, 499);
+		Connection::query("INSERT INTO _note (from_user, to_user, `text`) VALUES ({$request->person->id},{$userTo->id},'$message')");
+
+		$color = $request->person->gender == "M" ? "pizarra-color-text" : ($request->person->gender == "F" ? "pink-text" : "black-text");
+
+		// send notification for the app
+		Utils::addNotification(
+			$userTo->id,
+			"<span class='$color'>@{$request->person->username}</span> le ha enviado un mensaje",
+			"{'command':'PIZARRA CONVERSACION', 'data':{'userId':'{$request->person->id}'}}",
+			'message'
+		);
 	}
 
 	/**
 	 * Assign a topic to a note
 	 *
-	 * @author salvipascual
-	 *
 	 * @param Request $request
 	 * @param Response $response
+	 * @author salvipascual
+	 *
 	 */
 	public function _temificar(Request $request, Response $response)
 	{
@@ -624,20 +731,14 @@ class Service
 		// get the note to update
 		$note = Connection::query("SELECT topic1,topic2,topic3 FROM _pizarra_notes WHERE id='$noteId' AND id_person='{$request->person->id}' AND active=1");
 
-		if($note && $topic)
-		{
+		if ($note && $topic) {
 			// save topic in the database
 			$topic = Connection::escape($topic, 20);
-			if(empty($note[0]->topic1))
-			{
+			if (empty($note[0]->topic1)) {
 				$topicToSave = "topic1='$topic'";
-			}
-			elseif(empty($note[0]->topic2))
-			{
+			} elseif (empty($note[0]->topic2)) {
 				$topicToSave = "topic2='$topic'";
-			}
-			else
-			{
+			} else {
 				$topicToSave = "topic3='$topic'";
 			}
 			Connection::query("
@@ -647,10 +748,10 @@ class Service
 	}
 
 	/**
-	 * @author ricardo@apretaste.org
-	 *
 	 * @param Request
 	 * @param Response
+	 * @author ricardo@apretaste.org
+	 *
 	 */
 
 	public function _eliminar(Request $request, Response $response)
@@ -659,16 +760,16 @@ class Service
 		Connection::query(
 			"UPDATE _pizarra_notes SET active=0 
 			WHERE id='$noteId' AND id_person='{$request->person->id}'"
-			);
+		);
 	}
 
 	/**
 	 * Display the help document
 	 *
-	 * @author salvipascual
-	 *
 	 * @param Request $request
 	 * @param Response $response
+	 * @author salvipascual
+	 *
 	 */
 	public function _ayuda(Request $request, Response $response)
 	{
@@ -679,17 +780,16 @@ class Service
 	/**
 	 * Search what type of search the user is doing
 	 *
-	 * @author salvipascual
-	 *
 	 * @param String $search
 	 *
 	 * @return Array ["type", "value"]
+	 * @author salvipascual
+	 *
 	 */
 	private function getSearchType($keyword, $id)
 	{
 		// return topic selected by the user if blank
-		if(empty($keyword))
-		{
+		if (empty($keyword)) {
 			return ["topic", "general"];
 			/*$topic = Connection::query("SELECT default_topic FROM _pizarra_users WHERE id_person='$id'");
 			if(empty($topic[0]->default_topic))
@@ -709,22 +809,17 @@ class Service
 		$oneWord = count(explode(" ", $keyword)) == 1;
 
 		// check if searching for a username
-		if($oneWord && strlen($keyword) > 2 && $keyword[0] == "@")
-		{
+		if ($oneWord && strlen($keyword) > 2 && $keyword[0] == "@") {
 			return ["username", str_replace("@", "", $keyword)];
 		}
 
 		// check if searching for a topic
 		$topicNoHashSymbol = str_replace("#", "", $keyword);
 		$topicExists = Connection::query("SELECT id FROM _pizarra_topics WHERE topic='$topicNoHashSymbol'");
-		if($topicExists)
-		{
+		if ($topicExists) {
 			return ["topic", $topicNoHashSymbol];
-		}
-
-		// else searching for words on a note
-		else
-		{
+		} // else searching for words on a note
+		else {
 			return ["keyword", $keyword];
 		}
 	}
@@ -732,12 +827,12 @@ class Service
 	/**
 	 * Search and return all notes by a topic
 	 *
-	 * @author salvipascual
-	 *
 	 * @param Profile $profile
 	 * @param String $topic
 	 *
 	 * @return Array of notes
+	 * @author salvipascual
+	 *
 	 */
 	private function getNotesByTopic($profile, $topic)
 	{
@@ -748,7 +843,7 @@ class Service
 		// get the records from the db
 		$listOfNotes = Connection::query("
 			SELECT
-				A.id, A.id_person, A.text, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
+				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country, B.online,
 				C.reputation, C.avatar,
 				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
@@ -774,8 +869,7 @@ class Service
 						LIMIT 0,1);");
 
 		// sort results by weight. Too complex and slow in MySQL
-		usort($listOfNotes, function($a, $b)
-		{
+		usort($listOfNotes, function ($a, $b) {
 			$a->score = 100 - $a->hours + $a->comments * 0.2 + ($a->likes - $a->unlikes * 2) + $a->ad * 1000;
 			$b->score = 100 - $b->hours + $b->comments * 0.2 + ($b->likes - $b->unlikes * 2) + $b->ad * 1000;
 
@@ -784,24 +878,20 @@ class Service
 
 		// format the array of notes
 		$notes = [];
-		foreach($listOfNotes as $note)
-		{
+		foreach ($listOfNotes as $note) {
 			$notes[] = $this->formatNote($note, $profile->id); // format the array of notes
-			if(count($notes) > 50)
-			{
+			if (count($notes) > 50) {
 				break;
 			} // only parse the first 50 notes
 		}
 
 		// mark all notes as viewed
 		$viewed = [];
-		foreach($notes as $n)
-		{
+		foreach ($notes as $n) {
 			$viewed[] = $n['id'];
 		}
 		$viewed = implode(",", $viewed);
-		if(trim($viewed) !== '')
-		{
+		if (trim($viewed) !== '') {
 			Connection::query("UPDATE _pizarra_notes SET views=views+1 WHERE id IN ($viewed)");
 		}
 
@@ -812,25 +902,23 @@ class Service
 	/**
 	 * Search and return all notes made by a person
 	 *
-	 * @author salvipascual
-	 *
 	 * @param Profile $profile
 	 * @param String $username
 	 *
 	 * @return Array of notes
+	 * @author salvipascual
+	 *
 	 */
 	private function getNotesByUsername($profile, $username)
 	{
 		$user = Utils::getPerson($username);
-		if( ! $user)
-		{
+		if (!$user) {
 			return [];
 		}
 
 		// check if the person is blocked
 		$blocks = Social::isBlocked($profile->id, $user->id);
-		if($blocks->blocked || $blocks->blockedByMe)
-		{
+		if ($blocks->blocked || $blocks->blockedByMe) {
 			return [];
 		}
 
@@ -848,20 +936,17 @@ class Service
 
 		// format the array of notes
 		$notes = [];
-		foreach($listOfNotes as $note)
-		{
+		foreach ($listOfNotes as $note) {
 			$notes[] = $this->formatNote($note, $profile->id);
 		}
 
 		// mark all notes as viewed
 		$viewed = [];
-		foreach($notes as $n)
-		{
+		foreach ($notes as $n) {
 			$viewed[] = $n['id'];
 		}
 		$viewed = implode(",", $viewed);
-		if(trim($viewed) !== '')
-		{
+		if (trim($viewed) !== '') {
 			Connection::query("UPDATE _pizarra_notes SET views=views+1 WHERE id IN ($viewed)");
 		}
 
@@ -872,12 +957,12 @@ class Service
 	/**
 	 * Search notes by keyword
 	 *
-	 * @author salvipascual
-	 *
 	 * @param Profile $profile
 	 * @param String $keyword
 	 *
 	 * @return Array of notes
+	 * @author salvipascual
+	 *
 	 */
 	private function getNotesByKeyword($profile, $keyword)
 	{
@@ -900,20 +985,17 @@ class Service
 
 		// format the array of notes
 		$notes = [];
-		foreach($listOfNotes as $note)
-		{
+		foreach ($listOfNotes as $note) {
 			$notes[] = $this->formatNote($note, $profile->email);
 		}
 
 		// mark all notes as viewed
 		$viewed = [];
-		foreach($notes as $n)
-		{
+		foreach ($notes as $n) {
 			$viewed[] = $n['id'];
 		}
 		$viewed = implode(",", $viewed);
-		if(trim($viewed) !== '')
-		{
+		if (trim($viewed) !== '') {
 			Connection::query("UPDATE _pizarra_notes SET views=views+1 WHERE id IN ($viewed)");
 		}
 
@@ -921,9 +1003,10 @@ class Service
 		return $notes;
 	}
 
-	private function preparePizarraUser($profile){
+	private function preparePizarraUser($profile)
+	{
 		$myUser = q("SELECT reputation, avatar FROM _pizarra_users WHERE id_person='{$profile->id}'");
-		if(empty($myUser)){
+		if (empty($myUser)) {
 			// create the user in the table if do not exist
 			q("INSERT IGNORE INTO _pizarra_users (id_person) VALUES ('{$profile->id}')");
 			$myUser = q("SELECT reputation, avatar FROM _pizarra_users WHERE id_person='{$profile->id}'")[0];
@@ -941,38 +1024,38 @@ class Service
 	/**
 	 * Format note to be send to the view
 	 *
-	 * @author salvipascual
-	 *
 	 * @param Object $note
 	 *
 	 * @return Array
+	 * @throws Exception
+	 * @author salvipascual
+	 *
 	 */
 	private function formatNote($note, $id)
 	{
 		// get the location
-		if(empty($note->province))
-		{
+		if (empty($note->province)) {
 			$location = "Cuba";
-		}
-		else
-		{
+		} else {
 			$location = ucwords(strtolower(str_replace("_", " ", $note->province)));
 		}
 
 		// crate topics array
 		$topics = [];
-		if(isset($note->topic1) && $note->topic1)
-		{
+		if (isset($note->topic1) && $note->topic1) {
 			$topics[] = $note->topic1;
 		}
-		if(isset($note->topic2) && $note->topic2)
-		{
+		if (isset($note->topic2) && $note->topic2) {
 			$topics[] = $note->topic2;
 		}
-		if(isset($note->topic3) && $note->topic3)
-		{
+		if (isset($note->topic3) && $note->topic3) {
 			$topics[] = $note->topic3;
 		}
+
+		if(isset($note->image) && $note->image){
+			$wwwroot  = FactoryDefault::getDefault()->get('path')['root'];
+			$note->image = "$wwwroot/public/content/{$note->image}.jpg";
+		} else $note->image = false;
 
 		$avatar = empty($note->avatar) ? ($note->gender == "M" ? "man" : ($note->gender == "F" ? "woman" : "user")) : $note->avatar;
 
@@ -984,7 +1067,7 @@ class Service
 		$note->text = str_replace("\'", "'", $note->text);
 		$note->text = str_replace("\\n", "<br>", $note->text);
 
-		while(json_encode($note->text)=="") $note->text = substr($note->text, 0, strlen($note->text)-2);
+		while (json_encode($note->text) == "") $note->text = substr($note->text, 0, strlen($note->text) - 2);
 
 		// add the text to the array
 		$newNote = [
@@ -994,6 +1077,7 @@ class Service
 			"location" => $location,
 			"gender" => $note->gender,
 			"text" => $note->text,
+			"image" => $note->image,
 			"inserted" => date_format((new DateTime($note->inserted)), 'd/m/Y · h:i a'),
 			"likes" => isset($note->likes) ? $note->likes : 0,
 			"unlikes" => isset($note->unlikes) ? $note->unlikes : 0,
@@ -1014,11 +1098,11 @@ class Service
 	/**
 	 * Find all mentions on a text
 	 *
-	 * @author salvipascual
-	 *
 	 * @param String $text
 	 *
 	 * @return Array, [username,email]
+	 * @author salvipascual
+	 *
 	 */
 	private function findUsersMentionedOnText($text)
 	{
@@ -1027,8 +1111,7 @@ class Service
 
 		// filter the ones that exist
 		$return = [];
-		if($matches[0])
-		{
+		if ($matches[0]) {
 			// get string of possible matches
 			$usernames = "'" . implode("','", $matches[0]) . "'";
 			$usernames = str_replace("@", "", $usernames);
@@ -1040,8 +1123,7 @@ class Service
 			$users = Connection::query("SELECT id, email, username FROM person WHERE username in ($usernames)");
 
 			// format the return
-			foreach($users as $user)
-			{
+			foreach ($users as $user) {
 				$object = new stdClass();
 				$object->username = $user->username;
 				$object->email = $user->email;
@@ -1051,5 +1133,40 @@ class Service
 		}
 
 		return $return;
+	}
+
+	private function getTags(&$profile)
+	{
+		$profileTags = [];
+		$professionTags = [];
+
+		$genderLetter = $profile->gender == 'M' ? 'o' : 'a';
+
+		$profileTags[] = $profile->gender == 'M' ? "Hombre" : "Mujer";
+		$profileTags[] = $profile->age . " años";
+		if($profile->religion && $profile->religion != "OTRA") $profileTags[] = substr(strtolower($profile->religion), 0, -1) . $genderLetter;
+
+		$countries = [
+			'cu' => 'Cuba',
+			'us' => 'Estados Unidos',
+			'es' => 'Espana',
+			'it' => 'Italia',
+			'mx' => 'Mexico',
+			'br' => 'Brasil',
+			'ec' => 'Ecuador',
+			'ca' => 'Canada',
+			'vz' => 'Venezuela',
+			'al' => 'Alemania',
+			'co' => 'Colombia',
+			'OTRO' => 'Otro'
+		];
+
+		$profile->country = $countries[$profile->country];
+
+		if( $profile->highest_school_level != "OTRO") $professionTags[] = ucfirst(strtolower($profile->highest_school_level));
+		$professionTags[] = $profile->occupation;
+
+		$profile->profile_tags = implode(', ', $profileTags);
+		$profile->profession_tags = implode(', ', $professionTags);
 	}
 }

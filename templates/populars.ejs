@@ -1,0 +1,34 @@
+<div class="row" style="margin-bottom: 70px;">
+    <nav id="populars-nav" class="valign-wrapper white">
+        <div class="col s6 center-align"><h5 class="pizarra-color-text">Usuarios</h5></div>
+        <div class="col s6 center-align"><h5 onclick="togglePopularsMenu()" class="black-text">Temas</h5></div>
+        <div class="vdivider"></div>
+    </nav>
+
+    <div class="col s12" id="popular-users">
+        <%populars.forEach(function (popular) {%>
+            <% var color = popular.gender == "M" ? "pizarra-color-text" : popular.gender == "F" ? "pink-text" : "black-text"; %>
+            <div class="col s6 m4 l3">
+                <div class="center-align mini-card valign-wrapper center-align" onclick="apretaste.send({'command':'PIZARRA PERFIL', 'data': {'username':'<%=popular.username%>'}});">
+                    <div style="width: 100%;">
+                        <img class="avatar" src="{{APP_SERVICE_PATH}}/images/<%=popular.avatar%>.png" alt="@<%=popular.username%>">
+                        <% if(popular.online == "1"){ %>
+                            <i class="material-icons green-text" style="font-size:10px;">brightness_1</i>
+                        <% } %>
+                        <p class="<%=color%> text-medium" style="margin: 0 8px">@<%=popular.username%></p>
+                        <p class="text-medium" style="margin: 0 8px">★<%=popular.reputation%></p>
+                    </div>
+                </div>
+            </div>
+        <%})%>
+    </div>
+
+    <div class="col s12" id="popular-topics" style="display: none;">
+        <div class="row center-align">
+            <% topics.forEach(function(topic){ %>
+            <a style="font-size: <%= topic.size+3 %>px;" class="pizarra-color-text"
+               onclick="apretaste.send({'command':'PIZARRA','data':{'search':'#<%= topic.name %>'}})">#<%= topic.name %>  </a>
+            <% }); %>
+        </div>
+    </div>
+</div>
