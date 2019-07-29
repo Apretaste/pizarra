@@ -286,7 +286,7 @@ function sendCommentCallback(comment) {
 	let element = `
 	<li class="collection-item avatar row" id="last">
 		<div class="col s12">
-			<img src="` + serviceImgPath + myUser.avatar + `.png" alt="Avatar" class="circle">
+			<div class="avatar circle" style="`+ getAvatar(myUser.avatar, serviceImgPath, 42)+`"></div>
 			<span class="title">
 				<a class="` + color + `" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'` + myUser.username + `'}});">
 					<b>@` + myUser.username + `</b>
@@ -340,7 +340,7 @@ function sendNoteCallback(note) {
 
 	let element = `
 	<li class="collection-item avatar row" id="last">
-		<img src="` + serviceImgPath + myUser.avatar + `.png" alt="Avatar" class="circle">
+		<div class="avatar circle" style="`+getAvatar(myUser.avatar, serviceImgPath, 42)+`"></div>
 		<span class="title">
 			<a class="` + color + `" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'` + myUser.username + `'}});">
 				<b>@` + myUser.username + `</b>

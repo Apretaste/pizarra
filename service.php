@@ -280,7 +280,7 @@ class Service
 			// save the optimized image on the user folder
 			file_put_contents($filePath, base64_decode($image));
 			Utils::optimizeImage($filePath);
-		} else $fileName = 'NULL';
+		} else $fileName = '';
 
 		// only post notes with real content
 		if (strlen($text) < 20) {
