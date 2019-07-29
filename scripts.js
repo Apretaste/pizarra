@@ -4,13 +4,13 @@ var colors = {
 	'Naranja':'#F38200', 'Amarillo':'#FFE600'
 };
 
-var avatars = [
-	'Rockera', 'Tablista', 'Rapero', 'Guapo', 'Bandido', 'Encapuchado', 'Rapear', 'Inconformista', 'Coqueta',
-	'Punk', 'Metalero', 'Rudo', 'Señor', 'Nerd', 'Hombre', 'Cresta', 'Emo', 'Fabulosa', 'Mago', 'Jefe', 'Sensei',
-	'Rubia', 'Dulce', 'Belleza', 'Músico', 'Rap', 'Artista', 'Fuerte', 'Punkie', 'Vaquera', 'Modelo', 'Independiente',
-	'Extraña', 'Hippie', 'Chica Emo', 'Jugadora', 'Sencilla', 'Geek', 'Deportiva', 'Moderna', 'Surfista', 'Señorita',
-	'Rock', 'Genia', 'Gótica', 'Sencillo', 'Hawaiano', 'Ganadero', 'Gótico'
-];
+var avatars = {
+	'Rockera':'M', 'Tablista':'M', 'Rapero':'M', 'Guapo':'M', 'Bandido':'M', 'Encapuchado':'M', 'Rapear':'M', 'Inconformista':'M', 'Coqueta':'M',
+	'Punk':'M', 'Metalero':'M', 'Rudo':'M', 'Señor':'M', 'Nerd':'M', 'Hombre':'M', 'Cresta':'M', 'Emo':'M', 'Fabulosa':'M', 'Mago':'M', 'Jefe':'M', 'Sensei':'M',
+	'Rubia':'M', 'Dulce':'M', 'Belleza':'M', 'Músico':'M', 'Rap':'M', 'Artista':'M', 'Fuerte':'M', 'Punkie':'M', 'Vaquera':'M', 'Modelo':'M', 'Independiente':'M',
+	'Extraña':'M', 'Hippie':'M', 'Chica Emo':'M', 'Jugadora':'M', 'Sencilla':'M', 'Geek':'M', 'Deportiva':'M', 'Moderna':'M', 'Surfista':'M', 'Señorita':'M',
+	'Rock':'M', 'Genia':'M', 'Gótica':'M', 'Sencillo':'M', 'Hawaiano':'M', 'Ganadero':'M', 'Gótico':'M'
+};
 
 
 $(document).ready(function () {
@@ -78,7 +78,7 @@ $(document).ready(function () {
 
 	if(typeof notes != "undefined" || typeof chats != "undefined") $('#searchButton').removeClass('hide');
 	if(typeof chats != "undefined" || typeof chat != "undefined") $('#chatButton').addClass('hide');
-	if(typeof populars != "undefined"){
+	if(typeof populars != "undefined" || $('#colors-nav').length > 0){
 		if($('.container > .row').length == 3) $('.container> .row:first-child').css('margin-bottom','0');
 		else $('.container> .row:first-child').css('margin-bottom','15px');
 	}
@@ -102,7 +102,7 @@ function resizeImg() {
 }
 
 function getAvatar(avatar, serviceImgPath, size) {
-	var index = avatars.indexOf(avatar);
+	var index = Object.keys(avatars).indexOf(avatar);
 	var fullsize = size*7;
 	var x = (index % 7)*size;
 	var y = Math.floor(index/7)*size
@@ -629,4 +629,47 @@ function setMessagesEventListener(){
 	$('.bubble')
 		.on("mousedown", event => { runTimer(); activeMessage = event.currentTarget.id; })
 		.on("mouseup", event => { clearTimeout(timer); });
+}
+
+// Polyfill
+
+if (!Object.keys) {
+	Object.keys = (function() {
+		'use strict';
+		var hasOwnProperty = Object.prototype.hasOwnProperty,
+			hasDontEnumBug = !({ toString: null }).propertyIsEnumerable('toString'),
+			dontEnums = [
+				'toString',
+				'toLocaleString',
+				'valueOf',
+				'hasOwnProperty',
+				'isPrototypeOf',
+				'propertyIsEnumerable',
+				'constructor'
+			],
+			dontEnumsLength = dontEnums.length;
+
+		return function(obj) {
+			if (typeof obj !== 'object' && (typeof obj !== 'function' || obj === null)) {
+				throw new TypeError('Object.keys called on non-object');
+			}
+
+			var result = [], prop, i;
+
+			for (prop in obj) {
+				if (hasOwnProperty.call(obj, prop)) {
+					result.push(prop);
+				}
+			}
+
+			if (hasDontEnumBug) {
+				for (i = 0; i < dontEnumsLength; i++) {
+					if (hasOwnProperty.call(obj, dontEnums[i])) {
+						result.push(dontEnums[i]);
+					}
+				}
+			}
+			return result;
+		};
+	}());
 }

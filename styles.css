@@ -137,6 +137,12 @@ img.responsive-img{
 	max-height: 45vh;
 }
 
+.color{
+	width: 30px;
+	height: 30px;
+	display: inline-block;
+}
+
 #profile-rounded-img{
 	background-position: 50% 50%;
 	background-repeat: no-repeat;

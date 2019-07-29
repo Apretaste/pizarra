@@ -324,6 +324,14 @@ class Service
 		}
 	}
 
+	public function _avatar(Request $request, Response $response){
+		$pathToService = Utils::getPathToService($response->serviceName);
+		$images = ["$pathToService/images/avatars.png"];
+
+		$response->setLayout('pizarra.ejs');
+		$response->setTemplate('avatar_select.ejs', ['myUser' => $this->preparePizarraUser($request->person), 'activeIcon' => 1], $images);
+	}
+
 	/**
 	 * Post a new note to the public feed
 	 *
