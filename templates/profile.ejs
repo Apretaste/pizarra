@@ -2,10 +2,7 @@
 	<div id="img-pre" class="pizarra-color"></div>
 
 	<!-- PICTURE -->
-	<%var src = "{{APP_SERVICE_PATH}}/images/" + profile.avatar + ".png";%>
-	<div id="profile-rounded-img" class="circle" style="background-image: url(<%= src %>);">
-		<!-- EDIT PIC AND HEART BUTTON -->
-	</div>
+	<div id="profile-rounded-img" class="circle" style="<%=getAvatar(profile.avatar, "{{APP_SERVICE_PATH}}/images", ($(window).height() / 4)+8)%>"></div>
 
 	<% var color = profile.gender == "M" ? "pizarra-color-text" : profile.gender == "F" ? "pink-text" : "black-text"; %>
 

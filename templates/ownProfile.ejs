@@ -2,8 +2,7 @@
 	<div id="img-pre" class="pizarra-color"></div>
 
 	<!-- AVATAR -->
-	<%var src = "{{APP_SERVICE_PATH}}/images/" + profile.avatar + ".png";%>
-	<div id="profile-rounded-img" class="circle" style="background-image: url(<%= src %>);">
+	<div id="profile-rounded-img" class="circle" style="<%=getAvatar(profile.avatar, "{{APP_SERVICE_PATH}}/images", ($(window).height() / 4)+8)%>">
 		<!-- EDIT AVATAR BUTTON -->
 		<input id="picturefield" type="file" class="hide"/>
 		<a class="btn-floating white" id="picture-upload-btn" onclick="apretaste.send({'command':'PIZARRA AVATAR'})"><i class="material-icons grey-text text-darken-4">edit</i></a>
@@ -14,7 +13,7 @@
 		<!-- USERNAME -->
 		<div class="input-field col s8 m4 offset-s2 offset-m4">
 			<input id="username" type="text" value="@<%= profile.username %>" class="validate"/>
-			<label for="username">Nombre de usuario</label>
+			<label for="username">Username</label>
 		</div>
 
 		<!-- DESCRIPTION -->

@@ -4,7 +4,7 @@
         <div class="nav-wrapper pizarra-color">
             <!--Logo-->
             <span class="brand-logo left" onclick="apretaste.send({'command':'PIZARRA PERFIL', 'data':{'username': myUser.username}})">
-                <img src="{{APP_SERVICE_PATH}}/images/<%= myUser.avatar %>.png" alt="Avatar" id="top-avatar">
+                <div style="<%=getAvatar(myUser.avatar, "{{APP_SERVICE_PATH}}/images", 32)%>" id="top-avatar"></div>
             </span>
             <span id="avatar-info">
                 <b>
@@ -90,3 +90,5 @@
         <a onclick="deleteNote()" class="modal-close waves-effect waves-green btn-flat">Eliminar</a>
     </div>
 </div>
+
+<%-'<serviceImgPath data="{{APP_SERVICE_PATH}}/images"></serviceImgPath>'%>

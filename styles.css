@@ -23,7 +23,7 @@ a, a > span{
 	margin-right: -1.5rem;
 }
 
-.notes img{
+.notes .avatar{
 	left: 0 !important;
 }
 
@@ -88,6 +88,7 @@ b{
 	width: 32px;
 	vertical-align: sub;
 	margin-left: 14px;
+	margin-top: 30%;
 }
 
 #avatar-info{
@@ -191,7 +192,7 @@ img.responsive-img{
 
 /* CHATS */
 
-#chats-list img{
+#chats-list div.avatar{
 	width: 48px;
 	height: 48px;
 	left: 23px;
@@ -337,9 +338,10 @@ html, body {
 	padding-left: 0;
 }
 
-.mini-card img{
+.mini-card div.avatar{
 	width: 50px;
 	height: 50px;
+	display: inline-block;
 }
 
 .mini-card{
@@ -370,76 +372,11 @@ html, body {
 	background-color: #e5e5e5;
 	left: 50%;
 }
-/* HERE */
 
 .text-medium {
-    font-size: 1.3em;
-}
-
-.chip.small{
-    height: 20px;
-    line-height: 20px;
-    padding: 0 8px;
-}
-
-.img-wrap {
-	width: 100%;
-	height: 200px;
-	position: relative;
-	display: inline-block;
-	overflow: hidden;
-	margin: 0;
-}
-
-.img-wrap img {
-	display: block;
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	min-height: 100%;
-	min-width: 100%;
-	transform: translate(-50%, -50%);
+	font-size: 1.3em;
 }
 
 p{
     word-break: break-word;
-}
-td img{
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-}
-tr:first-child td{
-    padding-bottom: 0;
-}
-tr:last-child td{
-    padding-top: 0;
-}
-#first{
-    max-width: 40%;
-}
-#second-row img{
-    max-width: 80%;
-}
-
-nav.nav-center ul {
-    text-align: center;
-}
-nav.nav-center ul li {
-    display: inline;
-    float: none;
-}
-nav.nav-center ul li a {
-    display: inline-block;
-}
-input[type="text"]:focus:not(.browser-default):focus:not([readonly]),
-textarea.materialize-textarea:focus:not([readonly])
-{
-    border-bottom: #339900;
-    box-shadow: 0 1px 0 0 #339900;
-}
-
-input[type="text"]:not(.browser-default):focus:not([readonly]) + label,
-textarea.materialize-textarea:focus:not([readonly]) + label {
-    color: #339900;
 }

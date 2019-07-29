@@ -56,12 +56,7 @@ class Service
 		}
 
 		$pathToService = Utils::getPathToService($response->serviceName);
-		$images = [];
-		foreach ($notes as &$note) {
-			$note['image'] = !!$note['image'];
-			$images[] = "$pathToService/images/{$note['avatar']}.png";
-		}
-		$images[] = "$pathToService/images/{$myUser->avatar}.png";
+		$images = ["$pathToService/images/avatars.png"];
 		$images[] = "$pathToService/images/img-prev.png";
 
 		// create variables for the template
@@ -249,10 +244,8 @@ class Service
 
 		$myUser = $this->preparePizarraUser($request->person);
 
-		$images = [];
 		$pathToService = Utils::getPathToService($response->serviceName);
-		$images[] = "$pathToService/images/{$note['avatar']}.png";
-		$images[] = "$pathToService/images/{$myUser->avatar}.png";
+		$images = ["$pathToService/images/avatars.png"];
 		if($note['image']) $images[] = $note['image'];
 
 		$content = [
@@ -429,11 +422,10 @@ class Service
 		$pathToService = Utils::getPathToService($response->serviceName);
 		$images = [];
 		foreach ($populars as $popular){
-			$popular->avatar = empty($popular->avatar) ? ($popular->gender == "M" ? "man" : ($popular->gender == "F" ? "woman" : "user")) : $popular->avatar;
-			$images[] = "$pathToService/images/{$popular->avatar}.png";
+			$popular->avatar = empty($popular->avatar) ? ($popular->gender == "M" ? "Hombre" : ($popular->gender == "F" ? "Señorita": "Hombre")) : $popular->avatar;
 		}
 
-		$images[] = "$pathToService/images/{$myUser->avatar}.png";
+		$images = ["$pathToService/images/avatars.png"];
 
 		$response->setLayout('pizarra.ejs');
 		$response->SetTemplate("populars.ejs", [
@@ -462,9 +454,8 @@ class Service
 			AND `read` IS NULL
 			ORDER BY inserted DESC");
 
-		$myUser = $this->preparePizarraUser($request->person);
 		$pathToService = Utils::getPathToService($response->serviceName);
-		$images = ["$pathToService/images/{$myUser->avatar}.png"];
+		$images = ["$pathToService/images/avatars.png"];
 
 		// if no notifications, let the user know
 		if(empty($notifications)) {
@@ -474,7 +465,7 @@ class Service
 				"text" => "Por ahora usted no tiene ninguna notificación por leer.",
 				"button" => ["href"=>"PIZARRA", "caption"=>"Inicio"],
 				"activeIcon" => 3,
-				"myUser" => $myUser
+				"myUser" => $this->preparePizarraUser($request->person)
 			];
 
 			$response->setLayout('pizarra.ejs');
@@ -488,7 +479,7 @@ class Service
 			"notifications" => $notifications,
 			"title" => "Notificaciones",
 			"activeIcon" => 3,
-			"myUser" => $myUser
+			"myUser" => $this->preparePizarraUser($request->person)
 		];
 
 		// build the response
@@ -509,7 +500,7 @@ class Service
 	{
 		$myUser = $this->preparePizarraUser($request->person);
 		$pathToService = Utils::getPathToService($response->serviceName);
-		$images = ["$pathToService/images/{$myUser->avatar}.png"];
+		$images = ["$pathToService/images/avatars.png"];
 
 		if (isset($request->input->data->username) && $request->input->data->username != $request->person->username) {
 			$username = $request->input->data->username;
@@ -553,13 +544,9 @@ class Service
 		// create data for the view
 		$content = [
 			"profile" => $person,
-			'myUser' => $this->preparePizarraUser($request->person),
+			'myUser' => $myUser,
 			'activeIcon' => 1
 		];
-
-		// get images for the web
-		$pathToService = Utils::getPathToService($response->serviceName);
-		$images = ["$pathToService/images/{$person->avatar}.png"];
 
 		if ($person->id == $request->person->id) {
 			$response->setLayout('pizarra.ejs');
@@ -582,12 +569,12 @@ class Service
 
 	public function _chat(Request $request, Response $response)
 	{
-		$myUser = $this->preparePizarraUser($request->person);
-		$pathToService = Utils::getPathToService($response->serviceName);
-		$images = ["$pathToService/images/{$myUser->avatar}.png"];
-
 		// get the list of people chating with you
 		$chats = Social::chatsOpen($request->person->id);
+
+		$myUser = $this->preparePizarraUser($request->person);
+		$pathToService = Utils::getPathToService($response->serviceName);
+		$images = ["$pathToService/images/avatars.png"];
 
 		// if no matches, let the user know
 		if (empty($chats)) {
@@ -597,7 +584,7 @@ class Service
 				"text" => "Aún no ha hablado con nadie.",
 				"button" => ["href" => "PIZARRA", "caption" => "Inicio"],
 				"title" => "chats",
-				"myUser" => $this->preparePizarraUser($request->person),
+				"myUser" => $myUser,
 				"activeIcon" => 1];
 
 			$response->setLayout('pizarra.ejs');
@@ -618,9 +605,6 @@ class Service
 			"activeIcon" => 1
 		];
 
-		$pathToService = Utils::getPathToService($response->serviceName);
-		foreach ($chats as $chat) $images[] = "$pathToService/images/{$chat->avatar}.png";
-
 		$response->setLayout('pizarra.ejs');
 		$response->setTemplate("chats.ejs", $content, $images);
 	}
@@ -640,10 +624,7 @@ class Service
 			return;
 		}
 
-		$avatar = $this->preparePizarraUser($user)->avatar;
-
 		$messages = Social::chatConversation($request->person->id, $user->id);
-
 		$chats = [];
 
 		foreach ($messages as $message) {
@@ -658,7 +639,7 @@ class Service
 		}
 
 		$pathToService = Utils::getPathToService($response->serviceName);
-		$images = ["$pathToService/images/{$avatar}.png"];
+		$images = ["$pathToService/images/avatars.png"];
 
 		$content = [
 			"messages" => $chats,
@@ -668,7 +649,7 @@ class Service
 			"online" => $user->online,
 			"last" => date('d/m/Y h:i a', strtotime($user->last_access)),
 			"title" => $user->first_name,
-			"myUser" => $avatar
+			"myUser" => $this->preparePizarraUser($user)
 		];
 
 		$response->setlayout('pizarra.ejs');
@@ -1016,7 +997,7 @@ class Service
 		$myUser->username = $profile->username;
 		$myUser->gender = $profile->gender;
 		$myUser->location = empty($profile->province) ? "Cuba" : ucwords(strtolower(str_replace("_", " ", $profile->province)));
-		$myUser->avatar = empty($myUser->avatar) ? ($myUser->gender == "M" ? "man" : ($myUser->gender == "F" ? "woman" : "user")) : $myUser->avatar;
+		$myUser->avatar = empty($myUser->avatar) ? ($myUser->gender == "M" ? "Hombre" : ($myUser->gender == "F" ? "Señorita": "Hombre")) : $myUser->avatar;
 
 		return $myUser;
 	}
@@ -1057,7 +1038,7 @@ class Service
 			$note->image = "$wwwroot/public/content/{$note->image}.jpg";
 		} else $note->image = false;
 
-		$avatar = empty($note->avatar) ? ($note->gender == "M" ? "man" : ($note->gender == "F" ? "woman" : "user")) : $note->avatar;
+		$avatar = empty($note->avatar) ? ($note->gender == "M" ? "Hombre" : ($note->gender == "F" ? "Señorita": "Hombre")) : $note->avatar;
 
 		// get the country and flag
 		$country = empty(trim($note->country)) ? "cu" : strtolower($note->country);

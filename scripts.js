@@ -1,3 +1,18 @@
+var colors = {
+	'Azul':'#99F9FF', 'Verde':'#9ADB05',
+	'Rojo':'#FF415B', 'Morado':'#58235E',
+	'Naranja':'#F38200', 'Amarillo':'#FFE600'
+};
+
+var avatars = [
+	'Rockera', 'Tablista', 'Rapero', 'Guapo', 'Bandido', 'Encapuchado', 'Rapear', 'Inconformista', 'Coqueta',
+	'Punk', 'Metalero', 'Rudo', 'Señor', 'Nerd', 'Hombre', 'Cresta', 'Emo', 'Fabulosa', 'Mago', 'Jefe', 'Sensei',
+	'Rubia', 'Dulce', 'Belleza', 'Músico', 'Rap', 'Artista', 'Fuerte', 'Punkie', 'Vaquera', 'Modelo', 'Independiente',
+	'Extraña', 'Hippie', 'Chica Emo', 'Jugadora', 'Sencilla', 'Geek', 'Deportiva', 'Moderna', 'Surfista', 'Señorita',
+	'Rock', 'Genia', 'Gótica', 'Sencillo', 'Hawaiano', 'Ganadero', 'Gótico'
+];
+
+
 $(document).ready(function () {
 	$('.fixed-action-btn').floatingActionButton();
 	$('.modal').modal();
@@ -81,21 +96,19 @@ function resizeImg() {
 	img.height(size);
 	img.width(size);
 
-	var src = img.css('background-image');
-	src = src.search('url') == 0 ? src.replace('url("', '').replace('")', '') : src;
-	var bg = new Image;
-	bg.src = src;
-	if (bg.height >= bg.width) {
-		var scale = bg.height / bg.width;
-		img.css('background-size', size + 'px ' + (size * scale) + 'px');
-	} else {
-		var scale = bg.width / bg.height;
-		img.css('background-size', (size * scale) + 'px ' + size + 'px');
-	}
-
 	img.css('top', (-4 - $(window).height() / 8) + 'px'); // align the picture with the div
 	$('#edit-fields').css('margin-top', (-10 - $(window).height() / 8) + 'px'); // move the row before to the top to fill the empty space
 	$('#img-pre').height(img.height() * 0.8); // set the height of the colored div after the photo
+}
+
+function getAvatar(avatar, serviceImgPath, size) {
+	var index = avatars.indexOf(avatar);
+	var fullsize = size*7;
+	var x = (index % 7)*size;
+	var y = Math.floor(index/7)*size
+	return "background-image: url("+serviceImgPath+"avatars.png);" +
+		"background-size: "+fullsize+"px "+fullsize+"px;" +
+		"background-position: -"+x+"px -"+y+"px;"
 }
 
 function getYears() {

@@ -1,5 +1,3 @@
-<%-'<serviceImgPath data="{{APP_SERVICE_PATH}}/images"></serviceImgPath>'%>
-
 <div class="row notes">
     <div class="col s12">
         Temas populares:
@@ -13,7 +11,7 @@
                 <% if (note.gender == "M") color = "pizarra-color-text"; else if (note.gender == "F") color = "pink-text"; else color = "black-text" %>
 
                 <li class="collection-item avatar row" id="<%=note.id%>">
-                    <img src="{{APP_SERVICE_PATH}}/images/<%=note.avatar%>.png" alt="Avatar" class="circle">
+                    <div class="avatar circle" style="<%=getAvatar(note.avatar, "{{APP_SERVICE_PATH}}/images", 42)%>"></div>
                     <span class="title">
 						<a class="<%= color %>"
                            onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'<%= note.username %>'}});">
