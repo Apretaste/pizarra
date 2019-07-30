@@ -543,7 +543,13 @@ class Service
 				return;
 			}
 			$person = Social::prepareUserProfile($person);
-		} else $person = $request->person;
+		} else {
+			if(isset($request->input->data->avatar)){
+				q("UPDATE _pizarra_users SET avatar = '{$request->input->data->avatar}' WHERE id_person={$request->person->id}");
+				$myUser->avatar = $request->input->data->avatar;
+			}
+			$person = $request->person;
+		}
 
 		$user = $this->preparePizarraUser($person);
 		$person->avatar = $user->avatar;

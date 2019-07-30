@@ -12,8 +12,12 @@
         <%Object.keys(avatars).forEach(function (avatar) {%>
             <% var color = avatars[avatar] == "M" ? "pizarra-color-text" : avatars[avatar] == "F" ? "pink-text" : "black-text"; %>
             <div class="col s6 m4 l3">
-                <div class="center-align mini-card valign-wrapper center-align" onclick="apretaste.send({'command':'PIZARRA PERFIL', 'data': {'username':'<%=avatar.username%>'}});">
-                    <div style="width: 100%;">
+                <div class="center-align mini-card valign-wrapper center-align">
+                    <label class="avatar-checkbox" onclick="setAvatar('<%=avatar%>')">
+                        <input type="checkbox" class="filled-in" <%=avatar == myUser.avatar ? 'checked="checked"' : ""%>/>
+                        <span></span>
+                    </label>
+                    <div>
                         <div class="avatar" style="<%=getAvatar(avatar, "{{APP_SERVICE_PATH}}/images", 50)%>"></div>
                         <p class="<%=color%> text-medium" style="margin: 0 8px"><%=avatar%></p>
                     </div>

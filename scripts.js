@@ -111,6 +111,15 @@ function getAvatar(avatar, serviceImgPath, size) {
 		"background-position: -"+x+"px -"+y+"px;"
 }
 
+function setAvatar(avatar) {
+	apretaste.send({
+		'command': 'PIZARRA PERFIL',
+		'data': {
+			'avatar': avatar
+		}
+	})
+}
+
 function getYears() {
 	var year = new Date().getFullYear();
 	var years = [];

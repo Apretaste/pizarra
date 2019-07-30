@@ -169,7 +169,7 @@ img.responsive-img{
 #edit-fields .input-field:first-child > label{
 	width: auto;
 	left: 50%;
-	margin-left: -45px;
+	margin-left: -25px;
 }
 
 /* Notifications */
@@ -344,17 +344,22 @@ html, body {
 	padding-left: 0;
 }
 
+.mini-card{
+	height: 180px;
+	border-radius: 10%;
+	box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
+	padding: 8px;
+	position: relative;
+}
+
 .mini-card div.avatar{
 	width: 50px;
 	height: 50px;
 	display: inline-block;
 }
 
-.mini-card{
-	height: 140px;
-	border-radius: 10%;
-	box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.2);
-	padding: 8px;
+.mini-card > div{
+	width: 100%;
 }
 
 .col.s6:nth-child(odd) > .mini-card{
@@ -385,4 +390,15 @@ html, body {
 
 p{
     word-break: break-word;
+}
+
+[type="checkbox"].filled-in:checked+span:not(.lever):after {
+	border: 2px solid #285da0;
+	background-color: #285da0;
+}
+
+.avatar-checkbox{
+	position: absolute;
+	top: 10px;
+	right: 0;
 }
