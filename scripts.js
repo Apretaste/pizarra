@@ -106,7 +106,7 @@ function getAvatar(avatar, serviceImgPath, size) {
 	var fullsize = size*7;
 	var x = (index % 7)*size;
 	var y = Math.floor(index/7)*size
-	return "background-image: url("+serviceImgPath+"avatars.png);" +
+	return "background-image: url("+serviceImgPath+"/avatars.png);" +
 		"background-size: "+fullsize+"px "+fullsize+"px;" +
 		"background-position: -"+x+"px -"+y+"px;"
 }
