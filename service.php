@@ -267,7 +267,7 @@ class Service
 	 */
 	public function _escribir(Request $request, Response &$response)
 	{
-		$text = strip_tags($request->input->data->text);
+		$text = $request->input->data->text; // strip_tags
 		$image = isset($request->input->data->image) ? $request->input->data->image : false;
 
 		if($image){
@@ -1058,6 +1058,8 @@ class Service
 		$note->text = str_replace('\"', '"', $note->text);
 		$note->text = str_replace("\'", "'", $note->text);
 		$note->text = str_replace("\\n", "<br>", $note->text);
+
+		$note->text = htmlentities($note->text);
 
 		while (json_encode($note->text) == "") $note->text = substr($note->text, 0, strlen($note->text) - 2);
 

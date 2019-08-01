@@ -139,7 +139,7 @@ function sendComment() {
 			'command': 'PIZARRA COMENTAR',
 			'data': {'comment': comment, 'note': note.id},
 			'redirect': false,
-			'callback': {'name': 'sendCommentCallback', 'data': comment}
+			'callback': {'name': 'sendCommentCallback', 'data': comment.escapeHTML()}
 		});
 	} else {
 		showToast('Escriba algo');
@@ -335,6 +335,8 @@ function sendNoteCallback(note) {
 				<b>#` + topic + `</b>
 			</a>&nbsp;`;
 	});
+
+	note = note.escapeHTML();
 
 	let element = `
 	<li class="collection-item avatar row" id="last">
@@ -671,4 +673,19 @@ if (!Object.keys) {
 			return result;
 		};
 	}());
+}
+
+String.prototype.escapeHTML = function(){
+	var htmlEscapes = {
+		'&': '&amp;',
+		'<': '&lt;',
+		'>': '&gt;',
+		'"': '&quot;',
+		"'": '&#x27;',
+		'/': '&#x2F;'
+	};
+	var htmlEscaper = /[&<>"'\/]/g;
+	return ('' + this).replace(htmlEscaper, function(match) {
+		return htmlEscapes[match];
+	});
 }
