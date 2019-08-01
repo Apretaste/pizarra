@@ -82,12 +82,19 @@ function getAvatar(avatar, serviceImgPath, size) {
 }
 
 function setAvatar(avatar) {
+	if(typeof selectedColor == "undefined") selectedColor = myUser.avatarColor;
 	apretaste.send({
 		'command': 'PIZARRA PERFIL',
 		'data': {
-			'avatar': avatar
+			'avatar': avatar, 'color': selectedColor
 		}
 	})
+}
+
+var selectedColor;
+function changeColor(color){
+	selectedColor = color;
+	$('.mini-card div.avatar').css('background-color', colors[color]);
 }
 
 function getYears() {
@@ -282,7 +289,7 @@ function sendCommentCallback(comment) {
 	let element = `
 	<li class="collection-item avatar row" id="last">
 		<div class="col s12">
-			<div class="avatar circle" style="`+ getAvatar(myUser.avatar, serviceImgPath, 42)+`"></div>
+			<div class="avatar circle" style="`+ getAvatar(myUser.avatar, serviceImgPath, 42)+` background-color: ` + colors[myUser.avatarColor] + `;"></div>
 			<span class="title">
 				<a class="` + color + `" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'` + myUser.username + `'}});">
 					<b>@` + myUser.username + `</b>
@@ -340,7 +347,7 @@ function sendNoteCallback(note) {
 
 	let element = `
 	<li class="collection-item avatar row" id="last">
-		<div class="avatar circle" style="`+getAvatar(myUser.avatar, serviceImgPath, 42)+`"></div>
+		<div class="avatar circle" style="`+getAvatar(myUser.avatar, serviceImgPath, 42)+ ` background-color: ` + colors[myUser.avatarColor] + `;"></div>
 		<span class="title">
 			<a class="` + color + `" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'` + myUser.username + `'}});">
 				<b>@` + myUser.username + `</b>

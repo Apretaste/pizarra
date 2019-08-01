@@ -4,7 +4,7 @@
         <ul class="collection col s12">
             <% if (note.gender == "M") color = "pizarra-color-text"; else if (note.gender == "F") color = "pink-text"; else color = "black-text" %>
             <li class="collection-item avatar row" id="<%=note.id%>" liked="<%=note.liked%>" unliked="<%=note.unliked%>">
-                <div class="avatar circle" style="<%=getAvatar(note.avatar, "{{APP_SERVICE_PATH}}/images", 42)%>"></div>
+                <div class="avatar circle" style="<%=getAvatar(note.avatar, "{{APP_SERVICE_PATH}}/images", 42)%> background-color: <%=colors[note.avatarColor]%>;"></div>
                 <span class="title">
 						<a class="<%= color %>"
                            onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'<%= note.username %>'}});">
@@ -57,7 +57,7 @@
 
             <li class="collection-item avatar row" id="<%=comment.id%>">
                 <div class="col s12">
-                    <div class="avatar circle" style="<%=getAvatar(comment.avatar, "{{APP_SERVICE_PATH}}/images", 42)%>"></div>
+                    <div class="avatar circle" style="<%=getAvatar(comment.avatar, "{{APP_SERVICE_PATH}}/images", 42)%> background-color: <%=colors[comment.avatarColor]%>;"></div>
                     <span class="title">
 						<a class="<%= color %>"
                            onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'<%= comment.username %>'}});">

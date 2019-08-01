@@ -2,7 +2,7 @@
 	<div id="img-pre" class="pizarra-color"></div>
 
 	<!-- PICTURE -->
-	<div id="profile-rounded-img" class="circle" style="<%=getAvatar(profile.avatar, "{{APP_SERVICE_PATH}}/images", ($(window).height() / 4)+8)%>"></div>
+	<div id="profile-rounded-img" class="circle" style="<%=getAvatar(profile.avatar, "{{APP_SERVICE_PATH}}/images", ($(window).height() / 4)+8)%> background-color: <%=colors[profile.avatarColor]%>;"></div>
 
 	<% var color = profile.gender == "M" ? "pizarra-color-text" : profile.gender == "F" ? "pink-text" : "black-text"; %>
 

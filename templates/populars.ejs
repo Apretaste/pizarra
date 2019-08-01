@@ -11,7 +11,7 @@
             <div class="col s6 m4 l3">
                 <div class="center-align mini-card valign-wrapper center-align" onclick="apretaste.send({'command':'PIZARRA PERFIL', 'data': {'username':'<%=popular.username%>'}});">
                     <div style="width: 100%;">
-                        <div class="avatar" style="<%=getAvatar(popular.avatar, "{{APP_SERVICE_PATH}}/images", 50)%>"></div>
+                        <div class="avatar" style="<%=getAvatar(popular.avatar, "{{APP_SERVICE_PATH}}/images", 50)%> background-color: <%=colors[popular.avatarColor]%>;"></div>
                         <% if(popular.online == "1"){ %>
                             <i class="material-icons green-text" style="font-size:10px;">brightness_1</i>
                         <% } %>

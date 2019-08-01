@@ -2,7 +2,7 @@
     <nav id="colors-nav" class="valign-wrapper white">
         <%Object.keys(colors).forEach(function (color){%>
         <div class="col s2 center-align" style="line-height: 1rem;">
-            <div class="color circle" style="background: <%=colors[color]%>;"></div><br>
+            <div class="color circle" style="background: <%=colors[color]%>;" onclick="changeColor('<%=color%>')"></div><br>
             <span class="black-text"><%=color%></span>
         </div>
         <%})%>
@@ -18,7 +18,7 @@
                         <span></span>
                     </label-->
                     <div>
-                        <div class="avatar" style="<%=getAvatar(avatar, "{{APP_SERVICE_PATH}}/images", 50)%>"></div>
+                        <div class="avatar" style="<%=getAvatar(avatar, "{{APP_SERVICE_PATH}}/images", 50)%> background-color: <%=colors[myUser.avatarColor]%>;"></div>
                         <p class="<%=color%> text-medium" style="margin: 0 8px"><%=avatar%></p>
                     </div>
                 </div>

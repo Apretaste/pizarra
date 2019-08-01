@@ -7,7 +7,7 @@
 						<div class="col s12">
 						<a>
 							<!-- PICTURE -->
-							<div class="avatar circle" style="<%=getAvatar(chat.avatar, "{{APP_SERVICE_PATH}}/images", 48)%>"></div>
+							<div class="avatar circle" style="<%=getAvatar(chat.avatar, "{{APP_SERVICE_PATH}}/images", 48)%> background-color: <%=colors[chat.avatarColor]%>;"></div>
 
 							<!-- FIRST NAME -->
 							<h6 class="<%=color%> name">@<%= chat.username %></h6>

@@ -44,6 +44,24 @@ class Service
 			$title = $searchValue;
 		}
 
+		$pathToService = Utils::getPathToService($response->serviceName);
+		$images = ["$pathToService/images/avatars.png"];
+		$images[] = "$pathToService/images/img-prev.png";
+
+		if(empty($notes)){
+			$content = [
+				"header"=>"Lo sentimos",
+				"icon"=>"sentiment_very_dissatisfied",
+				"text" => "No encontramos notas que vayan con su búsqueda. Puede buscar por palabras, por @username o por #Tema.",
+				"activeIcon" => 1,
+				"myUser" => $myUser
+			];
+
+			$response->setLayout('pizarra.ejs');
+			$response->setTemplate('message.ejs', $content, $images);
+			return;
+		}
+
 		// get most popular topics of last 7 days
 		$popularTopics = Connection::query("
 			SELECT topic FROM _pizarra_topics
@@ -55,9 +73,7 @@ class Service
 			$topics[] = $topic->topic;
 		}
 
-		$pathToService = Utils::getPathToService($response->serviceName);
-		$images = ["$pathToService/images/avatars.png"];
-		$images[] = "$pathToService/images/img-prev.png";
+
 
 		// create variables for the template
 		$content = [
@@ -187,7 +203,7 @@ class Service
 		$result = Connection::query("
 			SELECT
 				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
-				B.avatar, C.username, C.first_name, C.last_name, C.province, C.picture, C.gender, C.country,
+				B.avatar, B.avatarColor, C.username, C.first_name, C.last_name, C.province, C.picture, C.gender, C.country,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_notes A LEFT JOIN _pizarra_users B ON A.id_person = B.id_person LEFT JOIN person C ON C.id = B.id_person
@@ -222,7 +238,7 @@ class Service
 
 		// get note comments
 		$cmts = Connection::query("
-			SELECT A.*, B.username, B.province, B.picture, B.gender, B.country, C.avatar,
+			SELECT A.*, B.username, B.province, B.picture, B.gender, B.country, C.avatar, C.avatarColor,
 			(SELECT COUNT(comment) FROM _pizarra_comments_actions WHERE comment=A.id AND A.id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
 			(SELECT COUNT(comment) FROM _pizarra_comments_actions WHERE comment=A.id AND A.id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_comments A
@@ -240,6 +256,8 @@ class Service
 			}
 		}
 		$note['comments'] = $comments;
+
+		q("UPDATE _pizarra_notes SET views=views+1 WHERE id={$note->id}");
 
 		$myUser = $this->preparePizarraUser($request->person);
 
@@ -425,7 +443,7 @@ class Service
 		$myUser = $this->preparePizarraUser($request->person);
 
 		// get the list of most popular users
-		$populars = Connection::query("SELECT A.id_person, A.reputation, A.avatar, B.username, B.gender, B.online FROM _pizarra_users A JOIN person B ON A.id_person = B.id ORDER BY reputation DESC LIMIT 10");
+		$populars = Connection::query("SELECT A.id_person, A.reputation, A.avatar, A.avatarColor, B.username, B.gender, B.online FROM _pizarra_users A JOIN person B ON A.id_person = B.id ORDER BY reputation DESC LIMIT 10");
 		$pathToService = Utils::getPathToService($response->serviceName);
 		$images = [];
 		foreach ($populars as $popular){
@@ -543,14 +561,16 @@ class Service
 			$person = Social::prepareUserProfile($person);
 		} else {
 			if(isset($request->input->data->avatar)){
-				q("UPDATE _pizarra_users SET avatar = '{$request->input->data->avatar}' WHERE id_person={$request->person->id}");
+				q("UPDATE _pizarra_users SET avatar = '{$request->input->data->avatar}', avatarColor='{$request->input->data->color}' WHERE id_person={$request->person->id}");
 				$myUser->avatar = $request->input->data->avatar;
+				$myUser->avatarColor = $request->input->data->color;
 			}
 			$person = $request->person;
 		}
 
 		$user = $this->preparePizarraUser($person);
 		$person->avatar = $user->avatar;
+		$person->avatarColor = $user->avatarColor;
 		$person->reputation = $user->reputation;
 
 		// create data for the view
@@ -604,8 +624,10 @@ class Service
 		}
 
 		foreach ($chats as $chat) {
+			$user = $this->preparePizarraUser($chat);
 			$chat->last_sent = explode(' ', $chat->last_sent)[0];
-			$chat->avatar = $this->preparePizarraUser($chat)->avatar;
+			$chat->avatar = $user->avatar;
+			$chat->avatarColor = $user->avatarColor;
 			unset($chat->picture);
 			unset($chat->first_name);
 		}
@@ -837,7 +859,7 @@ class Service
 			SELECT
 				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country, B.online,
-				C.reputation, C.avatar,
+				C.reputation, C.avatar, C.avatarColor, 
 				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$profile->id}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$profile->id}' AND action='unlike') > 0 AS isunliked
@@ -877,16 +899,6 @@ class Service
 			} // only parse the first 50 notes
 		}
 
-		// mark all notes as viewed
-		$viewed = [];
-		foreach ($notes as $n) {
-			$viewed[] = $n['id'];
-		}
-		$viewed = implode(",", $viewed);
-		if (trim($viewed) !== '') {
-			Connection::query("UPDATE _pizarra_notes SET views=views+1 WHERE id IN ($viewed)");
-		}
-
 		// return array of notes
 		return $notes;
 	}
@@ -904,24 +916,22 @@ class Service
 	private function getNotesByUsername($profile, $username)
 	{
 		$user = Utils::getPerson($username);
-		if (!$user) {
-			return [];
-		}
+		if (!$user) return [];
 
 		// check if the person is blocked
 		$blocks = Social::isBlocked($profile->id, $user->id);
-		if ($blocks->blocked || $blocks->blockedByMe) {
-			return [];
-		}
+		if ($blocks->blocked || $blocks->blockedByMe) return [];
 
 		// get the last 50 records from the db
 		$listOfNotes = Connection::query("
-			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country,
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, C.avatar, C.avatarColor,
 			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$profile->id}' AND `action` = 'like') > 0 AS isliked,
 			(SELECT COUNT(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) AS comments
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.id_person = B.id
+			LEFT JOIN _pizarra_users C
+			ON C.id_person = B.id
 			WHERE A.active=1 AND B.id = '$user->id'
 			ORDER BY inserted DESC
 			LIMIT 20");
@@ -930,16 +940,6 @@ class Service
 		$notes = [];
 		foreach ($listOfNotes as $note) {
 			$notes[] = $this->formatNote($note, $profile->id);
-		}
-
-		// mark all notes as viewed
-		$viewed = [];
-		foreach ($notes as $n) {
-			$viewed[] = $n['id'];
-		}
-		$viewed = implode(",", $viewed);
-		if (trim($viewed) !== '') {
-			Connection::query("UPDATE _pizarra_notes SET views=views+1 WHERE id IN ($viewed)");
 		}
 
 		// return array of notes
@@ -960,12 +960,14 @@ class Service
 	{
 		// get the last 50 records from the db
 		$listOfNotes = Connection::query("
-			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.online,
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.online, C.avatar, C.avatarColor,
 			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person= '{$profile->id}' AND `action` = 'like') > 0 AS isliked,
 			(SELECT count(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.id_person= B.id
+			LEFT JOIN _pizarra_users C
+			ON C.id_person = B.id
 			WHERE A.active=1 AND A.text like '%$keyword%' AND 
 			NOT EXISTS (SELECT * FROM relations 
 						WHERE `type` = 'blocked' AND confirmed=1 AND 
@@ -981,27 +983,17 @@ class Service
 			$notes[] = $this->formatNote($note, $profile->email);
 		}
 
-		// mark all notes as viewed
-		$viewed = [];
-		foreach ($notes as $n) {
-			$viewed[] = $n['id'];
-		}
-		$viewed = implode(",", $viewed);
-		if (trim($viewed) !== '') {
-			Connection::query("UPDATE _pizarra_notes SET views=views+1 WHERE id IN ($viewed)");
-		}
-
 		// return array of notes
 		return $notes;
 	}
 
 	private function preparePizarraUser($profile)
 	{
-		$myUser = q("SELECT reputation, avatar FROM _pizarra_users WHERE id_person='{$profile->id}'");
+		$myUser = q("SELECT reputation, avatar, avatarColor FROM _pizarra_users WHERE id_person='{$profile->id}'");
 		if (empty($myUser)) {
 			// create the user in the table if do not exist
 			q("INSERT IGNORE INTO _pizarra_users (id_person) VALUES ('{$profile->id}')");
-			$myUser = q("SELECT reputation, avatar FROM _pizarra_users WHERE id_person='{$profile->id}'")[0];
+			$myUser = q("SELECT reputation, avatar, avatarColor FROM _pizarra_users WHERE id_person='{$profile->id}'")[0];
 		} else $myUser = $myUser[0];
 
 		$myUser->id = $profile->id;
@@ -1082,6 +1074,7 @@ class Service
 			"online" => isset($note->online) ? $note->online : false,
 			"country" => $country,
 			"avatar" => $avatar,
+			"avatarColor" => $note->avatarColor,
 			"topics" => $topics,
 			'canmodify' => $note->id_person == $id,
 		];
