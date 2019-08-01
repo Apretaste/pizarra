@@ -23,36 +23,6 @@ $(document).ready(function () {
 		hoverEnabled: false
 	});
 
-	//For main profile
-	if (typeof profile != "undefined" && typeof isMyOwnProfile != "undefined") {
-		if (isMyOwnProfile) {
-			$("#editar").click(function () {
-				return apretaste.send({"command": "PERFIL EDITAR"})
-			});
-			$('.footer').addClass('hide');
-		} else {
-			$("#chat").click(function () {
-				apretaste.send({
-					"command": 'CHAT',
-					data: {"username": profile.username}
-				});
-			});
-
-			$("#bloquear").click(function () {
-				apretaste.send({
-					"command": 'PERFIL BLOQUEAR',
-					data: {"username": profile.username}
-				});
-			});
-		}
-		$("#notas").click(function () {
-			apretaste.send({
-				"command": 'PIZARRA',
-				data: {"search": '@' + profile.username}
-			});
-		});
-	}
-
 	if (typeof activeIcon != "undefined") {
 		var menuItem = $($('.footer i')[activeIcon - 1]);
 		menuItem.removeClass('grey-text');
@@ -218,15 +188,15 @@ function themifyNote() {
 
 // submit the profile informacion
 function submitProfileData() {
-	if(!isMyOwnProfile) return;
+	if(myUser.id != profile.id) return;
 	// get the array of fields and
-	var fields = ['first_name', 'username', 'about_me','gender','year_of_birth', 'highest_school_level','occupation','country','province','usstate','city','religion'];
+	var fields = ['first_name', 'username', 'about_me','gender','year_of_birth', 'highest_school_level','country','province','usstate','religion'];
 
 	// create the JSON of data
 	var data = new Object;
 	fields.forEach(function(field) {
 		var value = $('#'+field).val();
-		if(value && value.trim() != '') data[field] = value;
+		if(value && value.trim() != '' && !(field == "username" && value.trim() == '@'+profile.username)) data[field] = value;
 	});
 
 	// save information in the backend
@@ -258,13 +228,18 @@ function commentLengthValidate() {
 	}
 }
 
-function like(id, type) {
+function like(id, type, pubType = 'note') {
+	var element = pubType == 'note' ? $('#'+id) : $('#comments #'+id);
+	if((type == "like" && element.attr('liked')=='true') || (type == "unlike" && element.attr('unliked')=='true')) return;
+
+	var data = pubType == 'note' ? {'note': id} : {'comment': id};
+
 	apretaste.send({
 		'command': 'PIZARRA ' + type,
-		'data': {'note': id},
+		'data': data,
 		'callback': {
 			'name': 'likeCallback',
-			'data': {'id': id, 'type': type}
+			'data': JSON.stringify({'id': id, 'type': type, 'pubType':pubType})
 		},
 		'redirect': false
 	});
@@ -274,6 +249,18 @@ function likeCallback(data) {
 	data = JSON.parse(data)
 	id = data.id;
 	type = data.type;
+	pubType = data.pubType;
+	note = pubType == 'note' ? $('#'+id) : $('#comments #'+id);
+
+	if(type == "like"){
+		note.attr('liked', 'true');
+		note.attr('unliked', 'false');
+	}
+	else{
+		note.attr('unliked', 'true');
+		note.attr('liked', 'false');
+	}
+
 	counter = type == 'like' ? 'unlike' : 'like';
 	let span = $('#' + id + ' a.' + type + ' span');
 	let count = parseInt(span.html());
@@ -282,7 +269,7 @@ function likeCallback(data) {
 		span = $('#' + id + ' a.' + counter + ' span');
 		count = parseInt(span.html());
 		span.html(count - 1);
-		$('#' + id + ' a.' + counter).attr('onclick', "like('" + id + "','" + counter + "')");
+		$('#' + id + ' a.' + counter).attr('onclick', "like('" + id + "','" + counter + "', '" + pubType + "')");
 	}
 	$('#' + id + ' a.' + type).removeAttr('onclick');
 }
@@ -306,16 +293,16 @@ function sendCommentCallback(comment) {
 			<p>` + comment + `</p>
 				<div class="col s10 actions">
 					<div class="col s4">
-						<a class="like" onclick="like('last','like');">
+						<a class="like" onclick="like('last','like', 'comment');">
 							<i class="material-icons">thumb_up</i>
 							<span>0</span>
 						</a>
 					
 					</div>
 						<div class="col s4">
-							<a class="unlike" onclick="like('last','unlike')">
+							<a class="unlike" onclick="like('last','unlike', 'comment')">
 								<i class="material-icons">thumb_down</i>
-								<span>o</span>
+								<span>0</span>
 							</a>
 						</div>
 				</div>
@@ -337,7 +324,9 @@ function sendNoteCallback(note) {
 	let serviceImgPath = $('serviceImgPath').attr('data');
 	let topics = note.match(/(^|\B)#(?![0-9_]+\b)([a-zA-Z0-9_]{1,30})(\b|\r)/g);
 	let htmlTopics = "";
-	topics = topics.splice(0, 3);
+	topics = topics != null ? topics.splice(0, 3) : [];
+
+	let hasImage = typeof notePicture != "undefined" ? `<img class="responsive-img" src="`+ serviceImgPath +`/img-prev.png" onclick="apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'last'}});">` : "";
 
 	topics.forEach(function (topic) {
 		topic = topic.replace('#', '');
@@ -358,6 +347,7 @@ function sendNoteCallback(note) {
 		</span>
 		
 		<p>` + note + `</p>
+		`+hasImage+`
 		<p>
 			` + htmlTopics + `
 			</p>

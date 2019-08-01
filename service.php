@@ -85,35 +85,34 @@ class Service
 	 */
 	public function _like(Request $request, Response &$response)
 	{
-		$noteId = $request->input->data->note;
+		$type = isset($request->input->data->note) ? "note" : "comment";
+		$actionsTable = $type == "note" ? "_pizarra_actions" : "_pizarra_comments_actions";
+		$rowsTable = $type == "note" ? "_pizarra_notes" : "_pizarra_comments";
+		$noteId = $type == "note" ? $request->input->data->note : $request->input->data->comment;
+
 		if ($noteId == "last") {
-			$noteId = Connection::query("SELECT MAX(id) AS id FROM _pizarra_notes WHERE id_person = '{$request->person->id}'")[0]->id;
+			$noteId = Connection::query("SELECT MAX(id) AS id FROM $rowsTable WHERE id_person = '{$request->person->id}'")[0]->id;
 		}
 		// check if the user already liked this note
-		$res = Connection::query("SELECT * FROM _pizarra_actions WHERE id_person={$request->person->id} AND note='{$noteId}'");
-		$note = Connection::query("SELECT id_person, `text` FROM _pizarra_notes WHERE id='{$noteId}'");
+		$res = Connection::query("SELECT * FROM $actionsTable WHERE id_person={$request->person->id} AND $type='{$noteId}'");
+		$note = Connection::query("SELECT id_person, `text` FROM $rowsTable WHERE id='{$noteId}'");
 
-		if (empty($note)) {
-			return;
-		}
+		if (empty($note)) return;
 
 		if (!empty($res)) {
 			if ($res[0]->action == 'unlike') {
-				// delete previos vote and add new vote
+				// delete previous vote and add new vote
 				Connection::query("
-				UPDATE _pizarra_actions SET `action`='like' WHERE id_person='{$request->person->id}' AND note='{$noteId}';
-				UPDATE _pizarra_notes SET likes=likes+1, unlikes=unlikes-1 WHERE id='{$noteId}'");
-
-				return;
-			} else {
-				return;
+				UPDATE $actionsTable SET `action`='like' WHERE id_person='{$request->person->id}' AND $type='{$noteId}';
+				UPDATE $rowsTable SET likes=likes+1, unlikes=unlikes-1 WHERE id='{$noteId}'");
 			}
+			return;
 		}
 
 		// delete previos vote and add new vote
 		Connection::query("
-			INSERT INTO _pizarra_actions (id_person,note,action) VALUES ('{$request->person->id}','{$noteId}','like');
-			UPDATE _pizarra_notes SET likes=likes+1 WHERE id='{$noteId}'");
+			INSERT INTO $actionsTable (id_person,$type,action) VALUES ('{$request->person->id}','{$noteId}','like');
+			UPDATE $rowsTable SET likes=likes+1 WHERE id='{$noteId}'");
 
 		$note = $note[0];
 		$note->text = substr($note->text, 0, 30) . '...';
@@ -122,9 +121,6 @@ class Service
 		if ($request->person->id != $note->id_person) {
 			Utils::addNotification($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}", "thumb_up");
 		}
-
-		// increase the author's reputation
-		Connection::query("UPDATE _pizarra_users SET reputation=reputation+2 WHERE id_person='{$note->id_person}'");
 	}
 
 	/**
@@ -137,35 +133,34 @@ class Service
 	 */
 	public function _unlike(Request $request, Response $response)
 	{
-		$noteId = $request->input->data->note;
-		if ($noteId == "last") {
-			$noteId = Connection::query("SELECT MAX(id) AS id FROM _pizarra_notes WHERE id_person = '{$request->person->id}'")[0]->id;
-		}
-		// chekc if the user already liked this note
-		$res = Connection::query("SELECT * FROM _pizarra_actions WHERE id_person={$request->person->id} AND note='{$noteId}'");
-		$note = Connection::query("SELECT id_person, `text` FROM _pizarra_notes WHERE id='{$noteId}'");
+		$type = isset($request->input->data->note) ? "note" : "comment";
+		$actionsTable = $type == "note" ? "_pizarra_actions" : "_pizarra_comments_actions";
+		$rowsTable = $type == "note" ? "_pizarra_notes" : "_pizarra_comments";
+		$noteId = $type == "note" ? $request->input->data->note : $request->input->data->comment;
 
-		if (empty($note)) {
-			return;
+		if ($noteId == "last") {
+			$noteId = Connection::query("SELECT MAX(id) AS id FROM $rowsTable WHERE id_person = '{$request->person->id}'")[0]->id;
 		}
+		// check if the user already liked this note
+		$res = Connection::query("SELECT * FROM $actionsTable WHERE id_person={$request->person->id} AND $type='{$noteId}'");
+		$note = Connection::query("SELECT id_person, `text` FROM $rowsTable WHERE id='{$noteId}'");
+
+		if (empty($note)) return;
 
 		if (!empty($res)) {
 			if ($res[0]->action == 'like') {
 				// delete previos vote and add new vote
 				Connection::query("
-				UPDATE _pizarra_actions SET `action`='unlike' WHERE id_person='{$request->person->id}' AND note='{$noteId}';
-				UPDATE _pizarra_notes SET likes=likes-1, unlikes=unlikes+1 WHERE id='{$noteId}'");
-
-				return;
-			} else {
-				return;
+				UPDATE $actionsTable SET `action`='unlike' WHERE id_person='{$request->person->id}' AND $type='{$noteId}';
+				UPDATE $rowsTable SET likes=likes-1, unlikes=unlikes+1 WHERE id='{$noteId}'");
 			}
+			return;
 		}
 
 		// delete previos vote and add new vote
 		Connection::query("
-			INSERT INTO _pizarra_actions (id_person,note,action) VALUES ('{$request->person->id}','{$noteId}','unlike');
-			UPDATE _pizarra_notes SET unlikes=unlikes+1 WHERE id='{$noteId}'");
+			INSERT INTO $actionsTable (id_person,$type,action) VALUES ('{$request->person->id}','{$noteId}','unlike');
+			UPDATE $rowsTable SET unlikes=unlikes+1 WHERE id='{$noteId}'");
 
 		$note = $note[0];
 
@@ -192,10 +187,10 @@ class Service
 		$result = Connection::query("
 			SELECT
 				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
-				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country,
+				B.avatar, C.username, C.first_name, C.last_name, C.province, C.picture, C.gender, C.country,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
-			FROM _pizarra_notes A LEFT JOIN person B ON A.id_person = B.id
+			FROM _pizarra_notes A LEFT JOIN _pizarra_users B ON A.id_person = B.id_person LEFT JOIN person C ON C.id = B.id_person
 			WHERE A.id = '$noteId' AND A.active=1");
 
 		// format note
@@ -227,10 +222,14 @@ class Service
 
 		// get note comments
 		$cmts = Connection::query("
-			SELECT A.*, B.username, B.province, B.picture, B.gender, B.country
+			SELECT A.*, B.username, B.province, B.picture, B.gender, B.country, C.avatar,
+			(SELECT COUNT(comment) FROM _pizarra_comments_actions WHERE comment=A.id AND A.id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
+			(SELECT COUNT(comment) FROM _pizarra_comments_actions WHERE comment=A.id AND A.id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_comments A
 			LEFT JOIN person B
 			ON A.id_person = B.id
+			LEFT JOIN _pizarra_users C
+			ON C.id_person = B.id
 			WHERE note = '$noteId'");
 
 		// format comments
@@ -471,7 +470,6 @@ class Service
 				"header"=>"Nada por leer",
 				"icon"=>"notifications_off",
 				"text" => "Por ahora usted no tiene ninguna notificación por leer.",
-				"button" => ["href"=>"PIZARRA", "caption"=>"Inicio"],
 				"activeIcon" => 3,
 				"myUser" => $this->preparePizarraUser($request->person)
 			];
@@ -596,7 +594,6 @@ class Service
 				"header" => "No tiene conversaciones",
 				"icon" => "sentiment_very_dissatisfied",
 				"text" => "Aún no ha hablado con nadie.",
-				"button" => ["href" => "PIZARRA", "caption" => "Inicio"],
 				"title" => "chats",
 				"myUser" => $myUser,
 				"activeIcon" => 1];
@@ -1073,7 +1070,7 @@ class Service
 			"gender" => $note->gender,
 			"text" => $note->text,
 			"image" => $note->image,
-			"inserted" => date_format((new DateTime($note->inserted)), 'd/m/Y · h:i a'),
+			"inserted" => date_format((new DateTime($note->inserted)), 'j/n/y · g:ia'),
 			"likes" => isset($note->likes) ? $note->likes : 0,
 			"unlikes" => isset($note->unlikes) ? $note->unlikes : 0,
 			"comments" => isset($note->comments) ? $note->comments : 0,

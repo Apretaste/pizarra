@@ -23,8 +23,12 @@ a, a > span{
 	margin-right: -1.5rem;
 }
 
-.notes .avatar{
+.notes div.avatar{
 	left: 0 !important;
+}
+
+#comments div.avatar{
+	left: 21px !important;
 }
 
 .notes .actions, .notes .actions *{

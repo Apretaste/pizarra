@@ -3,7 +3,13 @@
     <nav>
         <div class="nav-wrapper pizarra-color">
             <!--Logo-->
-            <span class="brand-logo left" onclick="apretaste.send({'command':'PIZARRA PERFIL', 'data':{'username': myUser.username}})">
+            <span class="brand-logo left"
+            <%if(typeof messages != "undefined"){%>
+                  onclick="apretaste.send({'command':'PIZARRA PERFIL', 'data':{'username': '<%=myUser.username%>'}})"
+            <%}else{%>
+                onclick="apretaste.send({'command':'PIZARRA PERFIL'})"
+            <%}%>
+            >
                 <div style="<%=getAvatar(myUser.avatar, "{{APP_SERVICE_PATH}}/images", 32)%>" id="top-avatar"></div>
             </span>
             <span id="avatar-info">
@@ -21,7 +27,13 @@
                     </a>
                 </li>
                 <li id="chatButton">
-                    <a href="#!" class="black-text" onclick="apretaste.send({'command':'PIZARRA CHAT'})">
+                    <a href="#!" class="black-text"
+                    <%if(typeof profile != "undefined" && profile.id != myUser.id){%>
+                       onclick="apretaste.send({'command':'PIZARRA CONVERSACION', 'data':{'userId':'<%=profile.id%>'}})"
+                    <%}else{%>
+                       onclick="apretaste.send({'command':'PIZARRA CHAT'})"
+                    <%}%>
+                    >
                         <i class="material-icons white-text">chat</i>
                     </a>
                 </li>
