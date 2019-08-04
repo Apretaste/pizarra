@@ -22,7 +22,7 @@
                 </div>
                 <p>
                     <% note.topics.forEach(function(topic){ %>
-                        <a onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'<%= topic %>'}})">
+                        <a onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'#<%= topic %>'}})">
                             <b>#<%= topic %></b>
                         </a>&nbsp;
                     <% }); %>

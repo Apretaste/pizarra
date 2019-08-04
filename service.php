@@ -16,15 +16,13 @@ class Service
 	public function _main(Request $request, Response &$response)
 	{
 		// get the type of search
-		$keyword = isset($request->input->data->search) ? $request->input->data->search : "";
-		$search = $this->getSearchType($keyword, $request->person->id);
+		$keyword = $request->input->data->search ?? "";
+		$search = $this->getSearchType($keyword);
 		$searchType = $search[0];
 		$searchValue = $search[1];
 
 		// get the user's profile
 		$profile = $request->person;
-
-		$myUser = $this->preparePizarraUser($request->person);
 
 		// get notes if searched by topic
 		if ($searchType == "topic") {
@@ -43,6 +41,8 @@ class Service
 			$notes = $this->getNotesByKeyword($profile, $searchValue);
 			$title = $searchValue;
 		}
+
+		$myUser = $this->preparePizarraUser($request->person);
 
 		$pathToService = Utils::getPathToService($response->serviceName);
 		$images = ["$pathToService/images/avatars.png"];
@@ -135,7 +135,7 @@ class Service
 
 		// create notification for the creator
 		if ($request->person->id != $note->id_person) {
-			Utils::addNotification($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}", "thumb_up");
+			Utils::addNotification($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}", "thumb_up");
 		}
 	}
 
@@ -257,7 +257,7 @@ class Service
 		}
 		$note['comments'] = $comments;
 
-		q("UPDATE _pizarra_notes SET views=views+1 WHERE id={$note->id}");
+		q("UPDATE _pizarra_notes SET views=views+1 WHERE id={$note['id']}");
 
 		$myUser = $this->preparePizarraUser($request->person);
 
@@ -306,14 +306,13 @@ class Service
 
 		// get all the topics from the post
 		preg_match_all('/#\w*/', $text, $topics);
-		$topics = $topics[0];
+		$topics = empty($topics[0]) ? [q("SELECT default_topic FROM _pizarra_users WHERE id_person='{$request->person->id}'")[0]->default_topic] : $topics[0];
 		$topic1 = isset($topics[0]) ? str_replace("#", "", $topics[0]) : "";
 		$topic2 = isset($topics[1]) ? str_replace("#", "", $topics[1]) : "";
 		$topic3 = isset($topics[2]) ? str_replace("#", "", $topics[2]) : "";
 
 		// save note to the database
 		$cleanText = Connection::escape($text, 300);
-
 
 		$noteID = Connection::query("
 		INSERT INTO _pizarra_notes (id_person, `text`, image, topic1, topic2, topic3)
@@ -337,7 +336,7 @@ class Service
 			if ($blocks->blocked > 0) {
 				continue;
 			}
-			Utils::addNotification($m->id, "<span class='$color'>@{$request->person->username}</span> le ha mencionado", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteID'}", "comment");
+			Utils::addNotification($m->id, "<span class='$color'>@{$request->person->username}</span> le ha mencionado", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteID'}}", "comment");
 		}
 	}
 
@@ -390,13 +389,13 @@ class Service
 			if ($blocks->blocked || $blocks->blockedByMe) {
 				continue;
 			}
-			Utils::addNotification($mention->id, "El usuario @{$request->person->username} le ha mencionado en la pizarra", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}", "comment");
+			Utils::addNotification($mention->id, "El usuario @{$request->person->username} le ha mencionado en la pizarra", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}}", "comment");
 		}
 
 		// send a notificaction to the owner of the note
 		$color = $request->person->gender == "M" ? "pizarra-color-text" : ($request->person->gender == "F" ? "pink-text" : "black-text");
 		if ($request->person->id != $note->id_person) {
-			Utils::addNotification($note->id_person, "<span class='$color'>@{$request->person->username}</span> ha comentado tu publicación", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}", "comment");
+			Utils::addNotification($note->id_person, "<span class='$color'>@{$request->person->username}</span> ha comentado tu publicación", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}}", "comment");
 		}
 	}
 
@@ -800,7 +799,7 @@ class Service
 	 * @author salvipascual
 	 *
 	 */
-	private function getSearchType($keyword, $id)
+	private function getSearchType($keyword)
 	{
 		// return topic selected by the user if blank
 		if (empty($keyword)) {
@@ -852,7 +851,8 @@ class Service
 	{
 		$where = $topic != "general" ? "WHERE (topic1='$topic' OR topic2='$topic' OR topic3='$topic') AND active=1" : "WHERE active=1";
 		// set the topic as default for the user
-		// Connection::query("UPDATE _pizarra_users SET default_topic='$topic' WHERE id_person='{$profile->id}'");
+
+		Connection::query("UPDATE _pizarra_users SET default_topic='$topic' WHERE id_person='{$profile->id}'");
 
 		// get the records from the db
 		$listOfNotes = Connection::query("
@@ -989,7 +989,7 @@ class Service
 
 	private function preparePizarraUser($profile)
 	{
-		$myUser = q("SELECT reputation, avatar, avatarColor FROM _pizarra_users WHERE id_person='{$profile->id}'");
+		$myUser = q("SELECT reputation, avatar, avatarColor, default_topic AS topic FROM _pizarra_users WHERE id_person='{$profile->id}'");
 		if (empty($myUser)) {
 			// create the user in the table if do not exist
 			q("INSERT IGNORE INTO _pizarra_users (id_person) VALUES ('{$profile->id}')");

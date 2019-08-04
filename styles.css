@@ -14,6 +14,10 @@ a, a > span{
 	color: #285da0 !important;
 }
 
+.notes{
+	margin-top: 10px;
+}
+
 .notes .col{
 	padding: 0 1.5rem;
 }

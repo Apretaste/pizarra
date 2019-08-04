@@ -49,8 +49,7 @@ $(document).ready(function () {
 	if(typeof notes != "undefined" || typeof chats != "undefined") $('#searchButton').removeClass('hide');
 	if(typeof chats != "undefined" || typeof chat != "undefined") $('#chatButton').addClass('hide');
 	if(typeof populars != "undefined" || $('#colors-nav').length > 0){
-		if($('.container > .row').length == 3) $('.container> .row:first-child').css('margin-bottom','0');
-		else $('.container> .row:first-child').css('margin-bottom','15px');
+		if($('.container > .row').length != 3) $('.container> .row:first-child').css('margin-bottom','15px');
 	}
 
 	$('#chat-row').parent().css('margin-bottom','0');
@@ -113,9 +112,10 @@ function toggleWriteModal() {
 			$('#writeModal').css('height', 'calc(100% - ' + h + 'px)');
 		}
 
-		$('#writeModal').slideToggle({direction: "up"}).attr('status', 'opened'); //, () => resizeImg() // add this to resize then opened or closed
+		$('#writeModal').slideToggle({direction: "up"}).attr('status', 'opened');
+		$('#note').focus();
 	} else {
-		$('#writeModal').slideToggle({direction: "up"}).attr('status', 'closed'); //, () => resizeImg()
+		$('#writeModal').slideToggle({direction: "up"}).attr('status', 'closed');
 	}
 }
 
@@ -177,6 +177,34 @@ function deleteNote() {
 function deleteCallback(id) {
 	$('#' + id).remove();
 	showToast('Nota eliminada');
+}
+
+function deleteNotification(id) {
+	// delete from the backend
+	apretaste.send({
+		command: 'NOTIFICACIONES LEER',
+		data: {id: id},
+		redirect: false
+	});
+
+	// remove from the view
+	$('#'+id).fadeOut(function() {
+		$(this).remove();
+
+		// show message if all notifications were deleted
+		var count = $("ul.collection li").length;
+		if (count <= 0) {
+			var parent = $('#noti-list').parent();
+			$('ul.collection').remove();
+			parent.append(`
+				<div class="col s12 center">
+				<h1 class="black-text">Nada por leer</h1>
+				<i class="material-icons large">notifications_off</i>
+				<p>Por ahora usted no tiene ninguna notificación por leer.</p>
+				</div>
+				`);
+		}
+	});
 }
 
 function themifyNote() {
@@ -331,14 +359,14 @@ function sendNoteCallback(note) {
 	let serviceImgPath = $('serviceImgPath').attr('data');
 	let topics = note.match(/(^|\B)#(?![0-9_]+\b)([a-zA-Z0-9_]{1,30})(\b|\r)/g);
 	let htmlTopics = "";
-	topics = topics != null ? topics.splice(0, 3) : [];
+	topics = topics != null ? topics.splice(0, 3) : [myUser.topic];
 
 	let hasImage = typeof notePicture != "undefined" ? `<img class="responsive-img" src="`+ serviceImgPath +`/img-prev.png" onclick="apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'last'}});">` : "";
 
 	topics.forEach(function (topic) {
 		topic = topic.replace('#', '');
 		htmlTopics += `
-			<a onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'` + topic + `'}})">
+			<a onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'#` + topic + `'}})">
 				<b>#` + topic + `</b>
 			</a>&nbsp;`;
 	});

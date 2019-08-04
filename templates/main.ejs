@@ -1,11 +1,14 @@
 <div class="row notes">
     <div class="col s12">
-        Temas populares:
-        <% popularTopics.forEach(function(topic){ %>
-            <a onclick="apretaste.send({'command':'PIZARRA','data':{'search':'<%= topic %>'}});">
-                <%= topic %>
-            </a>&nbsp;
-        <% }); %>
+        <p style="margin: 0;">
+            Temas populares:
+            <% popularTopics.forEach(function(topic){ %>
+                <a onclick="apretaste.send({'command':'PIZARRA','data':{'search':'<%= topic %>'}});">
+                    #<%= topic %>
+                </a>&nbsp;
+            <% }); %>
+        </p>
+
         <ul class="collection col s12">
             <% notes.forEach(function(note){ %>
                 <% if (note.gender == "M") color = "pizarra-color-text"; else if (note.gender == "F") color = "pink-text"; else color = "black-text" %>
@@ -17,7 +20,7 @@
                            onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'<%= note.username %>'}});">
 							<b>@<%= note.username %></b>
 						</a>
-						<small class="grey-text text-darken-3"><%= note.location %> · <%= note.inserted %></small>
+						<small class="grey-text text-darken-3">&nbsp;<%= note.location %> · <%= note.inserted %></small>
 					</span>
                     <p>
                         <%- note.text %>
@@ -27,7 +30,7 @@
                     <%}%>
                     <p>
                         <% note.topics.forEach(function(topic){ %>
-                            <a onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'<%= topic %>'}})">
+                            <a onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'#<%= topic %>'}})">
                                 <b>#<%= topic %></b>
                             </a>&nbsp;
                         <% }); %>
