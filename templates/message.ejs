@@ -3,7 +3,7 @@
 		<h1 class="black-text"><%= header %></h1>
 		<i class="material-icons large"><%= icon %></i>
 		<p><%= text %></p>
-		<%if(typeof	button != "undefined"){%>
+		<%if(typeof button != "undefined"){%>
 		<a class="waves-effect waves-light btn pizarra-color white-text" href="#!" onclick="apretaste.send({'command':'<%= button['href'] %>'})">
 			<%= button['caption'] %>
 		</a>
