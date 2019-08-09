@@ -1,37 +1,38 @@
-<div class="row">
+<div class="row notes">
+	<div class="col s12">
 		<% if(chats.length > 0) { %>
 			<ul class="collection" id="chats-list">
 				<% chats.forEach(function(chat) { %>
 					<% if (chat.gender == "M") color = "pizarra-color-text"; else if (chat.gender == "F") color = "pink-text"; else color = "black-text" %>
-					<li class="collection-item avatar openchat" id="<%=chat.id%>" name='@<%= chat.username %>'>
-						<div class="col s12">
-						<a>
-							<!-- PICTURE -->
-							<div class="avatar circle" style="<%=getAvatar(chat.avatar, "{{APP_SERVICE_PATH}}/images", 48)%> background-color: <%=colors[chat.avatarColor]%>;"></div>
-
-							<!-- FIRST NAME -->
-							<h6 class="<%=color%> name">@<%= chat.username %></h6>
-							<%if(chat.online=="1"){%>
-								<i class="material-icons online-icon">brightness_1</i>
-							<%}%>
-						</a>
+					<li class="collection-item avatar row openchat" id="<%=chat.id%>" name='@<%= chat.username %>'>
+								<!-- PICTURE -->
+								<div class="avatar circle" style="<%=getAvatar(chat.avatar, "{{APP_SERVICE_PATH}}/images", 48)%> background-color: <%=colors[chat.avatarColor]%>;"></div>
+						<%if(chat.online=="1"){%>
+							<i class="material-icons online-icon">brightness_1</i>
+						<%}%>
+						<span class="title">
+							<b class="<%=color%> name">@<%= chat.username %></b>
+						</span>
 						<!-- TEXT -->
-						<msg>
-							<%if(!chat.last_note_read && chat.last_note_user != myUser.id){%>
+						<p>
+							<msg>
+								<%if(!chat.last_note_read && chat.last_note_user != myUser.id){%>
 								<b><%=chat.last_note%></b>
-							<%}else{%>
+								<%}else{%>
 								<%=chat.last_note%>
-							<%}%>
-						</msg>
+								<%}%>
+							</msg>
+						</p>
+
 						<span class="secondary-content">
 							<small class="right black-text"><%=chat.last_sent%></small>
 						</span>
-						</div>
 					</li>
-					
+
 				<% }) %>
 			</ul>
 		<% } %>
+	</div>
 </div>
 
 <div class="modal bottom-sheet" id="optionsModal">

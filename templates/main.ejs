@@ -9,15 +9,18 @@
             <% }); %>
         </p>
 
-        <ul class="collection col s12">
+        <ul class="collection">
             <% notes.forEach(function(note){ %>
                 <% if (note.gender == "M") color = "pizarra-color-text"; else if (note.gender == "F") color = "pink-text"; else color = "black-text" %>
 
                 <li class="collection-item avatar row" id="<%=note.id%>" liked="<%=note.liked%>" unliked="<%=note.unliked%>">
                     <div class="avatar circle" style="<%=getAvatar(note.avatar, "{{APP_SERVICE_PATH}}/images", 42)%> background-color: <%=colors[note.avatarColor]%>;"></div>
+                    <% if(note.online == "1"){ %>
+                        <i class="material-icons online-icon">brightness_1</i>
+                    <% } %>
                     <span class="title">
 						<a class="<%= color %>"
-                           onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'<%= note.username %>'}});">
+                           onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});">
 							<b>@<%= note.username %></b>
 						</a>
 						<small class="grey-text text-darken-3">&nbsp;<%= note.location %> · <%= note.inserted %></small>
@@ -58,9 +61,6 @@
                 </li>
 
                 <div class="hide">
-                    <% if(note.online == "1"){ %>
-                        <i class="material-icons green-text" style="font-size:10px;">brightness_1</i>
-                    <% } %>
                     <div class="card-action">
                         <% if(note.canmodify){ %>
                             <% if(note.topics.length < 3){ %>

@@ -1,17 +1,21 @@
 <div class="row notes">
     <% var color; %>
     <div class="col s12">
-        <ul class="collection col s12">
+        <ul class="collection">
             <% if (note.gender == "M") color = "pizarra-color-text"; else if (note.gender == "F") color = "pink-text"; else color = "black-text" %>
             <li class="collection-item avatar row" id="<%=note.id%>" liked="<%=note.liked%>" unliked="<%=note.unliked%>">
                 <div class="avatar circle" style="<%=getAvatar(note.avatar, "{{APP_SERVICE_PATH}}/images", 42)%> background-color: <%=colors[note.avatarColor]%>;"></div>
+                <% if(note.online == "1"){ %>
+                    <i class="material-icons online-icon">brightness_1</i>
+                <% } %>
                 <span class="title">
 						<a class="<%= color %>"
-                           onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'<%= note.username %>'}});">
+                           onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});">
 							<b>@<%= note.username %></b>
 						</a>
 						<small class="grey-text text-darken-3"><%= note.location %> · <%= note.inserted %></small>
 					</span>
+
                 <p>
                     <%- note.text %>
                 </p>
@@ -42,25 +46,22 @@
                     </div>
                 </div>
             </li>
-
-            <div class="hide">
-                <% if(note.online == "1"){ %>
-                    <i class="material-icons green-text" style="font-size:10px;">brightness_1</i>
-                <% } %>
-            </div>
         </ul>
     </div>
 
-    <ul class="collection" id="comments">
-        <% note.comments.forEach(function(comment){ %>
-            <% if (comment.gender == "M") color = "pizarra-color-text"; else if (comment.gender == "F") color = "pink-text"; else color = "black-text" %>
+    <div class="col s12">
+        <ul class="collection" id="comments">
+            <% note.comments.forEach(function(comment){ %>
+                <% if (comment.gender == "M") color = "pizarra-color-text"; else if (comment.gender == "F") color = "pink-text"; else color = "black-text" %>
 
-            <li class="collection-item avatar row" id="<%=comment.id%>">
-                <div class="col s12">
+                <li class="collection-item avatar row" id="<%=comment.id%>">
                     <div class="avatar circle" style="<%=getAvatar(comment.avatar, "{{APP_SERVICE_PATH}}/images", 42)%> background-color: <%=colors[comment.avatarColor]%>;"></div>
+                    <% if(comment.online == "1"){ %>
+                        <i class="material-icons online-icon">brightness_1</i>
+                    <% } %>
                     <span class="title">
 						<a class="<%= color %>"
-                           onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'<%= comment.username %>'}});">
+                           onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= comment.username %>'}});">
 							<b>@<%= comment.username %></b>
 						</a>
 						<small class="grey-text text-darken-3"><%= comment.location %> · <%= comment.inserted %></small>
@@ -82,10 +83,10 @@
                             </a>
                         </div>
                     </div>
-                </div>
-            </li>
-        <% }); %>
-    </ul>
+                </li>
+            <% }); %>
+        </ul>
+    </div>
 </div>
 
 <div class="fixed-action-btn">

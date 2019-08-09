@@ -123,6 +123,10 @@ function openSearchModal() {
 	M.Modal.getInstance($('#searchModal')).open();
 }
 
+function searchChat(){
+
+}
+
 var activeNote;
 
 function sendNote() {
@@ -316,13 +320,13 @@ function sendCommentCallback(comment) {
 
 	let element = `
 	<li class="collection-item avatar row" id="last">
-		<div class="col s12">
 			<div class="avatar circle" style="`+ getAvatar(myUser.avatar, serviceImgPath, 42)+` background-color: ` + colors[myUser.avatarColor] + `;"></div>
+			<i class="material-icons online-icon">brightness_1</i>
 			<span class="title">
 				<a class="` + color + `" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'` + myUser.username + `'}});">
 					<b>@` + myUser.username + `</b>
 				</a>
-				<small class="grey-text text-darken-3">` + myUser.location + ` · ` + new Date(Date.now()).toLocaleString() + `</small>
+				<small class="grey-text text-darken-3">` + myUser.location + ` · ` + Date.prototype.nowFormated() + `</small>
 			</span>
 			
 			<p>` + comment + `</p>
@@ -341,7 +345,6 @@ function sendCommentCallback(comment) {
 							</a>
 						</div>
 				</div>
-			</div>
 		</li>`;
 
 	$('#comments').append(element);
@@ -376,11 +379,12 @@ function sendNoteCallback(note) {
 	let element = `
 	<li class="collection-item avatar row" id="last">
 		<div class="avatar circle" style="`+getAvatar(myUser.avatar, serviceImgPath, 42)+ ` background-color: ` + colors[myUser.avatarColor] + `;"></div>
+		<i class="material-icons online-icon">brightness_1</i>
 		<span class="title">
 			<a class="` + color + `" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'` + myUser.username + `'}});">
 				<b>@` + myUser.username + `</b>
 			</a>
-			<small class="grey-text text-darken-3">` + myUser.location + ` · ` + new Date(Date.now()).toLocaleString() + `</small>
+			<small class="grey-text text-darken-3">` + myUser.location + ` · ` + Date.prototype.nowFormated() + `</small>
 		</span>
 		
 		<p>` + note + `</p>
@@ -710,6 +714,56 @@ if (!Object.keys) {
 	}());
 }
 
+if (!String.prototype.includes) {
+	(function() {
+		'use strict'; // needed to support `apply`/`call` with `undefined`/`null`
+		var toString = {}.toString;
+		var defineProperty = (function() {
+			// IE 8 only supports `Object.defineProperty` on DOM elements
+			try {
+				var object = {};
+				var $defineProperty = Object.defineProperty;
+				var result = $defineProperty(object, object, object) && $defineProperty;
+			} catch(error) {}
+			return result;
+		}());
+		var indexOf = ''.indexOf;
+		var includes = function(search) {
+			if (this == null) {
+				throw TypeError();
+			}
+			var string = String(this);
+			if (search && toString.call(search) == '[object RegExp]') {
+				throw TypeError();
+			}
+			var stringLength = string.length;
+			var searchString = String(search);
+			var searchLength = searchString.length;
+			var position = arguments.length > 1 ? arguments[1] : undefined;
+			// `ToInteger`
+			var pos = position ? Number(position) : 0;
+			if (pos != pos) { // better `isNaN`
+				pos = 0;
+			}
+			var start = Math.min(Math.max(pos, 0), stringLength);
+			// Avoid the `indexOf` call if no match is possible
+			if (searchLength + start > stringLength) {
+				return false;
+			}
+			return indexOf.call(string, searchString, pos) != -1;
+		};
+		if (defineProperty) {
+			defineProperty(String.prototype, 'includes', {
+				'value': includes,
+				'configurable': true,
+				'writable': true
+			});
+		} else {
+			String.prototype.includes = includes;
+		}
+	}());
+}
+
 String.prototype.escapeHTML = function(){
 	var htmlEscapes = {
 		'&': '&amp;',
@@ -723,4 +777,26 @@ String.prototype.escapeHTML = function(){
 	return ('' + this).replace(htmlEscaper, function(match) {
 		return htmlEscapes[match];
 	});
+}
+
+Date.prototype.nowFormated = function() {
+	now = new Date(); // This current millisecond on user's computer.
+	var format = "{D}/{M}/{Y} · {h}:{m}{ap}";
+	var Month = now.getMonth() + 1;
+	format = format.replace(/\{M\}/g,Month);
+	var Mday = now.getDate();
+	format = format.replace(/\{D\}/g,Mday);
+	var Year = now.getFullYear().toString().slice(2);
+	format = format.replace(/\{Y\}/g,Year);
+	var h = now.getHours();
+	var pm = (h > 11);
+	if(h>12) { h -= 12; };
+	var ap = pm ? "pm" : "am";
+	format = format.replace(/\{ap\}/g,ap);
+	var hh = h;
+	format = format.replace(/\{h\}/g,hh);
+	var mm = now.getMinutes();
+	if(mm<10) { mm = "0"+mm; }
+	format = format.replace(/\{m\}/g,mm);
+	return format;
 }

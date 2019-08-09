@@ -10,7 +10,9 @@
                 onclick="apretaste.send({'command':'PIZARRA PERFIL'})"
             <%}%>
             >
-                <div style="<%=getAvatar(myUser.avatar, "{{APP_SERVICE_PATH}}/images", 32)%> background-color: <%=colors[myUser.avatarColor]%>;" id="top-avatar"></div>
+                <div style="<%=getAvatar(myUser.avatar, "{{APP_SERVICE_PATH}}/images", 32)%> background-color: <%=colors[myUser.avatarColor]%>;" id="top-avatar">
+                    <i class="material-icons online-icon">brightness_1</i>
+                </div>
             </span>
             <span id="avatar-info">
                 <b>

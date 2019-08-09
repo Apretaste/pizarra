@@ -15,24 +15,11 @@ a, a > span{
 }
 
 .notes{
-	margin-top: 10px;
-}
-
-.notes .col{
-	padding: 0 1.5rem;
-}
-
-.notes .col .row{
-	margin-left: -1.5rem;
-	margin-right: -1.5rem;
+	margin-top: .75rem;
 }
 
 .notes div.avatar{
 	left: 0 !important;
-}
-
-#comments div.avatar{
-	left: 21px !important;
 }
 
 .notes .actions, .notes .actions *{
@@ -48,7 +35,11 @@ a, a > span{
 }
 
 .notes .collection-item.avatar{
-	padding: 10px 38px 10px 46px !important;
+	padding: .75rem 0.75rem .75rem 3.25rem !important;
+}
+
+.collection-item.avatar.row{
+	margin: 0;
 }
 
 .notes .collection-item.avatar p {
@@ -77,7 +68,7 @@ a, a > span{
 }
 
 b{
-	font-weight: 500 !important;
+	font-weight: 600 !important;
 }
 
 .footer{
@@ -94,17 +85,20 @@ b{
 	border-radius: 50%;
 	height: 32px;
 	width: 32px;
-	vertical-align: sub;
-	margin-left: 14px;
+	margin-left: .25rem;
 	margin-top: 30%;
 }
 
 #avatar-info{
 	position: absolute;
-	left: 67px;
+	left: 56px;
 	font-size: 16px;
 	line-height: 16px;
-	top: 14px;
+	top: 12px;
+}
+
+.brand-logo.left{
+	left: .5rem;
 }
 
 #writeModal{
@@ -184,11 +178,11 @@ img.responsive-img{
 
 #noti-list .secondary-content{
 	top: 32%;
-	right: 20px;
+	right: 10px;
 }
 
 #noti-list li{
-	padding: 5px 42px 5px 64px;
+	padding: 5px 30px 5px 54px;
 }
 
 #noti-list .collection-item.avatar{
@@ -197,21 +191,18 @@ img.responsive-img{
 
 #noti-list > li > i{
 	position: absolute;
-	left: 24px !important
+	left: 14px !important
 }
 
 #noti-list i{
 	top: 32%;
 }
 
-/* CHATS */
-
-#chats-list div.avatar{
-	width: 48px;
-	height: 48px;
-	left: 23px;
-	top: 20%;
+#noti-list{
+	margin-top: .75rem;
 }
+
+/* CHATS */
 
 #chats-list .collection-item.avatar {
 	min-height: 65px !important;
@@ -225,6 +216,10 @@ img.responsive-img{
 	border: none;
 }
 
+#chats-list{
+	margin-top: 0;
+}
+
 p#nochats{
 	position: absolute;
 	top: 50%;
@@ -232,15 +227,30 @@ p#nochats{
 }
 
 #chats-list .secondary-content{
-	right: 20px;
-	top: 20px;
+	right: .75rem;
+	top: .75rem;
 }
 
 .online-icon{
-	font-size:12px;
+	font-size:12px !important;
 	position: absolute;
-	left: 60px;bottom: 8px;
 	color: #1af10b;
+}
+
+.notes .online-icon{
+	left: 30px;
+	top: 40px;
+}
+
+#top-avatar .online-icon{
+	font-size: 10px !important;
+	left: 27px;
+	top: 6px;
+}
+
+.mini-card .online-icon{
+	bottom: 2px;
+	right: 2px;
 }
 
 msg{
@@ -365,6 +375,7 @@ html, body {
 	height: 50px;
 	display: inline-block;
 	border-radius: 50%;
+	position: relative;
 }
 
 .mini-card > div{
