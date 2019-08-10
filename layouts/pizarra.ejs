@@ -4,17 +4,24 @@
         <div class="nav-wrapper pizarra-color">
             <!--Logo-->
             <span class="brand-logo left"
-            <%if(typeof messages != "undefined"){%>
-                  onclick="apretaste.send({'command':'PIZARRA PERFIL', 'data':{'username': '<%=myUser.username%>'}})"
-            <%}else{%>
-                onclick="apretaste.send({'command':'PIZARRA PERFIL'})"
-            <%}%>
+            <% if(typeof messages != "undefined"){ %>
+                  onclick="apretaste.send({'command':'PIZARRA PERFIL', 'data':{'username': '<%= myUser.username %>'}})"
+            <% }else{ %>
+                  onclick="apretaste.send({'command':'PIZARRA PERFIL'})"
+            <% } %>
             >
-                <div style="<%=getAvatar(myUser.avatar, "{{APP_SERVICE_PATH}}/images", 32)%> background-color: <%=colors[myUser.avatarColor]%>;" id="top-avatar">
+                <div style="<%= getAvatar(myUser.avatar, "{{APP_SERVICE_PATH}}/images", 32) %> background-color: <%= colors[myUser.avatarColor] %>;"
+                     id="top-avatar">
                     <i class="material-icons online-icon">brightness_1</i>
                 </div>
             </span>
-            <span id="avatar-info">
+            <span id="avatar-info"
+            <% if(typeof messages != "undefined"){ %>
+                  onclick="apretaste.send({'command':'PIZARRA PERFIL', 'data':{'username': '<%= myUser.username %>'}})"
+            <% }else{ %>
+                  onclick="apretaste.send({'command':'PIZARRA PERFIL'})"
+            <% } %>
+            >
                 <b>
                     @<%= myUser.username %>
                     <br>
@@ -30,11 +37,11 @@
                 </li>
                 <li id="chatButton">
                     <a href="#!" class="black-text"
-                    <%if(typeof profile != "undefined" && profile.id != myUser.id){%>
-                       onclick="apretaste.send({'command':'PIZARRA CONVERSACION', 'data':{'userId':'<%=profile.id%>'}})"
-                    <%}else{%>
+                            <% if(typeof profile != "undefined" && profile.id != myUser.id){ %>
+                       onclick="apretaste.send({'command':'PIZARRA CONVERSACION', 'data':{'userId':'<%= profile.id %>'}})"
+                    <% }else{ %>
                        onclick="apretaste.send({'command':'PIZARRA CHAT'})"
-                    <%}%>
+                            <% } %>
                     >
                         <i class="material-icons white-text">chat</i>
                     </a>
@@ -105,4 +112,4 @@
     </div>
 </div>
 
-<%-'<serviceImgPath data="{{APP_SERVICE_PATH}}/images"></serviceImgPath>'%>
+<%- '<serviceImgPath data="{{APP_SERVICE_PATH}}/images"></serviceImgPath>' %>

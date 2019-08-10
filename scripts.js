@@ -513,6 +513,46 @@ function getCountries() {
 	];
 }
 
+var province = {
+	'PINAR_DEL_RIO':'Pinar del Río',
+	'ARTEMISA': 'Artemisa',
+	'LA_HABANA': 'La Habana',
+	'MAYABEQUE': 'Mayabeque',
+	'MATANZAS': 'Matanzas',
+	'CIENFUEGOS': 'Cienfuegos',
+	'VILLA_CLARA': 'Villa Clara',
+	'SANCTI_SPIRITUS': 'Sancti Spíritus',
+	'CIEGO_DE_AVILA': 'Ciego de Ávila',
+	'CAMAGUEY': 'Camagüey',
+	'LAS_TUNAS': 'Las Tunas',
+	'GRANMA': 'Granma',
+	'HOLGUIN': 'Holguín',
+	'SANTIAGO_DE_CUBA': 'Santiago de Cuba',
+	'GUANTANAMO': 'Guantánamo',
+	'ISLA_DE_LA_JUVENTUD': 'Isla de la Juventud'
+};
+
+function showStateOrProvince() {
+	var country = $('#country').val();
+	var province = $('.province-div');
+	var usstate = $('.usstate-div');
+
+	switch (country) {
+		case 'cu':
+			province.show();
+			usstate.hide();
+			break;
+		case 'us':
+			usstate.show();
+			province.hide();
+			break;
+		default:
+			usstate.hide();
+			province.hide();
+			break;
+	}
+}
+
 ///////// CHAT SCRIPTS /////////
 
 var optionsModalActive = false;
@@ -780,7 +820,7 @@ String.prototype.escapeHTML = function(){
 }
 
 Date.prototype.nowFormated = function() {
-	now = new Date(); // This current millisecond on user's computer.
+	var now = new Date(); // This current millisecond on user's computer.
 	var format = "{D}/{M}/{Y} · {h}:{m}{ap}";
 	var Month = now.getMonth() + 1;
 	format = format.replace(/\{M\}/g,Month);
@@ -799,4 +839,4 @@ Date.prototype.nowFormated = function() {
 	if(mm<10) { mm = "0"+mm; }
 	format = format.replace(/\{m\}/g,mm);
 	return format;
-}
+};

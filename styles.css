@@ -349,6 +349,10 @@ html, body {
                                     supported by Chrome and Opera */
 }
 
+ul.select-dropdown > li > span{
+	color: #285da0;
+}
+
 #profile-table td{
 	padding: 5px;
 }
