@@ -385,7 +385,7 @@ function like(id, type) {
 }
 
 function likeCallback(data) {
-	data = JSON.parse(data);
+	var data = JSON.parse(data);
 	var id = data.id;
 	var type = data.type;
 	var pubType = data.pubType;
