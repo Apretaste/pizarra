@@ -356,7 +356,7 @@ class Service
             if ($blocks->blocked > 0) {
                 continue;
             }
-            Utils::addNotification($m->id, "<span class="$color">@{$request->person->username}</span> le ha mencionado", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteID'}}", "comment");
+            Utils::addNotification($m->id, "<span class=\"$color\">@{$request->person->username}</span> le ha mencionado", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteID'}}", "comment");
 			$this->addReputation($m->id, $request->person->id, $noteID, 1);
 		}
     }
