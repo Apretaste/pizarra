@@ -2,7 +2,7 @@
 
 use Phalcon\DI\FactoryDefault;
 
-class Service
+class PizarraService extends ApretasteService
 {
 
 	/**
@@ -1027,7 +1027,10 @@ class Service
 		return $myUser;
 	}
 
-	private function profileCompletion($profile){
+	private function profileCompletion(){
+
+	    $profile = Utils::getPerson($this->request->person->id);
+	    
 		$total = 0;
 		$total += $profile->first_name ? 15 : 0;
 		$total += $profile->year_of_birth ? 15 : 0;
