@@ -24,12 +24,10 @@
         <%})%>
     </div>
 
-    <div class="col s12" id="popular-topics" style="display: none;">
-        <div class="row center-align">
-            <% topics.forEach(function(topic){ %>
+    <div class="col s12 center-align" id="popular-topics" style="display: none;">
+        <% topics.forEach(function(topic){ %>
             <a style="font-size: <%= topic.size+3 %>px;" class="pizarra-color-text"
                onclick="apretaste.send({'command':'PIZARRA','data':{'search':'#<%= topic.name %>'}})">#<%= topic.name %>  </a>
-            <% }); %>
-        </div>
+        <% }); %>
     </div>
 </div>

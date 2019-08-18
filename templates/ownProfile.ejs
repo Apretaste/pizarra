@@ -55,7 +55,7 @@
 
 		<!-- HIGHEST SCHOOL LEVEL-->
 		<% var highest_school_level = ["PRIMARIO","SECUNDARIO","TECNICO","UNIVERSITARIO","POSTGRADUADO","DOCTORADO","OTRO"] %>
-		<div class="input-field col s12 m6 <%=profile.highest_school_level == "" ? "hide" : ""%>">
+		<div class="input-field col s12 m6">
 			<i class="material-icons prefix grey-text text-darken-2">school</i>
 			<select id="highest_school_level" class="validate">
 				<option value=""></option>
@@ -68,7 +68,7 @@
 
 		<!-- OCCUPATION -->
 		<% var profesion = ["TRABAJADOR ESTATAL","CUENTAPROPISTA","ESTUDIANTE","AMA DE CASA","DESEMPLEADO","OTRO"] %>
-		<div class="input-field col s12 m6 <%=profile.occupation == "" ? "hide" : ""%>">
+		<div class="input-field col s12 m6">
 			<i class="material-icons prefix grey-text text-darken-2">business_center</i>
 			<select id="occupation" class="validate">
 				<option value=""><%=profesion.indexOf(profile.occupation) == -1 ? profile.occupation : ""%></option>
@@ -92,7 +92,7 @@
 		</div>
 
 		<!-- PROVINCE-->
-		<div class="input-field province-div col s12 m6 <%=profile.province == "" ? "hide" : ""%>">
+		<div class="input-field province-div col s12 m6">
 			<i class="material-icons prefix grey-text text-darken-2">place</i>
 			<select id="province" class="validate">
 				<option value=""></option>
@@ -104,7 +104,7 @@
 		</div>
 
 		<!-- CITY -->
-		<div class="input-field col s12 m6 <%=profile.city == "" ? "hide" : ""%>">
+		<div class="input-field col s12 m6">
 			<i class="material-icons prefix grey-text text-darken-2">place</i>
 			<input id="city" type="text" value="<%= profile.city %>" class="validate"/>
 			<label for="city">¿En que ciudad o pueblo vives?</label>
@@ -113,7 +113,7 @@
 
 		<!-- RELIGION -->
 		<% var religion = ["CRISTIANISMO","CATOLICISMO","YORUBA","PROTESTANTE","SANTERO","ABAKUA","BUDISMO","ISLAM","ATEISMO","AGNOSTICISMO","SECULARISMO","OTRA"] %>
-		<div class="input-field col s12 m6 <%=profile.religion == "" ? "hide" : ""%>">
+		<div class="input-field col s12 m6">
 			<i class="material-icons prefix grey-text text-darken-2">flare</i>
 			<select id="religion" class="validate">
 				<option value=""></option>
