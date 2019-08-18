@@ -449,9 +449,13 @@ class Service
 		$myUser = $this->preparePizarraUser($request->person);
 
 		// get the list of most popular users
-		$populars = q("SELECT A.id_person, A.avatar, A.avatarColor, B.username, B.first_name, B.country, B.province, B.about_me,  B.gender, B.year_of_birth, B.highest_school_level, B.online, (SELECT SUM(amount) FROM _pizarra_reputation WHERE id_person = A.id_person) AS reputation FROM _pizarra_users A JOIN person B ON A.id_person = B.id ORDER BY reputation DESC LIMIT 10");
+		$populars = q('SELECT A.id_person, A.avatar, A.avatarColor, B.username, B.first_name, B.country, 
+                               B.province, B.about_me,  B.gender, B.year_of_birth, B.highest_school_level, B.online, 
+                               (SELECT SUM(amount) FROM _pizarra_reputation WHERE id_person = A.id_person) AS reputation 
+                        FROM _pizarra_users A JOIN person B ON A.id_person = B.id ORDER BY reputation DESC LIMIT 10');
+
 		foreach ($populars as $popular) {
-			$popular->avatar = empty($popular->avatar) ? ($popular->gender == "M" ? "Hombre" : ($popular->gender == "F" ? "Señorita" : "Hombre")) : $popular->avatar;
+			$popular->avatar = empty($popular->avatar) ? ($popular->gender === "M" ? "Hombre" : ($popular->gender == "F" ? "Señorita" : "Hombre")) : $popular->avatar;
 			$popular->reputation = floor(($popular->reputation ?? 0) + $this->profileCompletion($popular));
 		}
 
@@ -1002,7 +1006,11 @@ class Service
 
 	private function preparePizarraUser($profile)
 	{
-		$myUser = q("SELECT (SELECT SUM(amount) AS reputation FROM _pizarra_reputation WHERE id_person='{$profile->id}') AS reputation, avatar, avatarColor, default_topic AS topic FROM _pizarra_users WHERE id_person='{$profile->id}'");
+		$myUser = q("SELECT (SELECT SUM(amount) AS reputation 
+                FROM _pizarra_reputation 
+                WHERE id_person='{$profile->id}') AS reputation, avatar, avatarColor, 
+                default_topic AS topic FROM _pizarra_users WHERE id_person='{$profile->id}'");
+
 		if (empty($myUser)) {
 			// create the user in the table if do not exist
 			q("INSERT IGNORE INTO _pizarra_users (id_person) VALUES ('{$profile->id}')");
@@ -1020,6 +1028,7 @@ class Service
 	}
 
 	private function profileCompletion($profile){
+	    $profile = Social::prepareUserProfile($profile, false);
 		$total = 0;
 		$total += $profile->first_name ? 15 : 0;
 		$total += $profile->year_of_birth ? 15 : 0;
