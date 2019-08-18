@@ -1,5 +1,6 @@
 <?php
 
+use Apretaste\Core;
 use Phalcon\DI\FactoryDefault;
 
 class PizarraService extends ApretasteService
@@ -1030,7 +1031,10 @@ class PizarraService extends ApretasteService
 	private function profileCompletion(){
 
 	    $profile = Utils::getPerson($this->request->person->id);
-	    
+
+	    if (!isset($profile->highest_school_level))
+	        Core::log('Person not exists in pizarra::profileCompletion: '.json_encode($profile), 'pizarra');
+
 		$total = 0;
 		$total += $profile->first_name ? 15 : 0;
 		$total += $profile->year_of_birth ? 15 : 0;
