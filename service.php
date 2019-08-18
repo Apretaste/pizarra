@@ -401,7 +401,7 @@ class Service
 		// send a notificaction to the owner of the note
 		$color = $request->person->gender == "M" ? "pizarra-color-text" : ($request->person->gender == "F" ? "pink-text" : "black-text");
 		if ($request->person->id != $note->id_person) {
-			Utils::addNotification($note->id_person, "<span class='$color'>@{$request->person->username}</span> ha comentado tu publicación", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}}", "comment");
+			Utils::addNotification($note->id_person, "<span class=\"$color\">@{$request->person->username}</span> ha comentado tu publicación", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}}", "comment");
 			$this->addReputation($note->id_person, $request->person->id, $noteId, 0.6);
 		}
 	}
@@ -734,7 +734,7 @@ class Service
 		// send notification for the app
 		Utils::addNotification(
 			$userTo->id,
-			"<span class='$color'>@{$request->person->username}</span> le ha enviado un mensaje",
+			"<span class=\"$color\">@{$request->person->username}</span> le ha enviado un mensaje",
 			"{'command':'PIZARRA CONVERSACION', 'data':{'userId':'{$request->person->id}'}}",
 			'message'
 		);
