@@ -18,7 +18,7 @@ class Service
     public function _main(Request $request, Response &$response)
     {
         // get the type of search
-        $keyword = $request->input->data->search ?? '';
+        $keyword = $request->input->data->search ?? "";
         $search = $this->getSearchType($keyword);
         $searchType = $search[0];
         $searchValue = $search[1];
@@ -27,19 +27,19 @@ class Service
         $profile = $request->person;
 
         // get notes if searched by topic
-        if ($searchType === 'topic') {
+        if ($searchType == "topic") {
             $notes = $this->getNotesByTopic($profile, $searchValue);
             $title = "#$searchValue";
         }
 
         // get notes if searched by username
-        if ($searchType === 'username') {
+        if ($searchType == "username") {
             $notes = $this->getNotesByUsername($profile, $searchValue);
             $title = "Notas de @$searchValue";
         }
 
         // get notes if searched by keyword
-        if ($searchType === 'keyword') {
+        if ($searchType == "keyword") {
             $notes = $this->getNotesByKeyword($profile, $searchValue);
             $title = $searchValue;
         }
@@ -52,11 +52,11 @@ class Service
 
         if (empty($notes)) {
             $content = [
-                'header'     => 'Lo sentimos',
-                'icon'       => 'sentiment_very_dissatisfied',
-                'text'       => 'No encontramos notas que vayan con su búsqueda. Puede buscar por palabras, por @username o por #Tema.',
-                'activeIcon' => 1,
-                'myUser'     => $myUser
+                "header"     => "Lo sentimos",
+                "icon"       => "sentiment_very_dissatisfied",
+                "text"       => "No encontramos notas que vayan con su búsqueda. Puede buscar por palabras, por @username o por #Tema.",
+                "activeIcon" => 1,
+                "myUser"     => $myUser
             ];
 
             $response->setLayout('pizarra.ejs');
@@ -66,10 +66,10 @@ class Service
         }
 
         // get most popular topics of last 7 days
-        $popularTopics = Connection::query('
+        $popularTopics = Connection::query("
 			SELECT topic FROM _pizarra_topics
 			WHERE created > DATE_ADD(NOW(), INTERVAL -7 DAY)
-			GROUP BY topic ORDER BY COUNT(id) DESC LIMIT 10');
+			GROUP BY topic ORDER BY COUNT(id) DESC LIMIT 10");
 
         $topics = [];
         foreach ($popularTopics as $topic) {
@@ -79,18 +79,18 @@ class Service
 
         // create variables for the template
         $content = [
-            'isProfileIncomplete' => $profile->completion < 70,
-            'notes'               => $notes,
-            'popularTopics'       => $topics,
-            'title'               => $title,
-            'num_notifications'   => $profile->notifications,
-            'myUser'              => $myUser,
+            "isProfileIncomplete" => $profile->completion < 70,
+            "notes"               => $notes,
+            "popularTopics"       => $topics,
+            "title"               => $title,
+            "num_notifications"   => $profile->notifications,
+            "myUser"              => $myUser,
             'activeIcon'          => 1
         ];
 
         // create the response
         $response->setLayout('pizarra.ejs');
-        $response->SetTemplate('main.ejs', $content, $images);
+        $response->SetTemplate("main.ejs", $content, $images);
     }
 
     /**
@@ -104,12 +104,12 @@ class Service
      */
     public function _like(Request $request, Response &$response)
     {
-        $type = isset($request->input->data->note) ? 'note' : 'comment';
-        $actionsTable = $type === 'note' ? '_pizarra_actions' : '_pizarra_comments_actions';
-        $rowsTable = $type === 'note' ? '_pizarra_notes' : '_pizarra_comments';
-        $noteId = $type === 'note' ? $request->input->data->note : $request->input->data->comment;
+        $type = isset($request->input->data->note) ? "note" : "comment";
+        $actionsTable = $type == "note" ? "_pizarra_actions" : "_pizarra_comments_actions";
+        $rowsTable = $type == "note" ? "_pizarra_notes" : "_pizarra_comments";
+        $noteId = $type == "note" ? $request->input->data->note : $request->input->data->comment;
 
-        if ($noteId === 'last') {
+        if ($noteId == "last") {
             $noteId = Connection::query("SELECT MAX(id) AS id FROM $rowsTable WHERE id_person = '{$request->person->id}'")[0]->id;
         }
         // check if the user already liked this note
@@ -121,7 +121,7 @@ class Service
         }
 
         if (!empty($res)) {
-            if ($res[0]->action === 'unlike') {
+            if ($res[0]->action == 'unlike') {
                 // delete previous vote and add new vote
                 Connection::query("
 				UPDATE $actionsTable SET `action`='like' WHERE id_person='{$request->person->id}' AND $type='{$noteId}';
@@ -143,7 +143,7 @@ class Service
 
         // create notification for the creator
         if ($request->person->id != $note->id_person) {
-            Utils::addNotification($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}", 'thumb_up');
+            Utils::addNotification($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}", "thumb_up");
         }
     }
 
@@ -158,12 +158,12 @@ class Service
      */
     public function _unlike(Request $request, Response $response)
     {
-        $type = isset($request->input->data->note) ? 'note' : 'comment';
-        $actionsTable = $type === 'note' ? '_pizarra_actions' : '_pizarra_comments_actions';
-        $rowsTable = $type === 'note' ? '_pizarra_notes' : '_pizarra_comments';
-        $noteId = $type === 'note' ? $request->input->data->note : $request->input->data->comment;
+        $type = isset($request->input->data->note) ? "note" : "comment";
+        $actionsTable = $type == "note" ? "_pizarra_actions" : "_pizarra_comments_actions";
+        $rowsTable = $type == "note" ? "_pizarra_notes" : "_pizarra_comments";
+        $noteId = $type == "note" ? $request->input->data->note : $request->input->data->comment;
 
-        if ($noteId === 'last') {
+        if ($noteId == "last") {
             $noteId = Connection::query("SELECT MAX(id) AS id FROM $rowsTable WHERE id_person = '{$request->person->id}'")[0]->id;
         }
         // check if the user already liked this note
@@ -175,7 +175,7 @@ class Service
         }
 
         if (!empty($res)) {
-            if ($res[0]->action === 'like') {
+            if ($res[0]->action == 'like') {
                 // delete previos vote and add new vote
                 Connection::query("
 				UPDATE $actionsTable SET `action`='unlike' WHERE id_person='{$request->person->id}' AND $type='{$noteId}';
@@ -209,7 +209,7 @@ class Service
     public function _nota(Request $request, Response $response)
     {
         $noteId = $request->input->data->note;
-        if ($noteId === 'last') {
+        if ($noteId == "last") {
             $noteId = Connection::query("SELECT MAX(id) AS id FROM _pizarra_notes WHERE id_person = '{$request->person->id}'")[0]->id;
         }
 
@@ -289,7 +289,7 @@ class Service
         ];
 
         $response->setLayout('pizarra.ejs');
-        $response->SetTemplate('note.ejs', $content, $images);
+        $response->SetTemplate("note.ejs", $content, $images);
     }
 
     /**
@@ -327,9 +327,9 @@ class Service
         // get all the topics from the post
         preg_match_all('/#\w*/', $text, $topics);
         $topics = empty($topics[0]) ? [Connection::query("SELECT default_topic FROM _pizarra_users WHERE id_person='{$request->person->id}'")[0]->default_topic] : $topics[0];
-        $topic1 = isset($topics[0]) ? str_replace('#', '', $topics[0]) : '';
-        $topic2 = isset($topics[1]) ? str_replace('#', '', $topics[1]) : '';
-        $topic3 = isset($topics[2]) ? str_replace('#', '', $topics[2]) : '';
+        $topic1 = isset($topics[0]) ? str_replace("#", "", $topics[0]) : "";
+        $topic2 = isset($topics[1]) ? str_replace("#", "", $topics[1]) : "";
+        $topic3 = isset($topics[2]) ? str_replace("#", "", $topics[2]) : "";
 
         // save note to the database
         $cleanText = Connection::escape($text, 300);
@@ -341,7 +341,7 @@ class Service
 
         // save the topics to the topics table
         foreach ($topics as $topic) {
-            $topic = str_replace('#', '', $topic);
+            $topic = str_replace("#", "", $topic);
             $topic = Connection::escape($topic, 20);
             Connection::query("
 				INSERT INTO _pizarra_topics(topic, note, id_person)
@@ -350,13 +350,13 @@ class Service
 
         // notify users mentioned
         $mentions = $this->findUsersMentionedOnText($text);
-        $color = $request->person->gender === 'M' ? 'pizarra-color-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
+        $color = $request->person->gender == "M" ? "pizarra-color-text" : ($request->person->gender == "F" ? "pink-text" : "black-text");
         foreach ($mentions as $m) {
             $blocks = Social::isBlocked($request->person->id, $m->id);
             if ($blocks->blocked > 0) {
                 continue;
             }
-            Utils::addNotification($m->id, '<span class='$color">@{$request->person->username}</span> le ha mencionado", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteID'}}", 'comment');
+            Utils::addNotification($m->id, "<span class="$color">@{$request->person->username}</span> le ha mencionado", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteID'}}", "comment");
 			$this->addReputation($m->id, $request->person->id, $noteID, 1);
 		}
     }
@@ -414,14 +414,14 @@ class Service
             if ($blocks->blocked || $blocks->blockedByMe) {
                 continue;
             }
-            Utils::addNotification($mention->id, "El usuario @{$request->person->username} le ha mencionado en la pizarra", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}}", 'comment');
+            Utils::addNotification($mention->id, "El usuario @{$request->person->username} le ha mencionado en la pizarra", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}}", "comment");
             $this->addReputation($mention->id, $request->person->id, $noteId, 1);
         }
 
         // send a notificaction to the owner of the note
-        $color = $request->person->gender === 'M' ? 'pizarra-color-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
+        $color = $request->person->gender == "M" ? "pizarra-color-text" : ($request->person->gender == "F" ? "pink-text" : "black-text");
         if ($request->person->id != $note->id_person) {
-            Utils::addNotification($note->id_person, '<span class='$color">@{$request->person->username}</span> ha comentado tu publicación", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}}", 'comment');
+            Utils::addNotification($note->id_person, "<span class="$color">@{$request->person->username}</span> ha comentado tu publicación", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}}", "comment");
 			$this->addReputation($note->id_person, $request->person->id, $noteId, 0.6);
 		}
     }
@@ -476,7 +476,7 @@ class Service
                         FROM _pizarra_users A JOIN person B ON A.id_person = B.id ORDER BY reputation DESC LIMIT 10');
 
         foreach ($populars as $popular) {
-            $popular->avatar = empty($popular->avatar) ? ($popular->gender === 'M' ? 'Hombre' : ($popular->gender === 'F' ? 'Señorita' : 'Hombre')) : $popular->avatar;
+            $popular->avatar = empty($popular->avatar) ? ($popular->gender === "M" ? "Hombre" : ($popular->gender == "F" ? "Señorita" : "Hombre")) : $popular->avatar;
             $popular->reputation = floor(($popular->reputation ?? 0) + $this->profileCompletion($popular));
         }
 
@@ -484,9 +484,9 @@ class Service
         $images = ["$pathToService/images/avatars.png"];
 
         $response->setLayout('pizarra.ejs');
-        $response->SetTemplate('populars.ejs', [
-            'topics'     => $topics,
-            'populars'   => $populars,
+        $response->SetTemplate("populars.ejs", [
+            "topics"     => $topics,
+            "populars"   => $populars,
             'myUser'     => $myUser,
             'activeIcon' => 2
         ], $images);
@@ -517,11 +517,11 @@ class Service
         // if no notifications, let the user know
         if (empty($notifications)) {
             $content = [
-                'header'     => 'Nada por leer',
-                'icon'       => 'notifications_off',
-                'text'       => 'Por ahora usted no tiene ninguna notificación por leer.',
-                'activeIcon' => 3,
-                'myUser'     => $this->preparePizarraUser($request->person)
+                "header"     => "Nada por leer",
+                "icon"       => "notifications_off",
+                "text"       => "Por ahora usted no tiene ninguna notificación por leer.",
+                "activeIcon" => 3,
+                "myUser"     => $this->preparePizarraUser($request->person)
             ];
 
             $response->setLayout('pizarra.ejs');
@@ -535,10 +535,10 @@ class Service
 
         // prepare content for the view
         $content = [
-            'notifications' => $notifications,
-            'title'         => 'Notificaciones',
-            'activeIcon'    => 3,
-            'myUser'        => $this->preparePizarraUser($request->person)
+            "notifications" => $notifications,
+            "title"         => "Notificaciones",
+            "activeIcon"    => 3,
+            "myUser"        => $this->preparePizarraUser($request->person)
         ];
 
         // build the response
@@ -591,7 +591,7 @@ class Service
                     'myUser'            => $myUser,
                     'activeIcon'        => 1
                 ];
-                $response->SetTemplate('blocked.ejs', $content, $images);
+                $response->SetTemplate("blocked.ejs", $content, $images);
 
                 return;
             }
@@ -612,19 +612,19 @@ class Service
 
         // create data for the view
         $content = [
-            'profile'    => $person,
+            "profile"    => $person,
             'myUser'     => $myUser,
             'activeIcon' => 1
         ];
 
         if ($person->id == $request->person->id) {
             $response->setLayout('pizarra.ejs');
-            $response->SetTemplate('ownProfile.ejs', $content, $images);
+            $response->SetTemplate("ownProfile.ejs", $content, $images);
         } else {
             $this->getTags($person);
 
             $response->setLayout('pizarra.ejs');
-            $response->SetTemplate('profile.ejs', $content, $images);
+            $response->SetTemplate("profile.ejs", $content, $images);
         }
     }
 
@@ -649,12 +649,12 @@ class Service
         // if no matches, let the user know
         if (empty($chats)) {
             $content = [
-                'header'     => 'No tiene conversaciones',
-                'icon'       => 'sentiment_very_dissatisfied',
-                'text'       => 'Aún no ha hablado con nadie.',
-                'title'      => 'chats',
-                'myUser'     => $myUser,
-                'activeIcon' => 1
+                "header"     => "No tiene conversaciones",
+                "icon"       => "sentiment_very_dissatisfied",
+                "text"       => "Aún no ha hablado con nadie.",
+                "title"      => "chats",
+                "myUser"     => $myUser,
+                "activeIcon" => 1
             ];
 
             $response->setLayout('pizarra.ejs');
@@ -673,13 +673,13 @@ class Service
         }
 
         $content = [
-            'chats'      => $chats,
-            'myUser'     => $myUser,
-            'activeIcon' => 1
+            "chats"      => $chats,
+            "myUser"     => $myUser,
+            "activeIcon" => 1
         ];
 
         $response->setLayout('pizarra.ejs');
-        $response->setTemplate('chats.ejs', $content, $images);
+        $response->setTemplate("chats.ejs", $content, $images);
     }
 
     public function _conversacion(Request $request, Response $response)
@@ -693,7 +693,7 @@ class Service
             $pathToService = Utils::getPathToService($response->serviceName);
             $images = ["$pathToService/images/{$user->avatar}.png"];
 
-            $response->setTemplate('notFound.ejs', ['myUser' => $myUser], $images);
+            $response->setTemplate("notFound.ejs", ['myUser' => $myUser], $images);
 
             return;
         }
@@ -716,18 +716,18 @@ class Service
         $images = ["$pathToService/images/avatars.png"];
 
         $content = [
-            'messages'   => $chats,
-            'username'   => $user->username,
-            'myusername' => $request->person->username,
-            'id'         => $user->id,
-            'online'     => $user->online,
-            'last'       => date('d/m/Y h:ia', strtotime($user->last_access)),
-            'title'      => $user->first_name,
-            'myUser'     => $this->preparePizarraUser($user)
+            "messages"   => $chats,
+            "username"   => $user->username,
+            "myusername" => $request->person->username,
+            "id"         => $user->id,
+            "online"     => $user->online,
+            "last"       => date('d/m/Y h:ia', strtotime($user->last_access)),
+            "title"      => $user->first_name,
+            "myUser"     => $this->preparePizarraUser($user)
         ];
 
         $response->setlayout('pizarra.ejs');
-        $response->setTemplate('conversation.ejs', $content, $images);
+        $response->setTemplate("conversation.ejs", $content, $images);
     }
 
     /**
@@ -753,7 +753,7 @@ class Service
             Utils::addNotification(
                 $request->person->id,
                 "Su mensaje para @{$userTo->username} no pudo ser entregado, es posible que usted haya sido bloqueado por esa persona.",
-                '{}',
+                "{}",
                 'error'
             );
 
@@ -764,12 +764,12 @@ class Service
         $message = Connection::escape($message, 499);
         Connection::query("INSERT INTO _note (from_user, to_user, `text`) VALUES ({$request->person->id},{$userTo->id},'$message')");
 
-        $color = $request->person->gender === 'M' ? 'pizarra-color-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
+        $color = $request->person->gender == "M" ? "pizarra-color-text" : ($request->person->gender == "F" ? "pink-text" : "black-text");
 
         // send notification for the app
         Utils::addNotification(
             $userTo->id,
-            '<span class='$color">@{$request->person->username}</span> le ha enviado un mensaje",
+            "<span class="$color">@{$request->person->username}</span> le ha enviado un mensaje",
 			"{'command':'PIZARRA CONVERSACION', 'data':{'userId':'{$request->person->id}'}}",
 			'message'
 		);
@@ -838,7 +838,7 @@ class Service
     public function _ayuda(Request $request, Response $response)
     {
         $response->setLayout('pizarra.ejs');
-        $response->SetTemplate('help.ejs', ['num_notifications' => $request->person->notifications]);
+        $response->SetTemplate("help.ejs", ["num_notifications" => $request->person->notifications]);
     }
 
     private function addReputation($toId, $fromId, $noteId, $amount)
@@ -861,7 +861,7 @@ class Service
     {
         // return topic selected by the user if blank
         if (empty($keyword)) {
-            return ['topic', 'general'];
+            return ["topic", "general"];
             /*$topic = Connection::query("SELECT default_topic FROM _pizarra_users WHERE id_person='$id'");
             if(empty($topic[0]->default_topic))
             {
@@ -877,21 +877,21 @@ class Service
         }
 
         // get the number of words passed
-        $oneWord = count(explode(' ', $keyword)) == 1;
+        $oneWord = count(explode(" ", $keyword)) == 1;
 
         // check if searching for a username
-        if ($oneWord && strlen($keyword) > 2 && $keyword[0] === '@') {
-            return ['username', str_replace('@', '', $keyword)];
+        if ($oneWord && strlen($keyword) > 2 && $keyword[0] == "@") {
+            return ["username", str_replace("@", "", $keyword)];
         }
 
         // check if searching for a topic
-        $topicNoHashSymbol = str_replace('#', '', $keyword);
+        $topicNoHashSymbol = str_replace("#", "", $keyword);
         $topicExists = Connection::query("SELECT id FROM _pizarra_topics WHERE topic='$topicNoHashSymbol'");
         if ($topicExists) {
-            return ['topic', $topicNoHashSymbol];
+            return ["topic", $topicNoHashSymbol];
         } // else searching for words on a note
         else {
-            return ['keyword', $keyword];
+            return ["keyword", $keyword];
         }
     }
 
@@ -907,7 +907,7 @@ class Service
      */
     private function getNotesByTopic($profile, $topic)
     {
-        $where = $topic !== 'general' ? "WHERE (topic1='$topic' OR topic2='$topic' OR topic3='$topic') AND active=1" : 'WHERE active=1';
+        $where = $topic != "general" ? "WHERE (topic1='$topic' OR topic2='$topic' OR topic3='$topic') AND active=1" : "WHERE active=1";
         // set the topic as default for the user
 
         Connection::query("UPDATE _pizarra_users SET default_topic='$topic' WHERE id_person='{$profile->id}'");
@@ -1068,8 +1068,8 @@ class Service
         $myUser->username = $profile->username;
         $myUser->gender = $profile->gender;
         $myUser->reputation = floor(($myUser->reputation ?? 0) + $this->profileCompletion($profile));
-        $myUser->location = empty($profile->province) ? 'Cuba' : ucwords(strtolower(str_replace('_', ' ', $profile->province)));
-        $myUser->avatar = empty($myUser->avatar) ? ($myUser->gender === 'M' ? 'Hombre' : ($myUser->gender === 'F' ? 'Señorita' : 'Hombre')) : $myUser->avatar;
+        $myUser->location = empty($profile->province) ? "Cuba" : ucwords(strtolower(str_replace("_", " ", $profile->province)));
+        $myUser->avatar = empty($myUser->avatar) ? ($myUser->gender == "M" ? "Hombre" : ($myUser->gender == "F" ? "Señorita" : "Hombre")) : $myUser->avatar;
 
         return $myUser;
     }
@@ -1107,9 +1107,9 @@ class Service
     {
         // get the location
         if (empty($note->province)) {
-            $location = 'Cuba';
+            $location = "Cuba";
         } else {
-            $location = ucwords(strtolower(str_replace('_', ' ', $note->province)));
+            $location = ucwords(strtolower(str_replace("_", " ", $note->province)));
         }
 
         // crate topics array
@@ -1131,43 +1131,43 @@ class Service
             $note->image = false;
         }
 
-        $avatar = empty($note->avatar) ? ($note->gender === 'M' ? 'Hombre' : ($note->gender === 'F' ? 'Señorita' : 'Hombre')) : $note->avatar;
+        $avatar = empty($note->avatar) ? ($note->gender == "M" ? "Hombre" : ($note->gender == "F" ? "Señorita" : "Hombre")) : $note->avatar;
 
         // get the country and flag
-        $country = empty(trim($note->country)) ? 'cu' : strtolower($note->country);
+        $country = empty(trim($note->country)) ? "cu" : strtolower($note->country);
 
         // remove \" and \' from the note
         $note->text = str_replace('\"', '"', $note->text);
         $note->text = str_replace("\'", "'", $note->text);
-        $note->text = str_replace("\\n", '<br>', $note->text);
+        $note->text = str_replace("\\n", "<br>", $note->text);
 
         $note->text = htmlentities($note->text);
 
-        while (json_encode($note->text) == '') {
+        while (json_encode($note->text) == "") {
             $note->text = substr($note->text, 0, strlen($note->text) - 2);
         }
 
         // add the text to the array
         $newNote = [
-            'id'          => $note->id,
-            'id_person'   => $note->id_person,
-            'username'    => $note->username,
-            'location'    => $location,
-            'gender'      => $note->gender,
-            'text'        => $note->text,
-            'image'       => $note->image,
-            'inserted'    => date_format((new DateTime($note->inserted)), 'j/n/y · g:ia'),
-            'likes'       => isset($note->likes) ? $note->likes : 0,
-            'unlikes'     => isset($note->unlikes) ? $note->unlikes : 0,
-            'comments'    => isset($note->comments) ? $note->comments : 0,
-            'liked'       => isset($note->isliked) && $note->isliked,
-            'unliked'     => isset($note->isunliked) && $note->isunliked,
-            'ad'          => isset($note->ad) ? $note->ad : false,
-            'online'      => isset($note->online) ? $note->online : false,
-            'country'     => $country,
-            'avatar'      => $avatar,
-            'avatarColor' => $note->avatarColor,
-            'topics'      => $topics,
+            "id"          => $note->id,
+            "id_person"   => $note->id_person,
+            "username"    => $note->username,
+            "location"    => $location,
+            "gender"      => $note->gender,
+            "text"        => $note->text,
+            "image"       => $note->image,
+            "inserted"    => date_format((new DateTime($note->inserted)), 'j/n/y · g:ia'),
+            "likes"       => isset($note->likes) ? $note->likes : 0,
+            "unlikes"     => isset($note->unlikes) ? $note->unlikes : 0,
+            "comments"    => isset($note->comments) ? $note->comments : 0,
+            "liked"       => isset($note->isliked) && $note->isliked,
+            "unliked"     => isset($note->isunliked) && $note->isunliked,
+            "ad"          => isset($note->ad) ? $note->ad : false,
+            "online"      => isset($note->online) ? $note->online : false,
+            "country"     => $country,
+            "avatar"      => $avatar,
+            "avatarColor" => $note->avatarColor,
+            "topics"      => $topics,
             'canmodify'   => $note->id_person == $id,
         ];
 
@@ -1193,10 +1193,10 @@ class Service
         if ($matches[0]) {
             // get string of possible matches
             $usernames = "'".implode("','", $matches[0])."'";
-            $usernames = str_replace('@', '', $usernames);
-            $usernames = str_replace(",'',", ',', $usernames);
-            $usernames = str_replace(",''", '', $usernames);
-            $usernames = str_replace("'',", '', $usernames);
+            $usernames = str_replace("@", "", $usernames);
+            $usernames = str_replace(",'',", ",", $usernames);
+            $usernames = str_replace(",''", "", $usernames);
+            $usernames = str_replace("'',", "", $usernames);
 
             // check real matches against the database
             $users = Connection::query("SELECT id, email, username FROM person WHERE username in ($usernames)");
@@ -1219,11 +1219,11 @@ class Service
         $profileTags = [];
         $professionTags = [];
 
-        $genderLetter = $profile->gender === 'M' ? 'o' : 'a';
+        $genderLetter = $profile->gender == 'M' ? 'o' : 'a';
 
-        $profileTags[] = $profile->gender === 'M' ? 'Hombre' : 'Mujer';
-        $profileTags[] = $profile->age.' años';
-        if ($profile->religion && $profile->religion !== 'OTRA') {
+        $profileTags[] = $profile->gender == 'M' ? "Hombre" : "Mujer";
+        $profileTags[] = $profile->age." años";
+        if ($profile->religion && $profile->religion != "OTRA") {
             $profileTags[] = substr(strtolower($profile->religion), 0, -1).$genderLetter;
         }
 
@@ -1244,7 +1244,7 @@ class Service
 
         $profile->country = $countries[$profile->country];
 
-        if ($profile->highest_school_level !== 'OTRO') {
+        if ($profile->highest_school_level != "OTRO") {
             $professionTags[] = ucfirst(strtolower($profile->highest_school_level));
         }
         $professionTags[] = $profile->occupation;
