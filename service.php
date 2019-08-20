@@ -488,7 +488,7 @@ class Service
 			FROM notification
 			WHERE `to` = {$request->person->id} 
 			AND service = 'pizarra'
-			AND `read` IS NULL
+			AND `hidden` = 0
 			ORDER BY inserted DESC");
 
 		$pathToService = Utils::getPathToService($response->serviceName);
