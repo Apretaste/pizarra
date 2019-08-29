@@ -449,54 +449,68 @@ class Service
      */
     public function _populares(Request $request, Response $response): void
     {
-        // get list of topics
-        $ts = q("
+
+		$cacheFile = Utils::getTempDir()."/pizarra_populars.tmp";
+		if(file_exists($cacheFile) && time() < filemtime($cacheFile) + 15*60){
+			$cache = json_decode(file_get_contents($cacheFile));
+			$topics = $cache->topics;
+			$populars = $cache->populars;
+		}
+		else{
+			// get list of topics
+			$ts = q("
 			SELECT topic AS name, COUNT(id) AS cnt FROM _pizarra_topics
 			WHERE created > DATE_ADD(NOW(), INTERVAL -30 DAY)
 			AND topic <> 'general'
 			GROUP BY topic ORDER BY cnt DESC LIMIT 50");
 
-        // get params for the algorithm
-        $maxLetterSize = 30;
-        $minLetterSize = 10;
-        $maxTopicMentions = $ts[0]->cnt;
-        $minTopicMentions = $ts[count($ts) - 1]->cnt;
-        $rate = ($maxTopicMentions - $minTopicMentions) / ($maxLetterSize - $minLetterSize);
-        if ($rate === 0) {
-            $rate = 1;
-        } // avoid divisions by zero
+			// get params for the algorithm
+			$maxLetterSize = 30;
+			$minLetterSize = 10;
+			$maxTopicMentions = $ts[0]->cnt;
+			$minTopicMentions = $ts[count($ts) - 1]->cnt;
+			$rate = ($maxTopicMentions - $minTopicMentions) / ($maxLetterSize - $minLetterSize);
+			if ($rate === 0) {
+				$rate = 1;
+			} // avoid divisions by zero
 
-        // get topics letter size and color
-        $topics = [];
-        foreach ($ts as $t) {
-            $topic = new stdClass();
-            $topic->name = $t->name;
-            $topic->size = (($t->cnt - $minTopicMentions) / $rate) + $minLetterSize;
-            $topics[] = $topic;
-        }
+			// get topics letter size and color
+			$topics = [];
+			foreach ($ts as $t) {
+				$topic = new stdClass();
+				$topic->name = $t->name;
+				$topic->size = (($t->cnt - $minTopicMentions) / $rate) + $minLetterSize;
+				$topics[] = $topic;
+			}
 
-        // set topics in random order
-        shuffle($topics);
+			// set topics in random order
+			shuffle($topics);
+
+			// get the list of most popular users
+			$populars =
+				q('SELECT A.id_person, A.avatar, A.avatarColor, B.username, B.first_name, B.country, B.province, B.about_me,  B.gender, B.year_of_birth, B.highest_school_level, B.online, (SELECT SUM(amount) FROM _pizarra_reputation WHERE id_person = A.id_person) AS reputation FROM _pizarra_users A JOIN person B ON A.id_person = B.id ORDER BY reputation DESC LIMIT 10');
+			foreach ($populars as $popular) {
+				$popular->avatar = empty($popular->avatar) ? ($popular->gender === 'M' ? 'Hombre' : ($popular->gender === 'F' ? 'Señorita' : 'Hombre')) : $popular->avatar;
+				$popular->reputation = floor(($popular->reputation ?? 0) + $this->profileCompletion($popular));
+			}
+
+			usort($populars, function ($a, $b) {
+				if ($a->reputation == $b->reputation) {
+					return 0;
+				} elseif ($a->reputation < $b->reputation) {
+					return 1;
+				} else {
+					return -1;
+				}
+			});
+
+			$cache = new stdClass();
+			$cache->populars = $populars;
+			$cache->topics = $topics;
+			file_put_contents($cacheFile, json_encode($cache));
+		}
 
         $myUser = $this->preparePizarraUser($request->person);
-
-        // get the list of most popular users
-        $populars =
-            q('SELECT A.id_person, A.avatar, A.avatarColor, B.username, B.first_name, B.country, B.province, B.about_me,  B.gender, B.year_of_birth, B.highest_school_level, B.online, (SELECT SUM(amount) FROM _pizarra_reputation WHERE id_person = A.id_person) AS reputation FROM _pizarra_users A JOIN person B ON A.id_person = B.id ORDER BY reputation DESC LIMIT 10');
-        foreach ($populars as $popular) {
-            $popular->avatar = empty($popular->avatar) ? ($popular->gender === 'M' ? 'Hombre' : ($popular->gender === 'F' ? 'Señorita' : 'Hombre')) : $popular->avatar;
-            $popular->reputation = floor(($popular->reputation ?? 0) + $this->profileCompletion($popular));
-        }
-
-        usort($populars, function ($a, $b) {
-            if ($a->reputation == $b->reputation) {
-                return 0;
-            } elseif ($a->reputation < $b->reputation) {
-                return 1;
-            } else {
-                return -1;
-            }
-        });
 
         $pathToService = Utils::getPathToService($response->serviceName);
         $images = ["$pathToService/images/avatars.png"];
