@@ -215,7 +215,7 @@ class Service
         $result = q("
 			SELECT
 				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
-				B.avatar, B.avatarColor, C.username, C.first_name, C.last_name, C.province, C.picture, C.gender, C.country, C.online,
+				C.avatar, C.avatarColor, C.username, C.first_name, C.last_name, C.province, C.picture, C.gender, C.country, C.online,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_notes A LEFT JOIN _pizarra_users B ON A.id_person = B.id_person LEFT JOIN person C ON C.id = B.id_person
@@ -250,14 +250,12 @@ class Service
 
         // get note comments
         $cmts = q("
-			SELECT A.*, B.username, B.province, B.picture, B.gender, B.country, B.online, C.avatar, C.avatarColor,
+			SELECT A.*, B.username, B.province, B.picture, B.gender, B.country, B.online, B.avatar, B.avatarColor,
 			(SELECT COUNT(comment) FROM _pizarra_comments_actions WHERE comment=A.id AND A.id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
 			(SELECT COUNT(comment) FROM _pizarra_comments_actions WHERE comment=A.id AND A.id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_comments A
 			LEFT JOIN person B
 			ON A.id_person = B.id
-			LEFT JOIN _pizarra_users C
-			ON C.id_person = B.id
 			WHERE note = '$noteId'");
 
         // format comments
@@ -488,7 +486,7 @@ class Service
 
 			// get the list of most popular users
 			$populars =
-				q('SELECT A.id_person, A.avatar, A.avatarColor, B.username, B.first_name, B.country, B.province, B.about_me,  B.gender, B.year_of_birth, B.highest_school_level, B.online, (SELECT SUM(amount) FROM _pizarra_reputation WHERE id_person = A.id_person) AS reputation FROM _pizarra_users A JOIN person B ON A.id_person = B.id ORDER BY reputation DESC LIMIT 10');
+				q('SELECT A.id_person, B.avatar, B.avatarColor, B.username, B.first_name, B.country, B.province, B.about_me,  B.gender, B.year_of_birth, B.highest_school_level, B.online, A.reputation FROM _pizarra_users A JOIN person B ON A.id_person = B.id ORDER BY reputation DESC LIMIT 10');
 			foreach ($populars as $popular) {
 				$popular->avatar = empty($popular->avatar) ? ($popular->gender === 'M' ? 'Hombre' : ($popular->gender === 'F' ? 'Señorita' : 'Hombre')) : $popular->avatar;
 				$popular->reputation = floor(($popular->reputation ?? 0) + $this->profileCompletion($popular));
@@ -532,7 +530,7 @@ class Service
      *
      * @author salvipascual
      */
-    public function _notificaciones(Request $request, Response $response): ?\Response
+    public function _notificaciones(Request $request, Response $response)
     {
         // get all unread notifications
         $notifications = q("
@@ -949,7 +947,7 @@ class Service
 			SELECT
 				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country, B.online,
-				C.reputation, C.avatar, C.avatarColor, 
+				C.reputation, B.avatar, B.avatarColor, 
 				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$profile->id}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$profile->id}' AND action='unlike') > 0 AS isunliked
@@ -1018,14 +1016,12 @@ class Service
 
         // get the last 50 records from the db
         $listOfNotes = q("
-			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, C.avatar, C.avatarColor,
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor,
 			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$profile->id}' AND `action` = 'like') > 0 AS isliked,
 			(SELECT COUNT(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) AS comments
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.id_person = B.id
-			LEFT JOIN _pizarra_users C
-			ON C.id_person = B.id
 			WHERE A.active=1 AND B.id = '$user->id'
 			ORDER BY inserted DESC
 			LIMIT 20");
@@ -1054,14 +1050,12 @@ class Service
     {
         // get the last 50 records from the db
         $listOfNotes = q("
-			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.online, C.avatar, C.avatarColor,
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.online, B.avatar, B.avatarColor,
 			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person= '{$profile->id}' AND `action` = 'like') > 0 AS isliked,
 			(SELECT count(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.id_person= B.id
-			LEFT JOIN _pizarra_users C
-			ON C.id_person = B.id
 			WHERE A.active=1 AND A.text like '%$keyword%' AND 
 			NOT EXISTS (SELECT * FROM relations 
 						WHERE `type` = 'blocked' AND confirmed=1 AND 
@@ -1083,11 +1077,11 @@ class Service
 
     private function preparePizarraUser($profile, $reputationRequired = true)
     {
-        $myUser = q("SELECT (SELECT SUM(amount) AS reputation FROM _pizarra_reputation WHERE id_person='{$profile->id}') AS reputation, avatar, avatarColor, default_topic AS topic FROM _pizarra_users WHERE id_person='{$profile->id}'");
+        $myUser = q("SELECT reputation, default_topic AS topic FROM _pizarra_users WHERE id_person='{$profile->id}'");
         if (empty($myUser)) {
             // create the user in the table if do not exist
             q("INSERT IGNORE INTO _pizarra_users (id_person) VALUES ('{$profile->id}')");
-            $myUser = q("SELECT reputation, avatar, avatarColor FROM _pizarra_users WHERE id_person='{$profile->id}'")[0];
+            $myUser = q("SELECT reputation, default_topic AS topic FROM _pizarra_users WHERE id_person='{$profile->id}'")[0];
         } else {
             $myUser = $myUser[0];
         }
@@ -1099,7 +1093,8 @@ class Service
             $myUser->reputation = floor(($myUser->reputation ?? 0) + $this->profileCompletion($profile));
         }
         $myUser->location = empty($profile->province) ? 'Cuba' : ucwords(strtolower(str_replace('_', ' ', $profile->province)));
-        $myUser->avatar = empty($myUser->avatar) ? ($myUser->gender === 'M' ? 'Hombre' : ($myUser->gender === 'F' ? 'Señorita' : 'Hombre')) : $myUser->avatar;
+        $myUser->avatar = empty($profile->avatar) ? ($myUser->gender === 'M' ? 'Hombre' : ($myUser->gender === 'F' ? 'Señorita' : 'Hombre')) : $profile->avatar;
+        $myUser->avatarColor = $profile->avatarColor;
 
         return $myUser;
     }
