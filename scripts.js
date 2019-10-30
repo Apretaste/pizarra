@@ -144,11 +144,21 @@ function getAvatar(avatar, serviceImgPath, size) {
 function setAvatar(avatar) {
 	if (typeof selectedColor == "undefined") selectedColor = myUser.avatarColor;
 	apretaste.send({
-		'command': 'PIZARRA PERFIL',
+		'command': 'PERFIL UPDATE',
 		'data': {
 			'avatar': avatar,
-			'color': selectedColor
+			'avatarColor': selectedColor
+		},
+		'redirect' : false,
+		'callback': {
+			'name': 'setAvatarCallback'
 		}
+	});
+}
+
+function setAvatarCallback() {
+	apretaste.send({
+		'command': 'PIZARRA PERFIL'
 	});
 }
 

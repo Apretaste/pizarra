@@ -142,6 +142,9 @@ class Service
 		if ($request->person->id != $note->id_person) {
 			Utils::addNotification($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}", 'thumb_up');
 		}
+
+		// complete the challenge
+		Challenges::complete("like-pizarra-note", $request->person->id);
 	}
 
 	/**
@@ -337,6 +340,8 @@ class Service
 		// add the experience
 		Level::setExperience('PIZARRA_POST_FIRST_DAILY', $request->person->id);
 
+
+
 		// save the topics to the topics table
 		foreach ($topics as $topic) {
 			$topic = str_replace('#', '', $topic);
@@ -416,6 +421,9 @@ class Service
 
 		// add the experience
 		Level::setExperience('PIZARRA_COMMENT_FIRST_DAILY', $request->person->id);
+
+		// complete the challenge
+		Challenges::complete("comment-pizarra-note", $request->person->id);
 
 		// notify users mentioned
 		$mentions = $this->findUsersMentionedOnText($comment);
