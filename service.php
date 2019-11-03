@@ -338,6 +338,8 @@ class Service
 
 		$noteID = Connection::query($sql);
 
+		Challenges::complete("write-pizarra-note", $request->person->id);
+
 		if (!is_numeric($noteID)) {
 			throw new RuntimeException("PIZARRA: NoteID is null after INSERT. QUERY = $sql");
 		}
@@ -363,7 +365,7 @@ class Service
 			$this->addReputation($m->id, $request->person->id, $noteID, 1);
 		}
 
-		Challenges::complete("write-pizarra-note", $request->person->id);
+
 	}
 
 	/**
