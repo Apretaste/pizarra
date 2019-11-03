@@ -4,7 +4,6 @@ use Phalcon\DI\FactoryDefault;
 
 class Service
 {
-
 	/**
 	 * To list latest notes or post a new note
 	 *
@@ -144,6 +143,7 @@ class Service
 			Utils::addNotification($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}", 'thumb_up');
 		}
 
+		// complete the challenge
 		Challenges::complete("like-pizarra-note", $request->person->id);
 	}
 
@@ -203,7 +203,6 @@ class Service
 	 * @param Request  $request
 	 * @param Response $response
 	 *
-	 * @throws \Exception
 	 * @author salvipascual
 	 *
 	 */
@@ -218,7 +217,7 @@ class Service
 		$result = q("
 			SELECT
 				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
-				C.avatar, C.avatarColor, C.username, C.first_name, C.last_name, C.province, C.picture, C.gender, C.country, C.online,
+				B.avatar, B.avatarColor, C.username, C.first_name, C.last_name, C.province, C.picture, C.gender, C.country, C.online,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_notes A LEFT JOIN _pizarra_users B ON A.id_person = B.id_person LEFT JOIN person C ON C.id = B.id_person
@@ -253,12 +252,14 @@ class Service
 
 		// get note comments
 		$cmts = q("
-			SELECT A.*, B.username, B.province, B.picture, B.gender, B.country, B.online, B.avatar, B.avatarColor,
+			SELECT A.*, B.username, B.province, B.picture, B.gender, B.country, B.online, C.avatar, C.avatarColor,
 			(SELECT COUNT(comment) FROM _pizarra_comments_actions WHERE comment=A.id AND A.id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
 			(SELECT COUNT(comment) FROM _pizarra_comments_actions WHERE comment=A.id AND A.id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_comments A
 			LEFT JOIN person B
 			ON A.id_person = B.id
+			LEFT JOIN _pizarra_users C
+			ON C.id_person = B.id
 			WHERE note = '$noteId'");
 
 		// format comments
@@ -294,11 +295,9 @@ class Service
 	/**
 	 * Post a new note to the public feed
 	 *
+	 * @author salvipascual
 	 * @param Request  $request
 	 * @param Response $response
-	 *
-	 * @author salvipascual
-	 *
 	 */
 	public function _escribir(Request $request, Response $response): void
 	{
@@ -332,17 +331,20 @@ class Service
 
 		// save note to the database
 		$cleanText = Connection::escape($text, 300);
-
-		$sql = "INSERT INTO _pizarra_notes (id_person, text, image, topic1, topic2, topic3)
-		            VALUES ('{$request->person->id}', '$cleanText', '$fileName', '$topic1', '$topic2', '$topic3')";
-
-		$noteID = Connection::query($sql);
+		$noteID = Connection::query("
+			INSERT INTO _pizarra_notes (id_person, `text`, image, topic1, topic2, topic3)
+			VALUES ('{$request->person->id}', '$cleanText', '$fileName', '$topic1', '$topic2', '$topic3')");
 
 		Challenges::complete("write-pizarra-note", $request->person->id);
 
 		if (!is_numeric($noteID)) {
 			throw new RuntimeException("PIZARRA: NoteID is null after INSERT. QUERY = $sql");
 		}
+
+		// add the experience
+		Level::setExperience('PIZARRA_POST_FIRST_DAILY', $request->person->id);
+
+
 
 		// save the topics to the topics table
 		foreach ($topics as $topic) {
@@ -423,13 +425,17 @@ class Service
 			INSERT INTO _pizarra_comments (id_person, note, text) VALUES ('{$request->person->id}', '$noteId', '$comment');
 			UPDATE _pizarra_notes SET comments = comments+1 WHERE id='$noteId';");
 
+		// add the experience
+		Level::setExperience('PIZARRA_COMMENT_FIRST_DAILY', $request->person->id);
+
+		// complete the challenge
+		Challenges::complete("comment-pizarra-note", $request->person->id);
+
 		// notify users mentioned
 		$mentions = $this->findUsersMentionedOnText($comment);
 		foreach ($mentions as $mention) {
 			$blocks = Social::isBlocked($request->person->id, $mention->id);
-			if ($blocks->blocked || $blocks->blockedByMe) {
-				continue;
-			}
+			if ($blocks->blocked || $blocks->blockedByMe) continue;
 			Utils::addNotification($mention->id, "El usuario @{$request->person->username} le ha mencionado en la pizarra", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}}", 'comment');
 			$this->addReputation($mention->id, $request->person->id, $noteId, 1);
 		}
@@ -440,8 +446,6 @@ class Service
 			Utils::addNotification($note->id_person, "<span class=\"$color\">@{$request->person->username}</span> ha comentado tu publicación", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}}", 'comment');
 			$this->addReputation($note->id_person, $request->person->id, $noteId, 0.6);
 		}
-
-		Challenges::complete("comment-pizarra-note", $request->person->id);
 	}
 
 	/**
@@ -456,12 +460,14 @@ class Service
 	 */
 	public function _populares(Request $request, Response $response): void
 	{
+
 		$cacheFile = Utils::getTempDir()."/pizarra_populars.tmp";
-		if (file_exists($cacheFile) && time() < filemtime($cacheFile) + 15*60) {
+		if(file_exists($cacheFile) && time() < filemtime($cacheFile) + 15*60){
 			$cache = json_decode(file_get_contents($cacheFile));
 			$topics = $cache->topics;
 			$populars = $cache->populars;
-		} else {
+		}
+		else{
 			// get list of topics
 			$ts = q("
 			SELECT topic AS name, COUNT(id) AS cnt FROM _pizarra_topics
@@ -493,7 +499,7 @@ class Service
 
 			// get the list of most popular users
 			$populars =
-				q('SELECT A.id_person, B.avatar, B.avatarColor, B.username, B.first_name, B.country, B.province, B.about_me,  B.gender, B.year_of_birth, B.highest_school_level, B.online, A.reputation FROM _pizarra_users A JOIN person B ON A.id_person = B.id ORDER BY reputation DESC LIMIT 10');
+				q('SELECT A.id_person, A.avatar, A.avatarColor, B.username, B.first_name, B.country, B.province, B.about_me,  B.gender, B.year_of_birth, B.highest_school_level, B.online, (SELECT SUM(amount) FROM _pizarra_reputation WHERE id_person = A.id_person) AS reputation FROM _pizarra_users A JOIN person B ON A.id_person = B.id ORDER BY reputation DESC LIMIT 10');
 			foreach ($populars as $popular) {
 				$popular->avatar = empty($popular->avatar) ? ($popular->gender === 'M' ? 'Hombre' : ($popular->gender === 'F' ? 'Señorita' : 'Hombre')) : $popular->avatar;
 				$popular->reputation = floor(($popular->reputation ?? 0) + $this->profileCompletion($popular));
@@ -537,7 +543,7 @@ class Service
 	 *
 	 * @author salvipascual
 	 */
-	public function _notificaciones(Request $request, Response $response)
+	public function _notificaciones(Request $request, Response $response): ?\Response
 	{
 		// get all unread notifications
 		$notifications = q("
@@ -954,7 +960,7 @@ class Service
 			SELECT
 				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country, B.online,
-				C.reputation, B.avatar, B.avatarColor, 
+				C.reputation, C.avatar, C.avatarColor, 
 				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$profile->id}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$profile->id}' AND action='unlike') > 0 AS isunliked
@@ -1023,12 +1029,14 @@ class Service
 
 		// get the last 50 records from the db
 		$listOfNotes = q("
-			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor,
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, C.avatar, C.avatarColor,
 			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$profile->id}' AND `action` = 'like') > 0 AS isliked,
 			(SELECT COUNT(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) AS comments
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.id_person = B.id
+			LEFT JOIN _pizarra_users C
+			ON C.id_person = B.id
 			WHERE A.active=1 AND B.id = '$user->id'
 			ORDER BY inserted DESC
 			LIMIT 20");
@@ -1057,12 +1065,14 @@ class Service
 	{
 		// get the last 50 records from the db
 		$listOfNotes = q("
-			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.online, B.avatar, B.avatarColor,
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.online, C.avatar, C.avatarColor,
 			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person= '{$profile->id}' AND `action` = 'like') > 0 AS isliked,
 			(SELECT count(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.id_person= B.id
+			LEFT JOIN _pizarra_users C
+			ON C.id_person = B.id
 			WHERE A.active=1 AND A.text like '%$keyword%' AND 
 			NOT EXISTS (SELECT * FROM relations 
 						WHERE `type` = 'blocked' AND confirmed=1 AND 
@@ -1084,11 +1094,11 @@ class Service
 
 	private function preparePizarraUser($profile, $reputationRequired = true)
 	{
-		$myUser = q("SELECT reputation, default_topic AS topic FROM _pizarra_users WHERE id_person='{$profile->id}'");
+		$myUser = q("SELECT (SELECT SUM(amount) AS reputation FROM _pizarra_reputation WHERE id_person='{$profile->id}') AS reputation, avatar, avatarColor, default_topic AS topic FROM _pizarra_users WHERE id_person='{$profile->id}'");
 		if (empty($myUser)) {
 			// create the user in the table if do not exist
 			q("INSERT IGNORE INTO _pizarra_users (id_person) VALUES ('{$profile->id}')");
-			$myUser = q("SELECT reputation, default_topic AS topic FROM _pizarra_users WHERE id_person='{$profile->id}'")[0];
+			$myUser = q("SELECT reputation, avatar, avatarColor FROM _pizarra_users WHERE id_person='{$profile->id}'")[0];
 		} else {
 			$myUser = $myUser[0];
 		}
@@ -1100,8 +1110,7 @@ class Service
 			$myUser->reputation = floor(($myUser->reputation ?? 0) + $this->profileCompletion($profile));
 		}
 		$myUser->location = empty($profile->province) ? 'Cuba' : ucwords(strtolower(str_replace('_', ' ', $profile->province)));
-		$myUser->avatar = empty($profile->avatar) ? ($myUser->gender === 'M' ? 'Hombre' : ($myUser->gender === 'F' ? 'Señorita' : 'Hombre')) : $profile->avatar;
-		$myUser->avatarColor = $profile->avatarColor;
+		$myUser->avatar = empty($myUser->avatar) ? ($myUser->gender === 'M' ? 'Hombre' : ($myUser->gender === 'F' ? 'Señorita' : 'Hombre')) : $myUser->avatar;
 
 		return $myUser;
 	}
