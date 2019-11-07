@@ -166,22 +166,21 @@ class Service
 		if ($noteId === 'last') {
 			$noteId = q("SELECT MAX(id) AS id FROM $rowsTable WHERE id_person = '{$request->person->id}'")[0]->id;
 		}
+
 		// check if the user already liked this note
 		$res = q("SELECT * FROM $actionsTable WHERE id_person={$request->person->id} AND $type='{$noteId}'");
 		$note = q("SELECT id_person, `text` FROM $rowsTable WHERE id='{$noteId}'");
 
-		if (empty($note)) {
-			return;
-		}
+		// do not continue if note do not exist
+		if (empty($note)) return;
 
+		// delete previos upvote and add new vote
 		if (!empty($res)) {
 			if ($res[0]->action === 'like') {
-				// delete previos vote and add new vote
 				q("
 				UPDATE $actionsTable SET `action`='unlike' WHERE id_person='{$request->person->id}' AND $type='{$noteId}';
 				UPDATE $rowsTable SET likes=likes-1, unlikes=unlikes+1 WHERE id='{$noteId}'");
 			}
-
 			return;
 		}
 
@@ -195,6 +194,12 @@ class Service
 
 		// decrease the author's reputation
 		Connection::query("UPDATE _pizarra_users SET reputation=reputation-1 WHERE id_person='{$note->id_person}'");
+
+		// run powers for amulet VIDENTE
+		if(Amulets::isActive(Amulets::VIDENTE, $note->id_person)) {
+			$msg = "Los poderes del amuleto del Druida te avisan: Alguien ha dicho que le disgusta tu nota en Pizarra";
+			Utils::addNotification($profile->id, $msg, '{command:"PERFIL", data:{username:"@{$request->person->username}"}}', 'remove_red_eye');
+		}
 	}
 
 	/**
@@ -303,9 +308,11 @@ class Service
 	{
 		$text = $request->input->data->text; // strip_tags
 		$image = isset($request->input->data->image) ? $request->input->data->image : false;
+		$fileName = ''; 
+		$ad = 0;
 
+		// get the image name and path
 		if ($image) {
-			// get the image name and path
 			$wwwroot = FactoryDefault::getDefault()->get('path')['root'];
 			$fileName = Utils::generateRandomHash();
 			$filePath = "$wwwroot/public/content/$fileName.jpg";
@@ -313,14 +320,10 @@ class Service
 			// save the optimized image on the user folder
 			file_put_contents($filePath, base64_decode($image));
 			Utils::optimizeImage($filePath);
-		} else {
-			$fileName = '';
 		}
 
 		// only post notes with real content
-		if (strlen($text) < 20) {
-			return;
-		}
+		if (strlen($text) < 20) return;
 
 		// get all the topics from the post
 		preg_match_all('/#\w*/', $text, $topics);
@@ -329,22 +332,29 @@ class Service
 		$topic2 = isset($topics[1]) ? str_replace('#', '', $topics[1]) : '';
 		$topic3 = isset($topics[2]) ? str_replace('#', '', $topics[2]) : '';
 
+		// run powers for amulet PRIORIDAD
+		if(Amulets::isActive(Amulets::PRIORIDAD, $request->person->id)) {
+			// make the note into an ad
+			$ad = 1;
+
+			// alert the user
+			$msg = "Los poderes del amuleto del druida harán que la nota que publicaste sea vista por muchas más personas";
+			Utils::addNotification($request->person->id, $msg, '{command:"PIROPAZO PERFIL"}}', 'local_florist');
+		}
+
 		// save note to the database
 		$cleanText = Connection::escape($text, 300, 'utf8mb4');
-		$sql = "INSERT INTO _pizarra_notes (id_person, `text`, image, topic1, topic2, topic3)
-			VALUES ('{$request->person->id}', '$cleanText', '$fileName', '$topic1', '$topic2', '$topic3')";
+		$sql = "INSERT INTO _pizarra_notes (id_person, `text`, image, ad, topic1, topic2, topic3) VALUES ('{$request->person->id}', '$cleanText', '$fileName', $ad, '$topic1', '$topic2', '$topic3')";
 		$noteID = Connection::query($sql);
 
-		Challenges::complete("write-pizarra-note", $request->person->id);
+		// error if the note could not be inserted
+		if (!is_numeric($noteID)) throw new RuntimeException("PIZARRA: NoteID is null after INSERT. QUERY = $sql");
 
-		if (!is_numeric($noteID)) {
-			throw new RuntimeException("PIZARRA: NoteID is null after INSERT. QUERY = $sql");
-		}
+		// complete the challenge
+		Challenges::complete("write-pizarra-note", $request->person->id);
 
 		// add the experience
 		Level::setExperience('PIZARRA_POST_FIRST_DAILY', $request->person->id);
-
-
 
 		// save the topics to the topics table
 		foreach ($topics as $topic) {
