@@ -331,9 +331,9 @@ class Service
 
 		// save note to the database
 		$cleanText = Connection::escape($text, 300, 'utf8mb4');
-		$noteID = Connection::query("
-			INSERT INTO _pizarra_notes (id_person, `text`, image, topic1, topic2, topic3)
-			VALUES ('{$request->person->id}', '$cleanText', '$fileName', '$topic1', '$topic2', '$topic3')");
+		$sql = "INSERT INTO _pizarra_notes (id_person, `text`, image, topic1, topic2, topic3)
+			VALUES ('{$request->person->id}', '$cleanText', '$fileName', '$topic1', '$topic2', '$topic3')";
+		$noteID = Connection::query($sql);
 
 		Challenges::complete("write-pizarra-note", $request->person->id);
 
