@@ -96,8 +96,8 @@ class Service
 	 * @param Request  $request
 	 * @param Response $response
 	 *
+	 * @throws \Exception
 	 * @author salvipascual
-	 *
 	 */
 	public function _like(Request $request, Response $response)
 	{
@@ -330,7 +330,7 @@ class Service
 		$topic3 = isset($topics[2]) ? str_replace('#', '', $topics[2]) : '';
 
 		// save note to the database
-		$cleanText = Connection::escape($text, 300);
+		$cleanText = Connection::escape($text, 300, 'utf8mb4');
 		$noteID = Connection::query("
 			INSERT INTO _pizarra_notes (id_person, `text`, image, topic1, topic2, topic3)
 			VALUES ('{$request->person->id}', '$cleanText', '$fileName', '$topic1', '$topic2', '$topic3')");
@@ -366,8 +366,6 @@ class Service
 			Utils::addNotification($m->id, "<span class=\"$color\">@{$request->person->username}</span> le ha mencionado", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteID'}}", 'comment');
 			$this->addReputation($m->id, $request->person->id, $noteID, 1);
 		}
-
-
 	}
 
 	/**
@@ -420,7 +418,7 @@ class Service
 		}
 
 		// save the comment
-		$comment = Connection::escape($comment, 200);
+		$comment = Connection::escape($comment, 200, 'utf8mb4');
 		q("
 			INSERT INTO _pizarra_comments (id_person, note, text) VALUES ('{$request->person->id}', '$noteId', '$comment');
 			UPDATE _pizarra_notes SET comments = comments+1 WHERE id='$noteId';");
@@ -435,7 +433,9 @@ class Service
 		$mentions = $this->findUsersMentionedOnText($comment);
 		foreach ($mentions as $mention) {
 			$blocks = Social::isBlocked($request->person->id, $mention->id);
-			if ($blocks->blocked || $blocks->blockedByMe) continue;
+			if ($blocks->blocked || $blocks->blockedByMe) {
+				continue;
+			}
 			Utils::addNotification($mention->id, "El usuario @{$request->person->username} le ha mencionado en la pizarra", "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}}", 'comment');
 			$this->addReputation($mention->id, $request->person->id, $noteId, 1);
 		}
@@ -460,14 +460,12 @@ class Service
 	 */
 	public function _populares(Request $request, Response $response): void
 	{
-
 		$cacheFile = Utils::getTempDir()."/pizarra_populars.tmp";
-		if(file_exists($cacheFile) && time() < filemtime($cacheFile) + 15*60){
+		if (file_exists($cacheFile) && time() < filemtime($cacheFile) + 15*60) {
 			$cache = json_decode(file_get_contents($cacheFile));
 			$topics = $cache->topics;
 			$populars = $cache->populars;
-		}
-		else{
+		} else {
 			// get list of topics
 			$ts = q("
 			SELECT topic AS name, COUNT(id) AS cnt FROM _pizarra_topics
@@ -804,7 +802,7 @@ class Service
 		}
 
 		// store the note in the database
-		$message = Connection::escape($message, 499);
+		$message = Connection::escape($message, 499, 'utf8mb4');
 		q("INSERT INTO _note (from_user, to_user, `text`) VALUES ({$request->person->id},{$userTo->id},'$message')");
 
 		$color = $request->person->gender === 'M' ? 'pizarra-color-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
