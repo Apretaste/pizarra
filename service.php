@@ -803,7 +803,7 @@ class Service
 
 		// store the note in the database
 		$message = Connection::escape($message, 499, 'utf8mb4');
-		q("INSERT INTO _note (from_user, to_user, `text`) VALUES ({$request->person->id},{$userTo->id},'$message')");
+		q("INSERT INTO _note (from_user, to_user, `text`) VALUES ({$request->person->id},{$userTo->id},'$message')", true, 'utf8mb4');
 
 		$color = $request->person->gender === 'M' ? 'pizarra-color-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
 
