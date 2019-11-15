@@ -1,5 +1,6 @@
 <?php
 
+use Apretaste\Core;
 use Phalcon\DI\FactoryDefault;
 
 class Service
@@ -198,7 +199,7 @@ class Service
 		// run powers for amulet VIDENTE
 		if(Amulets::isActive(Amulets::VIDENTE, $note->id_person)) {
 			$msg = "Los poderes del amuleto del Druida te avisan: Alguien ha dicho que le disgusta tu nota en Pizarra";
-			Utils::addNotification($profile->id, $msg, '{command:"PERFIL", data:{username:"@{$request->person->username}"}}', 'remove_red_eye');
+			Utils::addNotification($note->id_person, $msg, '{command:"PERFIL", data:{username:"@{$request->person->username}"}}', 'remove_red_eye');
 		}
 	}
 
@@ -313,9 +314,9 @@ class Service
 
 		// get the image name and path
 		if ($image) {
-			$wwwroot = FactoryDefault::getDefault()->get('path')['root'];
+			$pizarraImgDir = Core::getRoot() . "/shared/img/content/pizarra";
 			$fileName = Utils::generateRandomHash();
-			$filePath = "$wwwroot/public/content/$fileName.jpg";
+			$filePath = "$pizarraImgDir/$fileName.jpg";
 
 			// save the optimized image on the user folder
 			file_put_contents($filePath, base64_decode($image));
@@ -1167,8 +1168,8 @@ class Service
 		}
 
 		if (isset($note->image) && $note->image) {
-			$wwwroot = FactoryDefault::getDefault()->get('path')['root'];
-			$note->image = "$wwwroot/public/content/{$note->image}.jpg";
+			$pizarraImgDir = Core::getRoot() . "/shared/img/content/pizarra";
+			$note->image = "$pizarraImgDir/{$note->image}.jpg";
 		} else {
 			$note->image = false;
 		}
