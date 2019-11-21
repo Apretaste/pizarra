@@ -197,8 +197,8 @@ class Service
 
 		// run powers for amulet VIDENTE
 		if(Amulets::isActive(Amulets::VIDENTE, $note->id_person)) {
-			$msg = "Los poderes del amuleto del Druida te avisan: Alguien ha dicho que le disgusta tu nota en Pizarra";
-			Utils::addNotification($profile->id, $msg, '{command:"PERFIL", data:{username:"@{$request->person->username}"}}', 'remove_red_eye');
+			$msg = "Los poderes del amuleto del Druida te avisan: A @{$request->person->username} le disgustó tu nota en Pizarra";
+			Utils::addNotification($note->id_person, $msg, '{command:"PERFIL", data:{username:"@{$request->person->username}"}}', 'remove_red_eye');
 		}
 	}
 
