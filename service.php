@@ -1,5 +1,6 @@
 <?php
 
+use Apretaste\Core;
 use Phalcon\DI\FactoryDefault;
 
 class Service
@@ -308,14 +309,14 @@ class Service
 	{
 		$text = $request->input->data->text; // strip_tags
 		$image = isset($request->input->data->image) ? $request->input->data->image : false;
-		$fileName = ''; 
+		$fileName = '';
 		$ad = 0;
 
 		// get the image name and path
 		if ($image) {
-			$wwwroot = FactoryDefault::getDefault()->get('path')['root'];
+			$pizarraImgDir = Core::getRoot() . "/shared/img/content/pizarra";
 			$fileName = Utils::generateRandomHash();
-			$filePath = "$wwwroot/public/content/$fileName.jpg";
+			$filePath = "$pizarraImgDir/$fileName.jpg";
 
 			// save the optimized image on the user folder
 			file_put_contents($filePath, base64_decode($image));
@@ -345,7 +346,7 @@ class Service
 		// save note to the database
 		$cleanText = Connection::escape($text, 300, 'utf8mb4');
 		$sql = "INSERT INTO _pizarra_notes (id_person, `text`, image, ad, topic1, topic2, topic3) VALUES ('{$request->person->id}', '$cleanText', '$fileName', $ad, '$topic1', '$topic2', '$topic3')";
-		$noteID = Connection::query($sql);
+		$noteID = Connection::query($sql, true, 'utf8mb4');
 
 		// error if the note could not be inserted
 		if (!is_numeric($noteID)) throw new RuntimeException("PIZARRA: NoteID is null after INSERT. QUERY = $sql");
@@ -359,9 +360,8 @@ class Service
 		// save the topics to the topics table
 		foreach ($topics as $topic) {
 			$topic = str_replace('#', '', $topic);
-			$topic = Connection::escape($topic, 20);
-			q("INSERT INTO _pizarra_topics(topic, note, id_person)
-				VALUES ('$topic', '$noteID', '{$request->person->id}')");
+			$topic = Connection::escape($topic, 20, 'utf8mb4');
+			Connection::query("INSERT INTO _pizarra_topics (topic, note, id_person) VALUES ('$topic', '$noteID', '{$request->person->id}')", true, 'utf8mb4');
 		}
 
 		// notify users mentioned
@@ -429,9 +429,8 @@ class Service
 
 		// save the comment
 		$comment = Connection::escape($comment, 200, 'utf8mb4');
-		q("
-			INSERT INTO _pizarra_comments (id_person, note, text) VALUES ('{$request->person->id}', '$noteId', '$comment');
-			UPDATE _pizarra_notes SET comments = comments+1 WHERE id='$noteId';");
+		Connection::query(" INSERT INTO _pizarra_comments (id_person, note, text) VALUES ('{$request->person->id}', '$noteId', '$comment');
+			UPDATE _pizarra_notes SET comments = comments+1 WHERE id='$noteId';", true, 'utf8mb4');
 
 		// add the experience
 		Level::setExperience('PIZARRA_COMMENT_FIRST_DAILY', $request->person->id);
@@ -1169,8 +1168,8 @@ class Service
 		}
 
 		if (isset($note->image) && $note->image) {
-			$wwwroot = FactoryDefault::getDefault()->get('path')['root'];
-			$note->image = "$wwwroot/public/content/{$note->image}.jpg";
+			$pizarraImgDir = Core::getRoot() . "/shared/img/content/pizarra";
+			$note->image = "$pizarraImgDir/{$note->image}.jpg";
 		} else {
 			$note->image = false;
 		}
