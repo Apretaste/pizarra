@@ -645,7 +645,24 @@ class Service
 
 				return;
 			}
+
 			$person = Social::prepareUserProfile($person);
+
+			// run powers for amulet SHADOWMODE
+			if (Amulets::isActive(Amulets::SHADOWMODE, $person->id)) {
+				return $response->setTemplate("message.ejs", [
+					"header" => "Shadow-Mode",
+					"icon" => "visibility_off",
+					"text" => "La magia oscura de un amuleto rodea este perfil y te impide verlo. Por mucho que intentes romperlo, el hechizo del druida es poderoso."
+				]);
+			}
+
+			// run powers for amulet DETECTIVE
+			if (Amulets::isActive(Amulets::DETECTIVE, $person->id)) {
+				$msg = "Los poderes del amuleto del Druida te avisan: @{$request->person->username} está revisando tu perfil";
+				Utils::addNotification($person->id, $msg, '{command:"PERFIL", data:{username:"@{$request->person->username}"}}', 'pageview');
+			}
+
 		} else {
 			if (isset($request->input->data->avatar)) {
 				q("UPDATE _pizarra_users SET avatar = '{$request->input->data->avatar}', avatarColor='{$request->input->data->color}' WHERE id_person={$request->person->id}");
