@@ -1,7 +1,6 @@
 <?php
 
 use Apretaste\Core;
-use Phalcon\DI\FactoryDefault;
 
 class Service
 {
@@ -173,7 +172,9 @@ class Service
 		$note = q("SELECT id_person, `text` FROM $rowsTable WHERE id='{$noteId}'");
 
 		// do not continue if note do not exist
-		if (empty($note)) return;
+		if (empty($note)) {
+			return;
+		}
 
 		// delete previos upvote and add new vote
 		if (!empty($res)) {
@@ -197,7 +198,7 @@ class Service
 		Connection::query("UPDATE _pizarra_users SET reputation=reputation-1 WHERE id_person='{$note->id_person}'");
 
 		// run powers for amulet VIDENTE
-		if(Amulets::isActive(Amulets::VIDENTE, $note->id_person)) {
+		if (Amulets::isActive(Amulets::VIDENTE, $note->id_person)) {
 			$msg = "Los poderes del amuleto del Druida te avisan: A @{$request->person->username} le disgustó tu nota en Pizarra";
 			Utils::addNotification($note->id_person, $msg, '{command:"PERFIL", data:{username:"@{$request->person->username}"}}', 'remove_red_eye');
 		}
@@ -324,7 +325,9 @@ class Service
 		}
 
 		// only post notes with real content
-		if (strlen($text) < 20) return;
+		if (strlen($text) < 20) {
+			return;
+		}
 
 		// get all the topics from the post
 		preg_match_all('/#\w*/', $text, $topics);
@@ -334,7 +337,7 @@ class Service
 		$topic3 = isset($topics[2]) ? str_replace('#', '', $topics[2]) : '';
 
 		// run powers for amulet PRIORIDAD
-		if(Amulets::isActive(Amulets::PRIORIDAD, $request->person->id)) {
+		if (Amulets::isActive(Amulets::PRIORIDAD, $request->person->id)) {
 			// make the note into an ad
 			$ad = 1;
 
@@ -349,7 +352,9 @@ class Service
 		$noteID = Connection::query($sql, true, 'utf8mb4');
 
 		// error if the note could not be inserted
-		if (!is_numeric($noteID)) throw new RuntimeException("PIZARRA: NoteID is null after INSERT. QUERY = $sql");
+		if (!is_numeric($noteID)) {
+			throw new RuntimeException("PIZARRA: NoteID is null after INSERT. QUERY = $sql");
+		}
 
 		// complete the challenge
 		Challenges::complete("write-pizarra-note", $request->person->id);
@@ -648,6 +653,12 @@ class Service
 
 			$person = Social::prepareUserProfile($person);
 
+			// run powers for amulet DETECTIVE
+			if (Amulets::isActive(Amulets::DETECTIVE, $person->id)) {
+				$msg = "Los poderes del amuleto del Druida te avisan: @{$request->person->username} está revisando tu perfil";
+				Utils::addNotification($person->id, $msg, '{command:"PERFIL", data:{username:"@{$request->person->username}"}}', 'pageview');
+			}
+
 			// run powers for amulet SHADOWMODE
 			if (Amulets::isActive(Amulets::SHADOWMODE, $person->id)) {
 				return $response->setTemplate("message.ejs", [
@@ -656,13 +667,6 @@ class Service
 					"text" => "La magia oscura de un amuleto rodea este perfil y te impide verlo. Por mucho que intentes romperlo, el hechizo del druida es poderoso."
 				]);
 			}
-
-			// run powers for amulet DETECTIVE
-			if (Amulets::isActive(Amulets::DETECTIVE, $person->id)) {
-				$msg = "Los poderes del amuleto del Druida te avisan: @{$request->person->username} está revisando tu perfil";
-				Utils::addNotification($person->id, $msg, '{command:"PERFIL", data:{username:"@{$request->person->username}"}}', 'pageview');
-			}
-
 		} else {
 			if (isset($request->input->data->avatar)) {
 				q("UPDATE _pizarra_users SET avatar = '{$request->input->data->avatar}', avatarColor='{$request->input->data->color}' WHERE id_person={$request->person->id}");
