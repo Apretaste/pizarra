@@ -514,7 +514,7 @@ class Service
 				q('SELECT A.id_person, A.avatar, A.avatarColor, B.username, B.first_name, B.country, B.province, B.about_me,  B.gender, B.year_of_birth, B.highest_school_level, B.online, (SELECT SUM(amount) FROM _pizarra_reputation WHERE id_person = A.id_person) AS reputation FROM _pizarra_users A JOIN person B ON A.id_person = B.id ORDER BY reputation DESC LIMIT 10');
 			foreach ($populars as $popular) {
 				$popular->avatar = $request->person->avatar;
-				$popular->avatar = empty($popular->avatar) ? ($popular->gender === 'M' ? 'Hombre' : ($popular->gender === 'F' ? 'Señorita' : 'Hombre')) : $popular->avatar;
+				//$popular->avatar = empty($popular->avatar) ? ($popular->gender === 'M' ? 'Hombre' : ($popular->gender === 'F' ? 'Señorita' : 'Hombre')) : $popular->avatar;
 				$popular->reputation = floor(($popular->reputation ?? 0) + $this->profileCompletion($popular));
 			}
 
@@ -679,8 +679,8 @@ class Service
 		}
 
 		$user = $this->preparePizarraUser($person);
-		$person->avatar = $user->avatar;
-		$person->avatarColor = $user->avatarColor;
+		//$person->avatar = $user->avatar;
+		//$person->avatarColor = $user->avatarColor;
 		$person->reputation = $user->reputation;
 
 		// create data for the view
@@ -739,8 +739,8 @@ class Service
 		foreach ($chats as $chat) {
 			$user = $this->preparePizarraUser($chat, false);
 			$chat->last_sent = explode(' ', $chat->last_sent)[0];
-			$chat->avatar = $user->avatar;
-			$chat->avatarColor = $user->avatarColor;
+			//$chat->avatar = $user->avatar;
+			//$chat->avatarColor = $user->avatarColor;
 			unset($chat->picture);
 			unset($chat->first_name);
 		}
