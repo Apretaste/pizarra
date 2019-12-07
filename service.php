@@ -1137,7 +1137,9 @@ class Service
 		if ($reputationRequired) {
 			$myUser->reputation = floor(($myUser->reputation ?? 0) + $this->profileCompletion($profile));
 		}
+
 		$myUser->location = empty($profile->province) ? 'Cuba' : ucwords(strtolower(str_replace('_', ' ', $profile->province)));
+		$myUser->avatar = $profile->avatar;
 		$myUser->avatar = empty($myUser->avatar) ? ($myUser->gender === 'M' ? 'Hombre' : ($myUser->gender === 'F' ? 'Señorita' : 'Hombre')) : $myUser->avatar;
 
 		return $myUser;
