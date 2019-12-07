@@ -669,7 +669,8 @@ class Service
 			}
 		} else {
 			if (isset($request->input->data->avatar)) {
-				q("UPDATE _pizarra_users SET avatar = '{$request->input->data->avatar}', avatarColor='{$request->input->data->color}' WHERE id_person={$request->person->id}");
+				Connection::query("UPDATE _pizarra_users SET avatar = '{$request->input->data->avatar}', avatarColor='{$request->input->data->color}' WHERE id_person={$request->person->id}");
+				Connection::query("UPDATE person SET avatar = '{$request->input->data->avatar}', avatarColor='{$request->input->data->color}' WHERE id={$request->person->id}");
 				$myUser->avatar = $request->input->data->avatar;
 				$myUser->avatarColor = $request->input->data->color;
 			}
