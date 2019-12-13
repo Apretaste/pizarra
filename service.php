@@ -1142,6 +1142,7 @@ class Service
 
 		$myUser->location = empty($profile->province) ? 'Cuba' : ucwords(strtolower(str_replace('_', ' ', $profile->province)));
 		$myUser->avatar = $profile->avatar;
+		$myUser->avatarColor = $profile->avatarColor;
 		//$myUser->avatar = empty($myUser->avatar) ? ($myUser->gender === 'M' ? 'Hombre' : ($myUser->gender === 'F' ? 'Señorita' : 'Hombre')) : $myUser->avatar;
 
 		return $myUser;
