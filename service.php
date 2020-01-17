@@ -604,6 +604,7 @@ class Service
 		// build the response
 		$response->setLayout('pizarra.ejs');
 		$response->setTemplate('notifications.ejs', $content, $images);
+		return $response;
 	}
 
 	/**
