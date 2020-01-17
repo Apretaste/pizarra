@@ -20,6 +20,7 @@ a, a > span{
 
 .notes div.avatar{
 	left: 0 !important;
+	background-size: contain;
 }
 
 .notes .actions, .notes .actions *{
@@ -87,6 +88,7 @@ b{
 	width: 32px;
 	margin-left: .25rem;
 	margin-top: 30%;
+	background-size: contain;
 }
 
 #avatar-info{
@@ -151,6 +153,7 @@ img.responsive-img{
 	position: relative;
 	margin: auto;
 	border: 4px solid white;
+	background-size: contain;
 }
 
 #picture-upload-btn{
@@ -396,6 +399,7 @@ ul.select-dropdown > li > span{
 	display: inline-block;
 	border-radius: 50%;
 	position: relative;
+	background-size: contain;
 }
 
 .mini-card > div{

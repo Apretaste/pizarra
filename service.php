@@ -4,10 +4,12 @@ use Apretaste\Core;
 
 class Service
 {
+	private $avatars = ["apretin", "apretina", "artista", "bandido", "belleza", "chica", "coqueta", "cresta", "deportiva", "dulce", "emo", "encapuchado", "extranna", "fabulosa", "fuerte", "ganadero", "geek", "genia", "gotica", "gotico", "guapo", "hawaiano", "hippie", "hombre", "inconformista", "independiente", "jefe", "jugadora", "mago", "metalero", "modelo", "moderna", "musico", "nerd", "punk", "punkie", "rap", "rapear", "rapero", "rock", "rockera", "rubia", "rudo", "sencilla", "sencillo", "sennor", "sennorita", "sensei", "surfista", "tablista", "vaquera"];
+
 	/**
 	 * To list latest notes or post a new note
 	 *
-	 * @param Request  $request
+	 * @param Request $request
 	 * @param Response $response
 	 *
 	 * @author salvipascual
@@ -45,16 +47,16 @@ class Service
 		$myUser = $this->preparePizarraUser($request->person);
 
 		$pathToService = Utils::getPathToService($response->serviceName);
-		$images = ["$pathToService/images/avatars.png"];
+		$images = ["$pathToService/images/{$myUser->avatar}.png"];
 		$images[] = "$pathToService/images/img-prev.png";
 
 		if (empty($notes)) {
 			$content = [
-				'header'     => 'Lo sentimos',
-				'icon'       => 'sentiment_very_dissatisfied',
-				'text'       => 'No encontramos notas que vayan con su búsqueda. Puede buscar por palabras, por @username o por #Tema.',
+				'header' => 'Lo sentimos',
+				'icon' => 'sentiment_very_dissatisfied',
+				'text' => 'No encontramos notas que vayan con su búsqueda. Puede buscar por palabras, por @username o por #Tema.',
 				'activeIcon' => 1,
-				'myUser'     => $myUser
+				'myUser' => $myUser
 			];
 
 			$response->setLayout('pizarra.ejs');
@@ -77,12 +79,12 @@ class Service
 		// create variables for the template
 		$content = [
 			'isProfileIncomplete' => $profile->completion < 70,
-			'notes'               => $notes,
-			'popularTopics'       => $topics,
-			'title'               => $title,
-			'num_notifications'   => $profile->notifications,
-			'myUser'              => $myUser,
-			'activeIcon'          => 1
+			'notes' => $notes,
+			'popularTopics' => $topics,
+			'title' => $title,
+			'num_notifications' => $profile->notifications,
+			'myUser' => $myUser,
+			'activeIcon' => 1
 		];
 
 		// create the response
@@ -93,7 +95,7 @@ class Service
 	/**
 	 * The user likes a note
 	 *
-	 * @param Request  $request
+	 * @param Request $request
 	 * @param Response $response
 	 *
 	 * @throws \Exception
@@ -134,7 +136,7 @@ class Service
 			UPDATE $rowsTable SET likes=likes+1 WHERE id='{$noteId}'");
 
 		$note = $note[0];
-		$note->text = substr($note->text, 0, 30).'...';
+		$note->text = substr($note->text, 0, 30) . '...';
 
 		$this->addReputation($note->id_person, $request->person->id, $noteId, 0.3);
 
@@ -150,7 +152,7 @@ class Service
 	/**
 	 * The user unlikes a note
 	 *
-	 * @param Request  $request
+	 * @param Request $request
 	 * @param Response $response
 	 *
 	 * @author salvipascual
@@ -207,7 +209,7 @@ class Service
 	/**
 	 * NOTA subservice
 	 *
-	 * @param Request  $request
+	 * @param Request $request
 	 * @param Response $response
 	 *
 	 * @author salvipascual
@@ -224,7 +226,7 @@ class Service
 		$result = q("
 			SELECT
 				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
-				B.avatar, B.avatarColor, C.username, C.first_name, C.last_name, C.province, C.picture, C.gender, C.country, C.online,
+				C.avatar, C.avatarColor, C.username, C.first_name, C.last_name, C.province, C.picture, C.gender, C.country, C.online,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_notes A LEFT JOIN _pizarra_users B ON A.id_person = B.id_person LEFT JOIN person C ON C.id = B.id_person
@@ -236,7 +238,7 @@ class Service
 		} else {
 			$response->setLayout('pizarra.ejs');
 			$response->setTemplate('notFound.ejs', [
-				'origin'            => 'note',
+				'origin' => 'note',
 				'num_notifications' => $request->person->notifications,
 			]);
 
@@ -247,10 +249,10 @@ class Service
 		$blocks = Social::isBlocked($request->person->id, $note['id_person']);
 		if ($blocks->blocked || $blocks->blockedByMe) {
 			$content = [
-				'username'          => $note['username'],
-				'origin'            => 'note',
+				'username' => $note['username'],
+				'origin' => 'note',
 				'num_notifications' => $request->person->notifications,
-				'blocks'            => $blocks,
+				'blocks' => $blocks,
 			];
 			$response->setTemplate('blocked.ejs', $content);
 
@@ -259,7 +261,7 @@ class Service
 
 		// get note comments
 		$cmts = q("
-			SELECT A.*, B.username, B.province, B.picture, B.gender, B.country, B.online, C.avatar, C.avatarColor,
+			SELECT A.*, B.username, B.province, B.picture, B.gender, B.country, B.online, B.avatar, B.avatarColor,
 			(SELECT COUNT(comment) FROM _pizarra_comments_actions WHERE comment=A.id AND A.id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
 			(SELECT COUNT(comment) FROM _pizarra_comments_actions WHERE comment=A.id AND A.id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_comments A
@@ -284,14 +286,14 @@ class Service
 		$myUser = $this->preparePizarraUser($request->person);
 
 		$pathToService = Utils::getPathToService($response->serviceName);
-		$images = ["$pathToService/images/avatars.png"];
+		$images = ["$pathToService/images/{$myUser->avatar}.png"];
 		if ($note['image']) {
 			$images[] = $note['image'];
 		}
 
 		$content = [
-			'note'       => $note,
-			'myUser'     => $myUser,
+			'note' => $note,
+			'myUser' => $myUser,
 			'activeIcon' => 1
 		];
 
@@ -302,9 +304,9 @@ class Service
 	/**
 	 * Post a new note to the public feed
 	 *
-	 * @author salvipascual
-	 * @param Request  $request
+	 * @param Request $request
 	 * @param Response $response
+	 * @author salvipascual
 	 */
 	public function _escribir(Request $request, Response $response): void
 	{
@@ -386,17 +388,18 @@ class Service
 	/**
 	 * Avatar
 	 *
-	 * @param \Request  $request
+	 * @param \Request $request
 	 * @param \Response $response
 	 */
 	public function _avatar(Request $request, Response $response): void
 	{
 		$pathToService = Utils::getPathToService($response->serviceName);
-		$images = ["$pathToService/images/avatars.png"];
+		$images = [];
+		foreach ($this->avatars as $avatar) $images[] = "$pathToService/images/$avatar.png";
 
 		$response->setLayout('pizarra.ejs');
 		$response->setTemplate('avatar_select.ejs', [
-			'myUser'     => $this->preparePizarraUser($request->person),
+			'myUser' => $this->preparePizarraUser($request->person),
 			'activeIcon' => 1
 		], $images);
 	}
@@ -404,7 +407,7 @@ class Service
 	/**
 	 * Post a new note to the public feed
 	 *
-	 * @param Request  $request
+	 * @param Request $request
 	 * @param Response $response
 	 *
 	 * @author salvipascual
@@ -465,7 +468,7 @@ class Service
 	/**
 	 * Show extensive list of topics as a web cloud
 	 *
-	 * @param Request  $request
+	 * @param Request $request
 	 * @param Response $response
 	 *
 	 * @throws Exception
@@ -474,8 +477,8 @@ class Service
 	 */
 	public function _populares(Request $request, Response $response): void
 	{
-		$cacheFile = Utils::getTempDir()."/pizarra_populars.tmp";
-		if (file_exists($cacheFile) && time() < filemtime($cacheFile) + 15*60) {
+		$cacheFile = Utils::getTempDir() . "/pizarra_populars.tmp";
+		if (file_exists($cacheFile) && time() < filemtime($cacheFile) + 15 * 60) {
 			$cache = json_decode(file_get_contents($cacheFile));
 			$topics = $cache->topics;
 			$populars = $cache->populars;
@@ -511,7 +514,7 @@ class Service
 
 			// get the list of most popular users
 			$populars =
-				q('SELECT A.id_person, A.avatar, A.avatarColor, B.username, B.first_name, B.country, B.province, B.about_me,  B.gender, B.year_of_birth, B.highest_school_level, B.online, (SELECT SUM(amount) FROM _pizarra_reputation WHERE id_person = A.id_person) AS reputation FROM _pizarra_users A JOIN person B ON A.id_person = B.id ORDER BY reputation DESC LIMIT 10');
+				q('SELECT A.id_person, B.avatar, B.avatarColor, B.username, B.first_name, B.country, B.province, B.about_me,  B.gender, B.year_of_birth, B.highest_school_level, B.online, (SELECT SUM(amount) FROM _pizarra_reputation WHERE id_person = A.id_person) AS reputation FROM _pizarra_users A JOIN person B ON A.id_person = B.id ORDER BY reputation DESC LIMIT 10');
 			foreach ($populars as $popular) {
 				$popular->avatar = $request->person->avatar;
 				//$popular->avatar = empty($popular->avatar) ? ($popular->gender === 'M' ? 'Hombre' : ($popular->gender === 'F' ? 'Señorita' : 'Hombre')) : $popular->avatar;
@@ -537,13 +540,13 @@ class Service
 		$myUser = $this->preparePizarraUser($request->person);
 
 		$pathToService = Utils::getPathToService($response->serviceName);
-		$images = ["$pathToService/images/avatars.png"];
+		$images = ["$pathToService/images/{$myUser->avatar}.png"];
 
 		$response->setLayout('pizarra.ejs');
 		$response->SetTemplate('populars.ejs', [
-			'topics'     => $topics,
-			'populars'   => $populars,
-			'myUser'     => $myUser,
+			'topics' => $topics,
+			'populars' => $populars,
+			'myUser' => $myUser,
 			'activeIcon' => 2
 		], $images);
 	}
@@ -567,17 +570,18 @@ class Service
 			AND `hidden` = 0
 			ORDER BY inserted DESC");
 
+		$myUser = $this->preparePizarraUser($request->person);
 		$pathToService = Utils::getPathToService($response->serviceName);
-		$images = ["$pathToService/images/avatars.png"];
+		$images = ["$pathToService/images/{$myUser->avatar}.png"];
 
 		// if no notifications, let the user know
 		if (empty($notifications)) {
 			$content = [
-				'header'     => 'Nada por leer',
-				'icon'       => 'notifications_off',
-				'text'       => 'Por ahora usted no tiene ninguna notificación por leer.',
+				'header' => 'Nada por leer',
+				'icon' => 'notifications_off',
+				'text' => 'Por ahora usted no tiene ninguna notificación por leer.',
 				'activeIcon' => 3,
-				'myUser'     => $this->preparePizarraUser($request->person)
+				'myUser' => $myUser
 			];
 
 			$response->setLayout('pizarra.ejs');
@@ -592,9 +596,9 @@ class Service
 		// prepare content for the view
 		$content = [
 			'notifications' => $notifications,
-			'title'         => 'Notificaciones',
-			'activeIcon'    => 3,
-			'myUser'        => $this->preparePizarraUser($request->person)
+			'title' => 'Notificaciones',
+			'activeIcon' => 3,
+			'myUser' => $this->preparePizarraUser($request->person)
 		];
 
 		// build the response
@@ -605,7 +609,7 @@ class Service
 	/**
 	 * Show the user profile
 	 *
-	 * @param Request  $request
+	 * @param Request $request
 	 * @param Response $response
 	 *
 	 * @throws Exception
@@ -616,7 +620,7 @@ class Service
 	{
 		$myUser = $this->preparePizarraUser($request->person);
 		$pathToService = Utils::getPathToService($response->serviceName);
-		$images = ["$pathToService/images/avatars.png"];
+		$images = ["$pathToService/images/{$myUser}.png"];
 
 		if (isset($request->input->data->username) && $request->input->data->username != $request->person->username) {
 			$username = $request->input->data->username;
@@ -627,8 +631,8 @@ class Service
 			if (empty($person)) {
 				$response->setLayout('pizarra.ejs');
 				$response->setTemplate('notFound.ejs', [
-					'origin'     => 'profile',
-					'myUser'     => $myUser,
+					'origin' => 'profile',
+					'myUser' => $myUser,
 					'activeIcon' => 1
 				], $images);
 
@@ -640,12 +644,12 @@ class Service
 
 			if ($blocks->blocked || $blocks->blockedByMe) {
 				$content = [
-					'username'          => $person->username,
-					'origin'            => 'profile',
+					'username' => $person->username,
+					'origin' => 'profile',
 					'num_notifications' => $request->person->notifications,
-					'blocks'            => $blocks,
-					'myUser'            => $myUser,
-					'activeIcon'        => 1
+					'blocks' => $blocks,
+					'myUser' => $myUser,
+					'activeIcon' => 1
 				];
 				$response->SetTemplate('blocked.ejs', $content, $images);
 
@@ -679,14 +683,16 @@ class Service
 		}
 
 		$user = $this->preparePizarraUser($person);
-		//$person->avatar = $user->avatar;
-		//$person->avatarColor = $user->avatarColor;
+		$person->avatar = $user->avatar;
+		$person->avatarColor = $user->avatarColor;
 		$person->reputation = $user->reputation;
+
+		$images[] = "$pathToService/images/{$person->avatar}.png";
 
 		// create data for the view
 		$content = [
-			'profile'    => $person,
-			'myUser'     => $myUser,
+			'profile' => $person,
+			'myUser' => $myUser,
 			'activeIcon' => 1
 		];
 
@@ -717,16 +723,16 @@ class Service
 
 		$myUser = $this->preparePizarraUser($request->person);
 		$pathToService = Utils::getPathToService($response->serviceName);
-		$images = ["$pathToService/images/avatars.png"];
+		$images = ["$pathToService/images/{$myUser->avatar}.png"];
 
 		// if no matches, let the user know
 		if (empty($chats)) {
 			$content = [
-				'header'     => 'No tiene conversaciones',
-				'icon'       => 'sentiment_very_dissatisfied',
-				'text'       => 'Aún no ha hablado con nadie.',
-				'title'      => 'chats',
-				'myUser'     => $myUser,
+				'header' => 'No tiene conversaciones',
+				'icon' => 'sentiment_very_dissatisfied',
+				'text' => 'Aún no ha hablado con nadie.',
+				'title' => 'chats',
+				'myUser' => $myUser,
 				'activeIcon' => 1
 			];
 
@@ -739,15 +745,15 @@ class Service
 		foreach ($chats as $chat) {
 			$user = $this->preparePizarraUser($chat, false);
 			$chat->last_sent = explode(' ', $chat->last_sent)[0];
-			//$chat->avatar = $user->avatar;
-			//$chat->avatarColor = $user->avatarColor;
+			$chat->avatar = $user->avatar;
+			$chat->avatarColor = $user->avatarColor;
 			unset($chat->picture);
 			unset($chat->first_name);
 		}
 
 		$content = [
-			'chats'      => $chats,
-			'myUser'     => $myUser,
+			'chats' => $chats,
+			'myUser' => $myUser,
 			'activeIcon' => 1
 		];
 
@@ -785,18 +791,20 @@ class Service
 			$chats[] = $chat;
 		}
 
+		$chatUser = $this->preparePizarraUser($user);
+
 		$pathToService = Utils::getPathToService($response->serviceName);
-		$images = ["$pathToService/images/avatars.png"];
+		$images = ["$pathToService/images/{$chatUser->avatar}.png"];
 
 		$content = [
-			'messages'   => $chats,
-			'username'   => $user->username,
+			'messages' => $chats,
+			'username' => $user->username,
 			'myusername' => $request->person->username,
-			'id'         => $user->id,
-			'online'     => $user->online,
-			'last'       => date('d/m/Y h:ia', strtotime($user->last_access)),
-			'title'      => $user->first_name,
-			'myUser'     => $this->preparePizarraUser($user)
+			'id' => $user->id,
+			'online' => $user->online,
+			'last' => date('d/m/Y h:ia', strtotime($user->last_access)),
+			'title' => $user->first_name,
+			'myUser' => $chatUser
 		];
 
 		$response->setlayout('pizarra.ejs');
@@ -851,7 +859,7 @@ class Service
 	/**
 	 * Assign a topic to a note
 	 *
-	 * @param Request  $request
+	 * @param Request $request
 	 * @param Response $response
 	 *
 	 * @author salvipascual
@@ -902,7 +910,7 @@ class Service
 	/**
 	 * Display the help document
 	 *
-	 * @param Request  $request
+	 * @param Request $request
 	 * @param Response $response
 	 *
 	 * @author salvipascual
@@ -972,7 +980,7 @@ class Service
 	 * Search and return all notes by a topic
 	 *
 	 * @param Profile $profile
-	 * @param String  $topic
+	 * @param String $topic
 	 *
 	 * @return Array of notes
 	 * @author salvipascual
@@ -989,8 +997,8 @@ class Service
 		$listOfNotes = q("
 			SELECT
 				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
-				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country, B.online,
-				C.reputation, C.avatar, C.avatarColor, 
+				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country, B.online, B.avatar, B.avatarColor,
+				C.reputation, 
 				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$profile->id}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$profile->id}' AND action='unlike') > 0 AS isunliked
@@ -1038,7 +1046,7 @@ class Service
 	 * Search and return all notes made by a person
 	 *
 	 * @param Profile $profile
-	 * @param String  $username
+	 * @param String $username
 	 *
 	 * @return Array of notes
 	 * @author salvipascual
@@ -1059,7 +1067,7 @@ class Service
 
 		// get the last 50 records from the db
 		$listOfNotes = q("
-			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, C.avatar, C.avatarColor,
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor,
 			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$profile->id}' AND `action` = 'like') > 0 AS isliked,
 			(SELECT COUNT(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) AS comments
 			FROM _pizarra_notes A
@@ -1085,7 +1093,7 @@ class Service
 	 * Search notes by keyword
 	 *
 	 * @param Profile $profile
-	 * @param String  $keyword
+	 * @param String $keyword
 	 *
 	 * @return Array of notes
 	 * @author salvipascual
@@ -1095,7 +1103,7 @@ class Service
 	{
 		// get the last 50 records from the db
 		$listOfNotes = q("
-			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.online, C.avatar, C.avatarColor,
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.online, B.avatar, B.avatarColor,
 			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person= '{$profile->id}' AND `action` = 'like') > 0 AS isliked,
 			(SELECT count(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments
 			FROM _pizarra_notes A
@@ -1143,7 +1151,7 @@ class Service
 		$myUser->location = empty($profile->province) ? 'Cuba' : ucwords(strtolower(str_replace('_', ' ', $profile->province)));
 		$myUser->avatar = $profile->avatar;
 		$myUser->avatarColor = $profile->avatarColor;
-		//$myUser->avatar = empty($myUser->avatar) ? ($myUser->gender === 'M' ? 'Hombre' : ($myUser->gender === 'F' ? 'Señorita' : 'Hombre')) : $myUser->avatar;
+		$myUser->avatar = empty($myUser->avatar) ? ($myUser->gender === 'M' ? 'hombre' : ($myUser->gender === 'F' ? 'sennorita' : 'hombre')) : $myUser->avatar;
 
 		return $myUser;
 	}
@@ -1218,26 +1226,26 @@ class Service
 
 		// add the text to the array
 		$newNote = [
-			'id'          => $note->id,
-			'id_person'   => $note->id_person,
-			'username'    => $note->username,
-			'location'    => $location,
-			'gender'      => $note->gender,
-			'text'        => $note->text,
-			'image'       => $note->image,
-			'inserted'    => date_format((new DateTime($note->inserted)), 'j/n/y · g:ia'),
-			'likes'       => isset($note->likes) ? $note->likes : 0,
-			'unlikes'     => isset($note->unlikes) ? $note->unlikes : 0,
-			'comments'    => isset($note->comments) ? $note->comments : 0,
-			'liked'       => isset($note->isliked) && $note->isliked,
-			'unliked'     => isset($note->isunliked) && $note->isunliked,
-			'ad'          => isset($note->ad) ? $note->ad : false,
-			'online'      => isset($note->online) ? $note->online : false,
-			'country'     => $country,
-			'avatar'      => $avatar,
+			'id' => $note->id,
+			'id_person' => $note->id_person,
+			'username' => $note->username,
+			'location' => $location,
+			'gender' => $note->gender,
+			'text' => $note->text,
+			'image' => $note->image,
+			'inserted' => date_format((new DateTime($note->inserted)), 'j/n/y · g:ia'),
+			'likes' => isset($note->likes) ? $note->likes : 0,
+			'unlikes' => isset($note->unlikes) ? $note->unlikes : 0,
+			'comments' => isset($note->comments) ? $note->comments : 0,
+			'liked' => isset($note->isliked) && $note->isliked,
+			'unliked' => isset($note->isunliked) && $note->isunliked,
+			'ad' => isset($note->ad) ? $note->ad : false,
+			'online' => isset($note->online) ? $note->online : false,
+			'country' => $country,
+			'avatar' => $avatar,
 			'avatarColor' => $note->avatarColor,
-			'topics'      => $topics,
-			'canmodify'   => $note->id_person == $id,
+			'topics' => $topics,
+			'canmodify' => $note->id_person == $id,
 		];
 
 		return $newNote;
@@ -1261,7 +1269,7 @@ class Service
 		$return = [];
 		if ($matches[0]) {
 			// get string of possible matches
-			$usernames = "'".implode("','", $matches[0])."'";
+			$usernames = "'" . implode("','", $matches[0]) . "'";
 			$usernames = str_replace('@', '', $usernames);
 			$usernames = str_replace(",'',", ',', $usernames);
 			$usernames = str_replace(",''", '', $usernames);
@@ -1291,23 +1299,23 @@ class Service
 		$genderLetter = $profile->gender === 'M' ? 'o' : 'a';
 
 		$profileTags[] = $profile->gender === 'M' ? 'Hombre' : 'Mujer';
-		$profileTags[] = $profile->age.' años';
+		$profileTags[] = $profile->age . ' años';
 		if ($profile->religion && $profile->religion !== 'OTRA') {
-			$profileTags[] = substr(strtolower($profile->religion), 0, -1).$genderLetter;
+			$profileTags[] = substr(strtolower($profile->religion), 0, -1) . $genderLetter;
 		}
 
 		$countries = [
-			'cu'   => 'Cuba',
-			'us'   => 'Estados Unidos',
-			'es'   => 'Espana',
-			'it'   => 'Italia',
-			'mx'   => 'Mexico',
-			'br'   => 'Brasil',
-			'ec'   => 'Ecuador',
-			'ca'   => 'Canada',
-			'vz'   => 'Venezuela',
-			'al'   => 'Alemania',
-			'co'   => 'Colombia',
+			'cu' => 'Cuba',
+			'us' => 'Estados Unidos',
+			'es' => 'Espana',
+			'it' => 'Italia',
+			'mx' => 'Mexico',
+			'br' => 'Brasil',
+			'ec' => 'Ecuador',
+			'ca' => 'Canada',
+			'vz' => 'Venezuela',
+			'al' => 'Alemania',
+			'co' => 'Colombia',
 			'OTRO' => 'Otro'
 		];
 

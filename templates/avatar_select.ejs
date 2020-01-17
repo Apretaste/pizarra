@@ -1,28 +1,31 @@
 <div class="row" style="margin-bottom: 70px;">
     <nav id="colors-nav" class="valign-wrapper white">
-        <%Object.keys(colors).forEach(function (color){%>
+        <% Object.keys(colors).forEach(function (color){ %>
         <div class="col s2 center-align" style="line-height: 1rem;">
-            <div class="color circle" style="background: <%=colors[color]%>;" onclick="changeColor('<%=color%>')"></div><br>
-            <small class="black-text"><%=color%></small>
+            <div class="color circle" style="background: <%= colors[color] %>;"
+                 onclick="changeColor('<%= color %>')"></div>
+            <br>
+            <small class="black-text"><%= color %></small>
         </div>
-        <%})%>
+        <% }) %>
     </nav>
 
     <div class="col s12" id="avatar-select">
-        <%Object.keys(avatars).forEach(function (avatar) {%>
-            <% var color = avatars[avatar] == "M" ? "pizarra-color-text" : avatars[avatar] == "F" ? "pink-text" : "black-text"; %>
+        <% Object.keys(avatars).forEach(function (avatar) { %>
+            <% var color = avatars[avatar].gender == "M" ? "pizarra-color-text" : avatars[avatar].gender == "F" ? "pink-text" : "black-text"; %>
             <div class="col s6 m4 l3">
-                <div class="center-align mini-card valign-wrapper center-align" onclick="setAvatar('<%=avatar%>')">
+                <div class="center-align mini-card valign-wrapper center-align" onclick="setAvatar('<%= avatar %>')">
                     <!--label class="avatar-checkbox">
-                        <input type="checkbox" class="filled-in" <%=avatar == myUser.avatar ? 'checked="checked"' : ""%>/>
+                        <input type="checkbox" class="filled-in" <%= avatar == myUser.avatar ? 'checked="checked"' : "" %>/>
                         <span></span>
                     </label-->
                     <div>
-                        <div class="avatar" style="<%=getAvatar(avatar, "{{APP_SERVICE_PATH}}/images", 50)%> background-color: <%=colors[myUser.avatarColor]%>;"></div>
-                        <p class="<%=color%> text-medium" style="margin: 0 8px"><%=avatar%></p>
+                        <div class="avatar"
+                             style="<%= getAvatar(avatar, "{{APP_SERVICE_PATH}}/images", 50) %> background-color: <%= colors[myUser.avatarColor] %>;"></div>
+                        <p class="<%= color %> text-medium" style="margin: 0 8px"><%= avatars[avatar].caption %></p>
                     </div>
                 </div>
             </div>
-        <%})%>
+        <% }) %>
     </div>
 </div>

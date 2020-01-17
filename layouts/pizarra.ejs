@@ -1,54 +1,54 @@
 <!-- MENU -->
 <div class="row hide-on-unique" style="margin-bottom: 0;">
-	<nav>
-		<div class="nav-wrapper pizarra-color">
-			<!--Logo-->
-			<span class="brand-logo left"
-			<% if(typeof messages != "undefined"){ %>
-				  onclick="apretaste.send({'command':'PIZARRA PERFIL', 'data':{'username': '<%= myUser.username %>'}})"
-			<% }else{ %>
-				  onclick="apretaste.send({'command':'PIZARRA PERFIL'})"
-			<% } %>
-			>
-				<div style="<%= getAvatar(myUser.avatar, "{{APP_SERVICE_PATH}}/images", 32) %> background-color: <%= colors[myUser.avatarColor] %>;"
-					 id="top-avatar">
+    <nav>
+        <div class="nav-wrapper pizarra-color">
+            <!--Logo-->
+            <span class="brand-logo left"
+            <% if(typeof messages != "undefined"){ %>
+                  onclick="apretaste.send({'command':'PIZARRA PERFIL', 'data':{'username': '<%= myUser.username %>'}})"
+            <% }else{ %>
+                  onclick="apretaste.send({'command':'PIZARRA PERFIL'})"
+                    <% } %>
+            >
+				<div style="<%= getAvatar(myUser.avatar, "{{APP_SERVICE_PATH}}/images") %> background-color: <%= colors[myUser.avatarColor] %>;"
+                     id="top-avatar">
 					<i class="material-icons online-icon">brightness_1</i>
 				</div>
 			</span>
-			<span id="avatar-info"
-			<% if(typeof messages != "undefined"){ %>
-				  onclick="apretaste.send({'command':'PIZARRA PERFIL', 'data':{'username': '<%= myUser.username %>'}})"
-			<% }else{ %>
-				  onclick="apretaste.send({'command':'PIZARRA PERFIL'})"
-			<% } %>
-			>
+            <span id="avatar-info"
+            <% if(typeof messages != "undefined"){ %>
+                  onclick="apretaste.send({'command':'PIZARRA PERFIL', 'data':{'username': '<%= myUser.username %>'}})"
+            <% }else{ %>
+                  onclick="apretaste.send({'command':'PIZARRA PERFIL'})"
+                    <% } %>
+            >
 				<b>
 					@<%= myUser.username %>
 					<br>
 					<small>★<%= myUser.reputation %></small>
 				</b>
 			</span>
-			<!--notifications & profile-->
-			<ul class="right">
-				<li class="hide" id="searchButton">
-					<a onclick="openSearchModal()" class="black-text">
-						<i class="material-icons white-text">search</i>
-					</a>
-				</li>
-				<li id="chatButton">
-					<a href="#!" class="black-text"
-							<% if(typeof profile != "undefined" && profile.id != myUser.id){ %>
-					   onclick="apretaste.send({'command':'PIZARRA CONVERSACION', 'data':{'userId':'<%= profile.id %>'}})"
-					<% }else{ %>
-					   onclick="apretaste.send({'command':'PIZARRA CHAT'})"
-							<% } %>
-					>
-						<i class="material-icons white-text">chat</i>
-					</a>
-				</li>
-			</ul>
-		</div>
-	</nav>
+            <!--notifications & profile-->
+            <ul class="right">
+                <li class="hide" id="searchButton">
+                    <a onclick="openSearchModal()" class="black-text">
+                        <i class="material-icons white-text">search</i>
+                    </a>
+                </li>
+                <li id="chatButton">
+                    <a href="#!" class="black-text"
+                    <% if(typeof profile != "undefined" && profile.id != myUser.id){ %>
+                       onclick="apretaste.send({'command':'PIZARRA CONVERSACION', 'data':{'userId':'<%= profile.id %>'}})"
+                    <% }else{ %>
+                       onclick="apretaste.send({'command':'PIZARRA CHAT'})"
+                            <% } %>
+                    >
+                        <i class="material-icons white-text">chat</i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
 </div>
 
 <!-- CONTENT -->
@@ -56,60 +56,60 @@
 
 <!-- FOOTER MENU -->
 <nav class="container center-align hide-on-unique footer">
-	<div class="nav-wrapper row white">
-		<div class="col s4">
-			<a href="#!" class="grey-text text-darken-3" onclick="apretaste.send({'command':'PIZARRA'})">
-				<i class="material-icons">home</i>
-			</a>
-		</div>
-		<div class="col s4">
-			<a href="#!" class="grey-text text-darken-3" onclick="apretaste.send({'command':'PIZARRA POPULARES'})">
-				<i class="material-icons">star</i>
-			</a>
-		</div>
-		<div class="col s4">
-			<a href="#!" class="grey-text text-darken-3" onclick="apretaste.send({'command':'PIZARRA NOTIFICACIONES'})">
-				<i class="material-icons">notifications</i>
-			</a>
-		</div>
-	</div>
+    <div class="nav-wrapper row white">
+        <div class="col s4">
+            <a href="#!" class="grey-text text-darken-3" onclick="apretaste.send({'command':'PIZARRA'})">
+                <i class="material-icons">home</i>
+            </a>
+        </div>
+        <div class="col s4">
+            <a href="#!" class="grey-text text-darken-3" onclick="apretaste.send({'command':'PIZARRA POPULARES'})">
+                <i class="material-icons">star</i>
+            </a>
+        </div>
+        <div class="col s4">
+            <a href="#!" class="grey-text text-darken-3" onclick="apretaste.send({'command':'PIZARRA NOTIFICACIONES'})">
+                <i class="material-icons">notifications</i>
+            </a>
+        </div>
+    </div>
 </nav>
 
 <!-- MODALS -->
 <div id="searchModal" class="modal bottom-sheet">
-	<div class="modal-content">
-		<div class="input-field">
-			<input type="text" id="search" class="validate">
-			<label for="search">Buscar</label>
-		</div>
-	</div>
-	<div class="modal-footer">
-		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
-		<a onclick="searchText()" class="waves-effect waves-green btn-flat">Buscar</a>
-	</div>
+    <div class="modal-content">
+        <div class="input-field">
+            <input type="text" id="search" class="validate">
+            <label for="search">Buscar</label>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
+        <a onclick="searchText()" class="waves-effect waves-green btn-flat">Buscar</a>
+    </div>
 </div>
 
 <div id="themifyModal" class="modal bottom-sheet">
-	<div class="modal-content">
-		<div class="input-field">
-			<input type="text" id="theme" class="validate">
-			<label for="theme">Asignar tema</label>
-		</div>
-	</div>
-	<div class="modal-footer">
-		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
-		<a onclick="themifyNote()" class="modal-close waves-effect waves-green btn-flat">Asignar</a>
-	</div>
+    <div class="modal-content">
+        <div class="input-field">
+            <input type="text" id="theme" class="validate">
+            <label for="theme">Asignar tema</label>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
+        <a onclick="themifyNote()" class="modal-close waves-effect waves-green btn-flat">Asignar</a>
+    </div>
 </div>
 
 <div id="deleteConfirmModal" class="modal bottom-sheet">
-	<div class="modal-content">
-		<p>¿Esta seguro de eliminar su nota?</p>
-	</div>
-	<div class="modal-footer">
-		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
-		<a onclick="deleteNote()" class="modal-close waves-effect waves-green btn-flat">Eliminar</a>
-	</div>
+    <div class="modal-content">
+        <p>¿Esta seguro de eliminar su nota?</p>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
+        <a onclick="deleteNote()" class="modal-close waves-effect waves-green btn-flat">Eliminar</a>
+    </div>
 </div>
 
 <%- '<serviceImgPath data="{{APP_SERVICE_PATH}}/images"></serviceImgPath>' %>
