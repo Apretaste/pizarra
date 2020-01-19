@@ -526,7 +526,7 @@ class Service
 			$populars =
 				Database::query('SELECT A.id_person, B.avatar, B.avatarColor, B.username, B.first_name, B.country, B.province, B.about_me,  B.gender, B.year_of_birth, B.highest_school_level, B.online, (SELECT SUM(amount) FROM _pizarra_reputation WHERE id_person = A.id_person) AS reputation FROM _pizarra_users A JOIN person B ON A.id_person = B.id ORDER BY reputation DESC LIMIT 10');
 			foreach ($populars as $popular) {
-				$popular = (object)array_merge((array)$popular, (array)Person::prepareProfile($popular));
+				$popular->completion = Person::find($popular->id_person)->completion;
 				$popular->reputation = floor(($popular->reputation ?? 0) + $popular->completion);
 			}
 
