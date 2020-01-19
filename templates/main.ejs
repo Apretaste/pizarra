@@ -14,7 +14,7 @@
                 <% if (note.gender == "M") color = "pizarra-color-text"; else if (note.gender == "F") color = "pink-text"; else color = "black-text" %>
 
                 <li class="collection-item avatar row" id="<%=note.id%>" liked="<%=note.liked%>" unliked="<%=note.unliked%>">
-                    <div class="avatar circle" style="<%=getAvatar(note.avatar, "{{APP_SERVICE_PATH}}/images", 42)%> background-color: <%=colors[note.avatarColor]%>;" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});"></div>
+                    <div class="person-avatar circle" face="<%= note.avatar %>" color="<%= note.avatarColor %>" size="42" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});"></div>
                     <% if(note.online == "1"){ %>
                         <i class="material-icons online-icon">brightness_1</i>
                     <% } %>

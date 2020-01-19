@@ -153,7 +153,7 @@ function setAvatarCallback() {
 
 function changeColor(color) {
 	selectedColor = color;
-	$('.mini-card div.avatar').css('background-color', colors[color]);
+	$('.mini-card .person-avatar').css('background-color', colors[color]);
 }
 
 function getYears() {
