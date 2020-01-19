@@ -660,8 +660,6 @@ class Service
 				return;
 			}
 
-			$person = Person::prepareProfile($person);
-
 			// run powers for amulet DETECTIVE
 			if (Amulets::isActive(Amulets::DETECTIVE, $person->id)) {
 				$msg = "Los poderes del amuleto del Druida te avisan: @{$request->person->username} está revisando tu perfil";
@@ -783,11 +781,11 @@ class Service
 
 		foreach ($messages as $message) {
 			$chat = new stdClass();
-			$chat->id = $message->note_id;
+			$chat->id = $message->id;
 			$chat->username = $message->username;
 			$chat->text = $message->text;
-			$chat->sent = date_format((new DateTime($message->sent)), 'd/m/Y h:ia');
-			$chat->read = date('d/m/Y h:ia', strtotime($message->read));
+			$chat->sent = $message->sent;
+			$chat->read = $message->read;
 			$chat->readed = $message->readed;
 			$chats[] = $chat;
 		}
@@ -799,9 +797,9 @@ class Service
 			'username' => $user->username,
 			'myusername' => $request->person->username,
 			'id' => $user->id,
-			'online' => $user->online,
-			'last' => date('d/m/Y h:ia', strtotime($user->last_access)),
-			'title' => $user->first_name,
+			'online' => $user->isOnline,
+			'last' => date('d/m/Y h:ia', strtotime($user->lastAccess)),
+			'title' => $user->firstName,
 			'myUser' => $chatUser
 		];
 
