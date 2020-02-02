@@ -516,8 +516,7 @@ class Service
 			$populars =
 				q('SELECT A.id_person, B.avatar, B.avatarColor, B.username, B.first_name, B.country, B.province, B.about_me,  B.gender, B.year_of_birth, B.highest_school_level, B.online, (SELECT SUM(amount) FROM _pizarra_reputation WHERE id_person = A.id_person) AS reputation FROM _pizarra_users A JOIN person B ON A.id_person = B.id ORDER BY reputation DESC LIMIT 10');
 			foreach ($populars as $popular) {
-				$popular->avatar = $request->person->avatar;
-				//$popular->avatar = empty($popular->avatar) ? ($popular->gender === 'M' ? 'Hombre' : ($popular->gender === 'F' ? 'Señorita' : 'Hombre')) : $popular->avatar;
+				$popular->avatar = empty($popular->avatar) ? ($popular->gender === 'M' ? 'hombre' : ($popular->gender === 'F' ? 'sennorita' : 'hombre')) : $popular->avatar;
 				$popular->reputation = floor(($popular->reputation ?? 0) + $this->profileCompletion($popular));
 			}
 
@@ -1209,7 +1208,7 @@ class Service
 			$note->image = false;
 		}
 
-		$avatar = empty($note->avatar) ? ($note->gender === 'M' ? 'Hombre' : ($note->gender === 'F' ? 'Señorita' : 'Hombre')) : $note->avatar;
+		$avatar = empty($note->avatar) ? ($note->gender === 'M' ? 'hombre' : ($note->gender === 'F' ? 'sennorita' : 'hombre')) : $note->avatar;
 
 		// get the country and flag
 		$country = empty(trim($note->country)) ? 'cu' : strtolower($note->country);
