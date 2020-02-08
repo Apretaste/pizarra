@@ -456,3 +456,7 @@ p {
 	top: 10px;
 	right: 0;
 }
+
+.person-avatar {
+    background-size: contain;
+}
