@@ -4,7 +4,7 @@ use Apretaste\Core;
 
 class Service
 {
-	private $avatars = ["apretin", "apretina", "artista", "bandido", "belleza", "chica", "coqueta", "cresta", "deportiva", "dulce", "emo", "encapuchado", "extranna", "fabulosa", "fuerte", "ganadero", "geek", "genia", "gotica", "gotico", "guapo", "hawaiano", "hippie", "hombre", "inconformista", "independiente", "jefe", "jugadora", "mago", "metalero", "modelo", "moderna", "musico", "nerd", "punk", "punkie", "rap", "rapear", "rapero", "rock", "rockera", "rubia", "rudo", "sencilla", "sencillo", "sennor", "sennorita", "sensei", "surfista", "tablista", "vaquera"];
+	private $avatars = ["apretin", "apretina", "artista", "bandido", "belleza", "chica", "coqueta", "cresta", "deportiva", "dulce", "emo", "oculto", "extranna", "fabulosa", "fuerte", "ganadero", "geek", "genia", "gotica", "gotico", "guapo", "hawaiano", "hippie", "hombre", "atento", "libre", "jefe", "jugadora", "mago", "metalero", "modelo", "moderna", "musico", "nerd", "punk", "punkie", "rap", "rapear", "rapero", "rock", "rockera", "rubia", "rudo", "sencilla", "sencillo", "sennor", "sennorita", "sensei", "surfista", "tablista", "vaquera"];
 
 	/**
 	 * To list latest notes or post a new note
