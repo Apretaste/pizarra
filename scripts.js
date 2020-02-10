@@ -1,69 +1,6 @@
 "use strict";
 
-var colors = {
-	'azul': '#99F9FF',
-	'verde': '#9ADB05',
-	'rojo': '#FF415B',
-	'morado': '#58235E',
-	'naranja': '#F38200',
-	'amarillo': '#FFE600'
-};
-
 var selectedColor;
-
-var avatars = {
-	apretin: {caption: "Apretín", gender: 'M'},
-	apretina: {caption: "Apretina", gender: 'F'},
-	artista: {caption: "Artista", gender: 'M'},
-	bandido: {caption: "Bandido", gender: 'M'},
-	belleza: {caption: "Belleza", gender: 'F'},
-	chica: {caption: "Chica", gender: 'F'},
-	coqueta: {caption: "Coqueta", gender: 'F'},
-	cresta: {caption: "Cresta", gender: 'M'},
-	deportiva: {caption: "Deportiva", gender: 'F'},
-	dulce: {caption: "Dulce", gender: 'F'},
-	emo: {caption: "Emo", gender: 'M'},
-	encapuchado: {caption: "Encapuchado", gender: 'M'},
-	extranna: {caption: "Extraña", gender: 'F'},
-	fabulosa: {caption: "Fabulosa", gender: 'F'},
-	fuerte: {caption: "Fuerte", gender: 'M'},
-	ganadero: {caption: "Ganadero", gender: 'M'},
-	geek: {caption: "Geek", gender: 'F'},
-	genia: {caption: "Genia", gender: 'F'},
-	gotica: {caption: "Gótica", gender: 'F'},
-	gotico: {caption: "Gótico", gender: 'M'},
-	guapo: {caption: "Guapo", gender: 'M'},
-	hawaiano: {caption: "Hawaiano", gender: 'M'},
-	hippie: {caption: "Hippie", gender: 'M'},
-	hombre: {caption: "Hombre", gender: 'M'},
-	inconformista: {caption: "Inconformista", gender: 'M'},
-	independiente: {caption: "Independiente", gender: 'F'},
-	jefe: {caption: "Jefe", gender: 'M'},
-	jugadora: {caption: "Jugadora", gender: 'F'},
-	mago: {caption: "Mago", gender: 'M'},
-	metalero: {caption: "Metalero", gender: 'M'},
-	modelo: {caption: "Modelo", gender: 'F'},
-	moderna: {caption: "Moderna", gender: 'F'},
-	musico: {caption: "Músico", gender: 'M'},
-	nerd: {caption: "Nerd", gender: 'M'},
-	punk: {caption: "Punk", gender: 'M'},
-	punkie: {caption: "Punkie", gender: 'M'},
-	rap: {caption: "Rap", gender: 'M'},
-	rapear: {caption: "Rapear", gender: 'M'},
-	rapero: {caption: "Rapero", gender: 'M'},
-	rock: {caption: "Rock", gender: 'M'},
-	rockera: {caption: "Rockera", gender: 'F'},
-	rubia: {caption: "Rubia", gender: 'F'},
-	rudo: {caption: "Rudo", gender: 'M'},
-	sencilla: {caption: "Sencilla", gender: 'F'},
-	sencillo: {caption: "Sencillo", gender: 'M'},
-	sennor: {caption: "Señor", gender: 'M'},
-	sennorita: {caption: "Señorita", gender: 'F'},
-	sensei: {caption: "Sensei", gender: 'M'},
-	surfista: {caption: "Surfista", gender: 'M'},
-	tablista: {caption: "Tablista", gender: 'F'},
-	vaquera: {caption: "Vaquera", gender: 'F'}
-};
 
 $(document).ready(function () {
 	$('.fixed-action-btn').floatingActionButton();
