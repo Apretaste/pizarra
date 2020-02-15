@@ -16,6 +16,7 @@ a, a > span{
 
 .notes{
 	margin-top: .75rem;
+	margin-bottom: 64px;
 }
 
 .notes div.avatar{
