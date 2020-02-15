@@ -564,7 +564,7 @@ class Service
 		$notifications = q("
 			SELECT id,icon,`text`,link,inserted
 			FROM notification
-			WHERE `to` = {$request->person->id} 
+			WHERE `to` = {$request->person->id}
 			AND service = 'pizarra'
 			AND `hidden` = 0
 			ORDER BY inserted DESC");
@@ -620,7 +620,7 @@ class Service
 	{
 		$myUser = $this->preparePizarraUser($request->person);
 		$pathToService = Utils::getPathToService($response->serviceName);
-		$images = ["$pathToService/images/{$myUser}.png"];
+		$images = ["$pathToService/images/{$myUser->username}.png"];
 
 		if (isset($request->input->data->username) && $request->input->data->username != $request->person->username) {
 			$username = $request->input->data->username;
@@ -902,7 +902,7 @@ class Service
 	{
 		$noteId = $request->input->data->note;
 		q(
-			"UPDATE _pizarra_notes SET active=0 
+			"UPDATE _pizarra_notes SET active=0
 			WHERE id='$noteId' AND id_person='{$request->person->id}'"
 		);
 	}
@@ -998,7 +998,7 @@ class Service
 			SELECT
 				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country, B.online, B.avatar, B.avatarColor,
-				C.reputation, 
+				C.reputation,
 				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$profile->id}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$profile->id}' AND action='unlike') > 0 AS isunliked
@@ -1012,17 +1012,17 @@ class Service
 				ORDER BY inserted DESC
 				LIMIT 500
 			) A
-			LEFT JOIN person B ON A.id_person = B.id 
+			LEFT JOIN person B ON A.id_person = B.id
 			JOIN _pizarra_users C ON A.id_person = C.id_person
-			WHERE 
-			NOT EXISTS (SELECT * FROM relations 
-						WHERE `type` = 'blocked' AND confirmed=1 AND 
-						 ((relations.user1 = A.id_person AND relations.user2 = '{$profile->id}') 
+			WHERE
+			NOT EXISTS (SELECT * FROM relations
+						WHERE `type` = 'blocked' AND confirmed=1 AND
+						 ((relations.user1 = A.id_person AND relations.user2 = '{$profile->id}')
 						  OR (relations.user2 = A.id_person AND relations.user1 = '{$profile->id}'))
 						LIMIT 0,1);");
 
 		// sort results by weight. Too complex and slow in MySQL
-		usort($listOfNotes, function ($a, $b) {
+		if (is_array($listOfNotes))  usort($listOfNotes, function ($a, $b) {
 			$a->score = 100 - $a->hours + $a->comments * 0.2 + ($a->likes - $a->unlikes * 2) + $a->ad * 1000;
 			$b->score = 100 - $b->hours + $b->comments * 0.2 + ($b->likes - $b->unlikes * 2) + $b->ad * 1000;
 
@@ -1031,7 +1031,7 @@ class Service
 
 		// format the array of notes
 		$notes = [];
-		foreach ($listOfNotes as $note) {
+		if (is_array($listOfNotes)) foreach ($listOfNotes as $note) {
 			$notes[] = $this->formatNote($note, $profile->id); // format the array of notes
 			if (count($notes) > 50) {
 				break;
@@ -1111,10 +1111,10 @@ class Service
 			ON A.id_person= B.id
 			LEFT JOIN _pizarra_users C
 			ON C.id_person = B.id
-			WHERE A.active=1 AND A.text like '%$keyword%' AND 
-			NOT EXISTS (SELECT * FROM relations 
-						WHERE `type` = 'blocked' AND confirmed=1 AND 
-						 ((relations.user1 = A.id_person AND relations.user2 = '{$profile->id}') 
+			WHERE A.active=1 AND A.text like '%$keyword%' AND
+			NOT EXISTS (SELECT * FROM relations
+						WHERE `type` = 'blocked' AND confirmed=1 AND
+						 ((relations.user1 = A.id_person AND relations.user2 = '{$profile->id}')
 						  OR (relations.user2 = A.id_person AND relations.user1 = '{$profile->id}'))
 						LIMIT 0,1)
 			ORDER BY inserted DESC
