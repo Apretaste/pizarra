@@ -28,6 +28,16 @@ a, a > span {
 	padding-left: 0 !important;
 }
 
+.delete-button{
+	position: absolute;
+	top: 12px;
+	right: 10px;
+}
+
+.delete-button > i{
+	font-size: 18px;
+}
+
 .notes .actions i {
 	font-size: 1.25rem;
 }
@@ -140,6 +150,20 @@ b {
 
 img.responsive-img {
 	max-height: 45vh;
+}
+
+.chip.small {
+	height: 16px;
+	font-size: 10px;
+	line-height: 16px;
+	padding: 0 6px;
+}
+
+.chip.medium {
+	height: 22px;
+	font-size: 12px;
+	line-height: 22px;
+	padding: 0 8px;
 }
 
 .color {

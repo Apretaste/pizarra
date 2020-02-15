@@ -13,8 +13,11 @@
             <% notes.forEach(function(note){ %>
                 <% if (note.gender == "M") color = "pizarra-color-text"; else if (note.gender == "F") color = "pink-text"; else color = "black-text" %>
 
-                <li class="collection-item avatar row" id="<%=note.id%>" liked="<%=note.liked%>" unliked="<%=note.unliked%>">
-                    <div class="person-avatar circle" face="<%= note.avatar %>" color="<%= note.avatarColor %>" size="42" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});"></div>
+                <li class="collection-item avatar row" id="<%= note.id %>" liked="<%= note.liked %>"
+                    unliked="<%= note.unliked %>">
+                    <div class="person-avatar circle" face="<%= note.avatar %>" color="<%= note.avatarColor %>"
+                         size="42"
+                         onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});"></div>
                     <% if(note.online == "1"){ %>
                         <i class="material-icons online-icon">brightness_1</i>
                     <% } %>
@@ -25,12 +28,21 @@
 						</a>
 						<small class="grey-text text-darken-3">&nbsp;<%= note.location %> · <%= note.inserted %></small>
 					</span>
+
+                    <% if(note.canmodify){ %>
+                        <a class="modal-trigger delete-button" href="#deleteConfirmModal"
+                           onclick="activeNote = '<%= note.id %>';">
+                            <i class="material-icons grey-text text-darken-3">close</i>
+                        </a>
+                    <% } %>
+
                     <p>
                         <%- note.text %>
                     </p>
-                    <%if(note.image){%>
-                        <img class="responsive-img" src="{{APP_SERVICE_PATH}}/images/img-prev.png" onclick="apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'<%= note.id %>'}});">
-                    <%}%>
+                    <% if(note.image){ %>
+                        <img class="responsive-img" src="{{APP_SERVICE_PATH}}/images/img-prev.png"
+                             onclick="apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'<%= note.id %>'}});">
+                    <% } %>
                     <p>
                         <% note.topics.forEach(function(topic){ %>
                             <a onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'#<%= topic %>'}})">
@@ -40,13 +52,19 @@
                     </p>
                     <div class="col s10 actions">
                         <div class="col s4">
-                            <a class="like" <%if(!note.liked){%> onclick="like('<%= note.id %>','like');" <%}%>>
+                            <a class="like"
+                            <% if(!note.liked){ %> onclick="like('<%= note.id %>','like');"
+                                    <% } %>
+                            >
                                 <i class="material-icons">thumb_up</i>
                                 <span><%= note.likes %></span>
                             </a>
                         </div>
                         <div class="col s4">
-                            <a class="unlike" <%if(!note.unliked){%> onclick="like('<%= note.id %>','unlike')" <%}%>>
+                            <a class="unlike"
+                            <% if(!note.unliked){ %> onclick="like('<%= note.id %>','unlike')"
+                                    <% } %>
+                            >
                                 <i class="material-icons">thumb_down</i>
                                 <span><%= note.unlikes %></span>
                             </a>

@@ -125,9 +125,7 @@ class Service
 		$res = Database::query("SELECT * FROM $actionsTable WHERE id_person={$request->person->id} AND $type='{$noteId}'");
 		$note = Database::query("SELECT id_person, `text` FROM $rowsTable WHERE id='{$noteId}'");
 
-		if (empty($note)) {
-			return;
-		}
+		if (empty($note)) return;
 
 		if (!empty($res)) {
 			if ($res[0]->action === 'unlike') {
@@ -135,12 +133,16 @@ class Service
 				Database::query("
 				UPDATE $actionsTable SET `action`='like' WHERE id_person='{$request->person->id}' AND $type='{$noteId}';
 				UPDATE $rowsTable SET likes=likes+1, unlikes=unlikes-1 WHERE id='{$noteId}'");
-			}
 
+				// create notification for the creator
+				if ($request->person->id != $note->id_person) {
+					Notifications::alert($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
+				}
+			}
 			return;
 		}
 
-		// delete previos vote and add new vote
+		// add new vote
 		Database::query("
 			INSERT INTO $actionsTable (id_person,$type,action) VALUES ('{$request->person->id}','{$noteId}','like');
 			UPDATE $rowsTable SET likes=likes+1 WHERE id='{$noteId}'");
@@ -1021,8 +1023,8 @@ class Service
 
 		// sort results by weight. Too complex and slow in MySQL
 		usort($listOfNotes, function ($a, $b) {
-			$a->score = 100 - $a->hours + $a->comments * 0.2 + ($a->likes - $a->unlikes * 2) + $a->ad * 1000;
-			$b->score = 100 - $b->hours + $b->comments * 0.2 + ($b->likes - $b->unlikes * 2) + $b->ad * 1000;
+			$a->score = 100 - $a->hours + $a->comments * 0.2 + (($a->likes - $a->unlikes * 2) * 0.4) + $a->ad * 1000;
+			$b->score = 100 - $b->hours + $b->comments * 0.2 + (($b->likes - $b->unlikes * 2) * 0.4) + $b->ad * 1000;
 
 			return ($b->score - $a->score) ? ($b->score - $a->score) / abs($b->score - $a->score) : 0;
 		});

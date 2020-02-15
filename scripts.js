@@ -257,7 +257,7 @@ function themifyNote() {
 function submitProfileData() {
 	if (myUser.id != profile.id) return; // get the array of fields and
 
-	var fields = ['first_name', 'username', 'about_me', 'gender', 'year_of_birth', 'highest_school_level', 'country', 'province', 'usstate', 'religion']; // create the JSON of data
+	var fields = ['first_name', 'username', 'about_me', 'gender', 'year_of_birth', 'highest_school_level', 'country', 'province', 'city', 'usstate', 'religion', 'occupation']; // create the JSON of data
 
 	var data = new Object();
 	fields.forEach(function (field) {
