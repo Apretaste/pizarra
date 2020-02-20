@@ -302,7 +302,7 @@ class Service
 		$images = [];
 		if ($note['image']) {
 			$pizarraImgDir = IMG_PATH . "/content/pizarra";
-			$images[] = "$pizarraImgDir/{$note['image']}.jpg";
+			$images[] = "$pizarraImgDir/{$note['image']}";
 		}
 
 		$content = [
@@ -1196,7 +1196,8 @@ class Service
 			$topics[] = $note->topic3;
 		}
 
-		if (!(isset($note->image) && $note->image)) $note->image = false;
+		if (isset($note->image) && $note->image) $note->image = $note->image . '.jpg';
+		else $note->image = false;
 
 		$avatar = empty($note->avatar) ? ($note->gender === 'M' ? 'Hombre' : ($note->gender === 'F' ? 'Señorita' : 'Hombre')) : $note->avatar;
 
