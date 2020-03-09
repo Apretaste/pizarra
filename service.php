@@ -301,7 +301,7 @@ class Service
 
 		$images = [];
 		if ($note['image']) {
-			$pizarraImgDir = IMG_PATH . "/content/pizarra";
+			$pizarraImgDir = SHARED_PUBLIC_PATH . "/content/pizarra";
 			$images[] = "$pizarraImgDir/{$note['image']}";
 		}
 
@@ -332,7 +332,7 @@ class Service
 
 		// get the image name and path
 		if ($image) {
-			$pizarraImgDir = IMG_PATH . "/content/pizarra";
+			$pizarraImgDir = SHARED_PUBLIC_PATH . "/content/pizarra";
 			$fileName = Utils::randomHash();
 			$filePath = "$pizarraImgDir/$fileName.jpg";
 
