@@ -338,7 +338,7 @@ class Service
 
 			// save the optimized image on the user folder
 			file_put_contents($filePath, base64_decode($image));
-			Images::optimizeImage($filePath);
+			Images::optimize($filePath);
 		}
 
 		// only post notes with real content
