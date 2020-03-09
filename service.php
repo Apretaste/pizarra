@@ -1158,7 +1158,7 @@ class Service
 			$myUser->reputation = floor(($myUser->reputation ?? 0) + $profile->completion);
 		}
 
-		$myUser->location = $profile->province;
+		$myUser->location = $profile->location;
 		$myUser->avatar = $profile->avatar;
 		$myUser->avatarColor = $profile->avatarColor;
 

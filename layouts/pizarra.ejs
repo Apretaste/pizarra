@@ -40,7 +40,7 @@
                     <% if(typeof profile != "undefined" && profile.id != myUser.id){ %>
                        onclick="apretaste.send({'command':'PIZARRA CONVERSACION', 'data':{'userId':'<%= profile.id %>'}})"
                     <% }else{ %>
-                       onclick="apretaste.send({'command':'PIZARRA CHAT'})"
+                       onclick="apretaste.send({'command':'CHAT'})"
                             <% } %>
                     >
                         <i class="material-icons white-text">chat</i>
