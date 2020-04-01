@@ -925,6 +925,7 @@ class Service
 
 	private function addReputation($toId, $fromId, $noteId, $amount): void
 	{
+		$amount = str_replace(',', '.', $amount);
 		if ($toId != $fromId) {
 			Database::query("INSERT INTO _pizarra_reputation(id_person, id_from, id_note, amount) VALUES ($toId, $fromId, $noteId, $amount)");
 		}
