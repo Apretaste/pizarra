@@ -135,7 +135,7 @@ class Service
 				UPDATE $rowsTable SET likes=likes+1, unlikes=unlikes-1 WHERE id='{$noteId}'");
 
 				// create notification for the creator
-				if ($request->person->id != $note->id_person) {
+				if ($request->person->id != $note[0]->id_person) {
 					Notifications::alert($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
 				}
 			}
@@ -349,6 +349,10 @@ class Service
 		// get all the topics from the post
 		preg_match_all('/#\w*/', $text, $topics);
 		$topics = empty($topics[0]) ? [Database::query("SELECT default_topic FROM _pizarra_users WHERE id_person='{$request->person->id}'")[0]->default_topic] : $topics[0];
+
+		// cut and escape values
+		for ($i = 0; $i < count($topics); $i++) $topics[$i] = Database::escape($topics[$i], 20);
+
 		$topic1 = isset($topics[0]) ? str_replace('#', '', $topics[0]) : '';
 		$topic2 = isset($topics[1]) ? str_replace('#', '', $topics[1]) : '';
 		$topic3 = isset($topics[2]) ? str_replace('#', '', $topics[2]) : '';
@@ -364,9 +368,9 @@ class Service
 		}
 
 		// save note to the database
-		$cleanText = Database::escape($text, 300, 'utf8mb4');
+		$cleanText = Database::escape($text, 300);
 		$sql = "INSERT INTO _pizarra_notes (id_person, `text`, image, ad, topic1, topic2, topic3) VALUES ('{$request->person->id}', '$cleanText', '$fileName', $ad, '$topic1', '$topic2', '$topic3')";
-		$noteID = Database::query($sql, true, 'utf8mb4');
+		$noteID = Database::query($sql, true);
 
 		// error if the note could not be inserted
 		if (!is_numeric($noteID)) {
@@ -382,8 +386,8 @@ class Service
 		// save the topics to the topics table
 		foreach ($topics as $topic) {
 			$topic = str_replace('#', '', $topic);
-			$topic = Database::escape($topic, 20, 'utf8mb4');
-			Database::query("INSERT INTO _pizarra_topics (topic, note, id_person) VALUES ('$topic', '$noteID', '{$request->person->id}')", true, 'utf8mb4');
+			$topic = Database::escape($topic, 20);
+			Database::query("INSERT INTO _pizarra_topics (topic, note, id_person) VALUES ('$topic', '$noteID', '{$request->person->id}')", true);
 		}
 
 		// notify users mentioned
@@ -449,9 +453,9 @@ class Service
 		}
 
 		// save the comment
-		$comment = Database::escape($comment, 200, 'utf8mb4');
+		$comment = Database::escape($comment, 200);
 		Database::query(" INSERT INTO _pizarra_comments (id_person, note, text) VALUES ('{$request->person->id}', '$noteId', '$comment');
-			UPDATE _pizarra_notes SET comments = comments+1 WHERE id='$noteId';", true, 'utf8mb4');
+			UPDATE _pizarra_notes SET comments = comments+1 WHERE id='$noteId';", true);
 
 		// add the experience
 		Level::setExperience('PIZARRA_COMMENT_FIRST_DAILY', $request->person->id);
@@ -841,8 +845,8 @@ class Service
 		}
 
 		// store the note in the database
-		$message = Database::escape($message, 499, 'utf8mb4');
-		Database::query("INSERT INTO _note (from_user, to_user, `text`) VALUES ({$request->person->id},{$userTo->id},'$message')", true, 'utf8mb4');
+		$message = Database::escape($message, 499);
+		Database::query("INSERT INTO _note (from_user, to_user, `text`) VALUES ({$request->person->id},{$userTo->id},'$message')", true);
 
 		$color = $request->person->gender === 'M' ? 'pizarra-color-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
 
