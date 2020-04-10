@@ -137,7 +137,7 @@ class Service
 				UPDATE $rowsTable SET likes=likes+1, unlikes=unlikes-1 WHERE id='{$noteId}'");
 
 					// create notification for the creator
-					if ($request->person->id != $note[0]->id_person) {
+					if ($request->person->id != $note->id_person) {
 						Notifications::alert($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
 					}
 				}
@@ -149,7 +149,6 @@ class Service
 			INSERT INTO $actionsTable (id_person,$type,action) VALUES ('{$request->person->id}','{$noteId}','like');
 			UPDATE $rowsTable SET likes=likes+1 WHERE id='{$noteId}'");
 
-			$note = $note[0];
 			$note->text = substr($note->text, 0, 30) . '...';
 
 			$this->addReputation($note->id_person, $request->person->id, $noteId, 0.3);
