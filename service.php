@@ -999,7 +999,7 @@ class Service
 
 		Database::query("UPDATE _pizarra_users SET default_topic='$topic' WHERE id_person='{$profile->id}'");
 
-		$tbname = uniqid();
+		$tbname = "temprelation_".uniqid();
 		Database::query("CREATE TEMPORARY TABLE $tbname 
     			SELECT relations.user1, relations.user2 
 				FROM relations 
