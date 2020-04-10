@@ -125,11 +125,9 @@ class Service
 		$res = Database::query("SELECT * FROM $actionsTable WHERE id_person={$request->person->id} AND $type='{$noteId}'");
 		$note = Database::query("SELECT id_person, `text` FROM $rowsTable WHERE id='{$noteId}'");
 
-		if (!empty($res)) {
-			
-			if (empty($note)) return;
-			else $note = $note[0];
+		if (empty($note)) return;
 
+		if (!empty($res)) {
 			if ($res[0]->action === 'unlike') {
 				// delete previous vote and add new vote
 				Database::query("
@@ -137,7 +135,7 @@ class Service
 				UPDATE $rowsTable SET likes=likes+1, unlikes=unlikes-1 WHERE id='{$noteId}'");
 
 				// create notification for the creator
-				if ($request->person->id != $note->id_person) {
+				if ($request->person->id != $note[0]->id_person) {
 					Notifications::alert($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
 				}
 			}
@@ -146,16 +144,8 @@ class Service
 
 		// add new vote
 		Database::query("
-			INSERT INTO $actionsTable (id_person,$type,action) VALUES ('
-{
-$request->person->id
-}
-
-','{
-	$noteId}','like');
-			UPDATE
-$rowsTable SET likes=likes+1 WHERE id='{
-	$noteId}'");
+			INSERT INTO $actionsTable (id_person,$type,action) VALUES ('{$request->person->id}','{$noteId}','like');
+			UPDATE $rowsTable SET likes=likes+1 WHERE id='{$noteId}'");
 
 		$note = $note[0];
 		$note->text = substr($note->text, 0, 30) . '...';
@@ -164,14 +154,7 @@ $rowsTable SET likes=likes+1 WHERE id='{
 
 		// create notification for the creator
 		if ($request->person->id != $note->id_person) {
-			Notifications::alert($note->id_person, "El usuario @
-{
-$request->person->username
-}
-
- le dio like a tu nota en la Pizarra: {
-	$note->text}
-", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
+			Notifications::alert($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
 		}
 
 		// complete the challenge
@@ -974,7 +957,7 @@ $request->person->username
 			{
 				$defaultTopic = $topic[0]->default_topic;
 			}
-	
+
 			return ["topic", $defaultTopic];
 			*/
 		}
