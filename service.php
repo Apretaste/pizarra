@@ -121,44 +121,47 @@ class Service
 		if ($noteId === 'last') {
 			$noteId = Database::query("SELECT MAX(id) AS id FROM $rowsTable WHERE id_person = '{$request->person->id}'")[0]->id;
 		}
+
 		// check if the user already liked this note
 		$res = Database::query("SELECT * FROM $actionsTable WHERE id_person={$request->person->id} AND $type='{$noteId}'");
 		$note = Database::query("SELECT id_person, `text` FROM $rowsTable WHERE id='{$noteId}'");
 
-		if (empty($note)) return;
+		if (!empty($note)) {
+			$note = $note[0];
 
-		if (!empty($res)) {
-			if ($res[0]->action === 'unlike') {
-				// delete previous vote and add new vote
-				Database::query("
+			if (!empty($res)) {
+				if ($res[0]->action === 'unlike') {
+					// delete previous vote and add new vote
+					Database::query("
 				UPDATE $actionsTable SET `action`='like' WHERE id_person='{$request->person->id}' AND $type='{$noteId}';
 				UPDATE $rowsTable SET likes=likes+1, unlikes=unlikes-1 WHERE id='{$noteId}'");
 
-				// create notification for the creator
-				if ($request->person->id != $note[0]->id_person) {
-					Notifications::alert($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
+					// create notification for the creator
+					if ($request->person->id != $note[0]->id_person) {
+						Notifications::alert($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
+					}
 				}
+				return;
 			}
-			return;
-		}
 
-		// add new vote
-		Database::query("
+			// add new vote
+			Database::query("
 			INSERT INTO $actionsTable (id_person,$type,action) VALUES ('{$request->person->id}','{$noteId}','like');
 			UPDATE $rowsTable SET likes=likes+1 WHERE id='{$noteId}'");
 
-		$note = $note[0];
-		$note->text = substr($note->text, 0, 30) . '...';
+			$note = $note[0];
+			$note->text = substr($note->text, 0, 30) . '...';
 
-		$this->addReputation($note->id_person, $request->person->id, $noteId, 0.3);
+			$this->addReputation($note->id_person, $request->person->id, $noteId, 0.3);
 
-		// create notification for the creator
-		if ($request->person->id != $note->id_person) {
-			Notifications::alert($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
+			// create notification for the creator
+			if ($request->person->id !== $note->id_person) {
+				Notifications::alert($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
+			}
+
+			// complete the challenge
+			Challenges::complete('like-pizarra-note', $request->person->id);
 		}
-
-		// complete the challenge
-		Challenges::complete("like-pizarra-note", $request->person->id);
 	}
 
 	/**
@@ -301,7 +304,7 @@ class Service
 
 		$images = [];
 		if ($note['image']) {
-			$pizarraImgDir = SHARED_PUBLIC_PATH . "/content/pizarra";
+			$pizarraImgDir = SHARED_PUBLIC_PATH.'/content/pizarra';
 			$images[] = "$pizarraImgDir/{$note['image']}";
 		}
 
@@ -326,13 +329,13 @@ class Service
 	public function _escribir(Request $request, Response $response): void
 	{
 		$text = $request->input->data->text; // strip_tags
-		$image = isset($request->input->data->image) ? $request->input->data->image : false;
+		$image = $request->input->data->image ?? false;
 		$fileName = '';
 		$ad = 0;
 
 		// get the image name and path
 		if ($image) {
-			$pizarraImgDir = SHARED_PUBLIC_PATH . "/content/pizarra";
+			$pizarraImgDir = SHARED_PUBLIC_PATH.'/content/pizarra';
 			$fileName = Utils::randomHash();
 			$filePath = "$pizarraImgDir/$fileName.jpg";
 
@@ -351,7 +354,9 @@ class Service
 		$topics = empty($topics[0]) ? [Database::query("SELECT default_topic FROM _pizarra_users WHERE id_person='{$request->person->id}'")[0]->default_topic] : $topics[0];
 
 		// cut and escape values
-		for ($i = 0; $i < count($topics); $i++) $topics[$i] = Database::escape($topics[$i], 20);
+		foreach ($topics as $i => $iValue) {
+			$topics[$i] = Database::escape($iValue, 20);
+		}
 
 		$topic1 = isset($topics[0]) ? str_replace('#', '', $topics[0]) : '';
 		$topic2 = isset($topics[1]) ? str_replace('#', '', $topics[1]) : '';
@@ -363,14 +368,14 @@ class Service
 			$ad = 1;
 
 			// alert the user
-			$msg = "Los poderes del amuleto del druida harán que la nota que publicaste sea vista por muchas más personas";
+			$msg = 'Los poderes del amuleto del druida harán que la nota que publicaste sea vista por muchas más personas';
 			Notifications::alert($request->person->id, $msg, 'local_florist', '{command:"PIROPAZO PERFIL"}}');
 		}
 
 		// save note to the database
 		$cleanText = Database::escape($text, 300);
 		$sql = "INSERT INTO _pizarra_notes (id_person, `text`, image, ad, topic1, topic2, topic3) VALUES ('{$request->person->id}', '$cleanText', '$fileName', $ad, '$topic1', '$topic2', '$topic3')";
-		$noteID = Database::query($sql, true);
+		$noteID = Database::query($sql);
 
 		// error if the note could not be inserted
 		if (!is_numeric($noteID)) {
@@ -378,7 +383,7 @@ class Service
 		}
 
 		// complete the challenge
-		Challenges::complete("write-pizarra-note", $request->person->id);
+		Challenges::complete('write-pizarra-note', $request->person->id);
 
 		// add the experience
 		Level::setExperience('PIZARRA_POST_FIRST_DAILY', $request->person->id);
@@ -461,7 +466,7 @@ class Service
 		Level::setExperience('PIZARRA_COMMENT_FIRST_DAILY', $request->person->id);
 
 		// complete the challenge
-		Challenges::complete("comment-pizarra-note", $request->person->id);
+		Challenges::complete('comment-pizarra-note', $request->person->id);
 
 		// notify users mentioned
 		$mentions = $this->findUsersMentionedOnText($comment);
@@ -494,7 +499,7 @@ class Service
 	 */
 	public function _populares(Request $request, Response $response): void
 	{
-		$cacheFile = TEMP_PATH . "/pizarra_populars.tmp";
+		$cacheFile = TEMP_PATH.'/pizarra_populars.tmp';
 		if (file_exists($cacheFile) && time() < filemtime($cacheFile) + 15 * 60) {
 			$cache = json_decode(file_get_contents($cacheFile));
 			$topics = $cache->topics;
@@ -675,10 +680,10 @@ class Service
 
 			// run powers for amulet SHADOWMODE
 			if (Amulets::isActive(Amulets::SHADOWMODE, $person->id)) {
-				return $response->setTemplate("message.ejs", [
-					"header" => "Shadow-Mode",
-					"icon" => "visibility_off",
-					"text" => "La magia oscura de un amuleto rodea este perfil y te impide verlo. Por mucho que intentes romperlo, el hechizo del druida es poderoso."
+				return $response->setTemplate('message.ejs', [
+					'header' => 'Shadow-Mode',
+					'icon' => 'visibility_off',
+					'text' => 'La magia oscura de un amuleto rodea este perfil y te impide verlo. Por mucho que intentes romperlo, el hechizo del druida es poderoso.'
 				]);
 			}
 		} else {
@@ -999,8 +1004,8 @@ class Service
 
 		Database::query("UPDATE _pizarra_users SET default_topic='$topic' WHERE id_person='{$profile->id}'");
 
-		$tbname = "temprelation_".uniqid();
-		Database::query("CREATE TEMPORARY TABLE $tbname 
+		$temporaryTableName = 'temprelation_'.uniqid('', false);
+		Database::query("CREATE TEMPORARY TABLE $temporaryTableName 
     			SELECT relations.user1, relations.user2 
 				FROM relations 
 				WHERE (user1 = {$profile->id} OR user2 = {$profile->id}) AND type = 'blocked' AND confirmed = 1;");
@@ -1031,16 +1036,10 @@ class Service
 			    SELECT P.id, P.username, P.first_name, P.last_name, P.province, P.picture, 
 			           P.gender, P.country, P.online, 
 			           P.avatar, P.avatarColor
-			    FROM person P LEFT JOIN $tbname ON $tbname.user1 = P.id OR $tbname.user2 = P.id
-			    WHERE $tbname.user1 IS NULL AND $tbname.user2 IS NULL  
-			    
+			    FROM person P LEFT JOIN $temporaryTableName ON $temporaryTableName.user1 = P.id OR $temporaryTableName.user2 = P.id
+			    WHERE $temporaryTableName.user1 IS NULL AND $temporaryTableName.user2 IS NULL  			    
 			) B ON A.id_person = B.id 
-			JOIN _pizarra_users C ON A.id_person = C.id_person
-			" /*WHERE
-			NOT EXISTS (SELECT * FROM relations 
-						WHERE `type` = 'blocked' AND confirmed=1 AND 
-						 ((relations.user1 = A.id_person AND relations.user2 = {$profile->id}) 
-						  OR (relations.user2 = A.id_person AND relations.user1 = {$profile->id})));*/);
+			JOIN _pizarra_users C ON A.id_person = C.id_person");
 
 		// sort results by weight. Too complex and slow in MySQL
 		usort($listOfNotes, function ($a, $b) {
@@ -1188,12 +1187,13 @@ class Service
 	/**
 	 * Format note to be send to the view
 	 *
-	 * @param Object $note
+	 * @param object $note
+	 *
+	 * @param $id
 	 *
 	 * @return array
-	 * @throws Exception
+	 * @throws \Exception
 	 * @author salvipascual
-	 *
 	 */
 	private function formatNote($note, $id): array
 	{
@@ -1216,8 +1216,11 @@ class Service
 			$topics[] = $note->topic3;
 		}
 
-		if (isset($note->image) && $note->image) $note->image = $note->image . '.jpg';
-		else $note->image = false;
+		if (isset($note->image) && $note->image) {
+			$note->image .= '.jpg';
+		} else {
+			$note->image = false;
+		}
 
 		$avatar = empty($note->avatar) ? ($note->gender === 'M' ? 'Hombre' : ($note->gender === 'F' ? 'Señorita' : 'Hombre')) : $note->avatar;
 
@@ -1231,12 +1234,12 @@ class Service
 		$note->text = htmlentities($note->text);
 		$note->text = str_replace("\n", '<br>', $note->text);
 
-		while (json_encode($note->text) == '') {
-			$note->text = substr($note->text, 0, strlen($note->text) - 2);
+		while (json_encode($note->text, JSON_THROW_ON_ERROR, 512) === '') {
+			$note->text = substr($note->text, 0, -2);
 		}
 
 		// add the text to the array
-		$newNote = [
+		return [
 			'id' => $note->id,
 			'id_person' => $note->id_person,
 			'username' => $note->username,
@@ -1245,21 +1248,19 @@ class Service
 			'text' => $note->text,
 			'image' => $note->image,
 			'inserted' => date_format((new DateTime($note->inserted)), 'j/n/y · g:ia'),
-			'likes' => isset($note->likes) ? $note->likes : 0,
-			'unlikes' => isset($note->unlikes) ? $note->unlikes : 0,
-			'comments' => isset($note->comments) ? $note->comments : 0,
+			'likes' => $note->likes ?? 0,
+			'unlikes' => $note->unlikes ?? 0,
+			'comments' => $note->comments ?? 0,
 			'liked' => isset($note->isliked) && $note->isliked,
 			'unliked' => isset($note->isunliked) && $note->isunliked,
-			'ad' => isset($note->ad) ? $note->ad : false,
-			'online' => isset($note->online) ? $note->online : false,
+			'ad' => $note->ad ?? false,
+			'online' => $note->online ?? false,
 			'country' => $country,
 			'avatar' => $avatar,
 			'avatarColor' => $note->avatarColor,
 			'topics' => $topics,
-			'canmodify' => $note->id_person == $id,
+			'canmodify' => $note->id_person === $id,
 		];
-
-		return $newNote;
 	}
 
 	/**
