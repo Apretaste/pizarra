@@ -990,38 +990,53 @@ class Service
 	 */
 	private function getNotesByTopic($profile, $topic): array
 	{
-		$where = $topic !== 'general' ? "WHERE (topic1='$topic' OR topic2='$topic' OR topic3='$topic') AND active=1" : 'WHERE active=1';
+		$where = $topic !== 'general' ? "WHERE (_pizarra_notes.topic1='$topic' OR _pizarra_notes.topic2='$topic' OR _pizarra_notes.topic3='$topic') AND active=1" : 'WHERE _pizarra_notes.active=1';
 		// set the topic as default for the user
 
 		Database::query("UPDATE _pizarra_users SET default_topic='$topic' WHERE id_person='{$profile->id}'");
 
+		$tbname = uniqid();
+		Database::query("CREATE TEMPORARY TABLE $tbname 
+    			SELECT relations.user1, relations.user2 
+				FROM relations 
+				WHERE (user1 = {$profile->id} OR user2 = {$profile->id}) AND type = 'blocked' AND confirmed = 1;");
+
 		// get the records from the db
 		$listOfNotes = Database::query("
 			SELECT
-				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
-				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.country, B.online, B.avatar, B.avatarColor,
+				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, 
+			    A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
+				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, 
+			    B.country, B.online, B.avatar, B.avatarColor,
 				C.reputation, 
 				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
-				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$profile->id}' AND action='like') > 0 AS isliked,
-				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$profile->id}' AND action='unlike') > 0 AS isunliked
-			FROM (
-				SELECT * FROM _pizarra_notes subq2 INNER JOIN (
-					SELECT max(id) as idx FROM _pizarra_notes
-					$where
-					GROUP BY id_person
-					) subq
-				ON subq.idx = subq2.id
-				ORDER BY inserted DESC
-				LIMIT 500
-			) A
-			LEFT JOIN person B ON A.id_person = B.id 
+				(SELECT COUNT(_pizarra_actions.note) FROM _pizarra_actions 
+					WHERE _pizarra_actions.note = A.id AND A.id_person = {$profile->id} 
+					  AND _pizarra_actions.action = 'like') > 0 AS isliked,
+				(SELECT COUNT(_pizarra_actions.note) FROM _pizarra_actions 
+					WHERE _pizarra_actions.note = A.id AND A.id_person = {$profile->id} 
+					  AND _pizarra_actions.action = 'unlike') > 0 AS isunliked
+			FROM (SELECT subq3.* 
+					FROM (SELECT DISTINCT id, id_person 
+						  FROM _pizarra_notes $where 
+						  ORDER BY id DESC LIMIT 500) subq2 
+					INNER JOIN _pizarra_notes subq3 
+					ON subq2.id = subq3.id
+			      ) A
+			LEFT JOIN (
+			    SELECT P.id, P.username, P.first_name, P.last_name, P.province, P.picture, 
+			           P.gender, P.country, P.online, 
+			           P.avatar, P.avatarColor
+			    FROM person P LEFT JOIN $tbname ON $tbname.user1 = P.id OR $tbname.user2 = P.id
+			    WHERE $tbname.user1 IS NULL AND $tbname.user2 IS NULL  
+			    
+			) B ON A.id_person = B.id 
 			JOIN _pizarra_users C ON A.id_person = C.id_person
-			WHERE 
+			" /*WHERE
 			NOT EXISTS (SELECT * FROM relations 
 						WHERE `type` = 'blocked' AND confirmed=1 AND 
-						 ((relations.user1 = A.id_person AND relations.user2 = '{$profile->id}') 
-						  OR (relations.user2 = A.id_person AND relations.user1 = '{$profile->id}'))
-						LIMIT 0,1);");
+						 ((relations.user1 = A.id_person AND relations.user2 = {$profile->id}) 
+						  OR (relations.user2 = A.id_person AND relations.user1 = {$profile->id})));*/);
 
 		// sort results by weight. Too complex and slow in MySQL
 		usort($listOfNotes, function ($a, $b) {
