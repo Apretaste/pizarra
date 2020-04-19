@@ -246,7 +246,7 @@ class Service
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_notes A LEFT JOIN _pizarra_users B ON A.id_person = B.id_person LEFT JOIN person C ON C.id = B.id_person
-			WHERE A.id = '$noteId' AND A.active=1");
+			WHERE A.id = $noteId AND A.active=1");
 
 		// format note
 		if ($result) {
@@ -1122,22 +1122,30 @@ class Service
 	 */
 	private function getNotesByKeyword($profile, $keyword): array
 	{
+
+		$temporaryTableName = 'temprelation_'.uniqid('', false);
+		Database::query("CREATE TEMPORARY TABLE $temporaryTableName 
+    			SELECT relations.user1, relations.user2 
+				FROM relations 
+				WHERE (user1 = {$profile->id} OR user2 = {$profile->id}) AND type = 'blocked' AND confirmed = 1;");
+
 		// get the last 50 records from the db
 		$listOfNotes = Database::query("
 			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.online, B.avatar, B.avatarColor,
 			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person= '{$profile->id}' AND `action` = 'like') > 0 AS isliked,
 			(SELECT count(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments
 			FROM _pizarra_notes A
-			LEFT JOIN person B
+			LEFT JOIN (
+			    SELECT P.id, P.username, P.first_name, P.last_name, P.province, P.picture, 
+			           P.gender, P.country, P.online, 
+			           P.avatar, P.avatarColor
+			    FROM person P LEFT JOIN $temporaryTableName ON $temporaryTableName.user1 = P.id OR $temporaryTableName.user2 = P.id
+			    WHERE $temporaryTableName.user1 IS NULL AND $temporaryTableName.user2 IS NULL  			    
+			) B
 			ON A.id_person= B.id
 			LEFT JOIN _pizarra_users C
 			ON C.id_person = B.id
-			WHERE A.active=1 AND A.text like '%$keyword%' AND 
-			NOT EXISTS (SELECT * FROM relations 
-						WHERE `type` = 'blocked' AND confirmed=1 AND 
-						 ((relations.user1 = A.id_person AND relations.user2 = '{$profile->id}') 
-						  OR (relations.user2 = A.id_person AND relations.user1 = '{$profile->id}'))
-						LIMIT 0,1)
+			WHERE A.active=1 AND A.text like '%$keyword%' 
 			ORDER BY inserted DESC
 			LIMIT 30");
 
