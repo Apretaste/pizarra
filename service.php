@@ -234,6 +234,16 @@ class Service
 	public function _nota(Request $request, Response $response): void
 	{
 		$noteId = $request->input->data->note;
+		if (empty($noteId)) {
+			$response->setLayout('pizarra.ejs');
+			$response->setTemplate('notFound.ejs', [
+				'origin' => 'note',
+				'num_notifications' => $request->person->notifications,
+			]);
+
+			return;
+		}
+
 		if ($noteId === 'last') {
 			$noteId = Database::query("SELECT MAX(id) AS id FROM _pizarra_notes WHERE id_person = '{$request->person->id}'")[0]->id;
 		}
@@ -246,7 +256,7 @@ class Service
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_notes A LEFT JOIN _pizarra_users B ON A.id_person = B.id_person LEFT JOIN person C ON C.id = B.id_person
-			WHERE A.id = $noteId AND A.active=1");
+			WHERE A.id = '$noteId' AND A.active=1");
 
 		// format note
 		if ($result) {
@@ -303,7 +313,7 @@ class Service
 
 		$images = [];
 		if ($note['image']) {
-			$pizarraImgDir = SHARED_PUBLIC_PATH.'/content/pizarra';
+			$pizarraImgDir = SHARED_PUBLIC_PATH . '/content/pizarra';
 			$images[] = "$pizarraImgDir/{$note['image']}";
 		}
 
@@ -334,7 +344,7 @@ class Service
 
 		// get the image name and path
 		if ($image) {
-			$pizarraImgDir = SHARED_PUBLIC_PATH.'/content/pizarra';
+			$pizarraImgDir = SHARED_PUBLIC_PATH . '/content/pizarra';
 			$fileName = Utils::randomHash();
 			$filePath = "$pizarraImgDir/$fileName.jpg";
 
@@ -498,7 +508,7 @@ class Service
 	 */
 	public function _populares(Request $request, Response $response): void
 	{
-		$cacheFile = TEMP_PATH.'/pizarra_populars.tmp';
+		$cacheFile = TEMP_PATH . '/pizarra_populars.tmp';
 		if (file_exists($cacheFile) && time() < filemtime($cacheFile) + 15 * 60) {
 			$cache = json_decode(file_get_contents($cacheFile));
 			$topics = $cache->topics;
@@ -1003,7 +1013,7 @@ class Service
 
 		Database::query("UPDATE _pizarra_users SET default_topic='$topic' WHERE id_person='{$profile->id}'");
 
-		$temporaryTableName = 'temprelation_'.uniqid('', false);
+		$temporaryTableName = 'temprelation_' . uniqid('', false);
 		Database::query("CREATE TEMPORARY TABLE $temporaryTableName 
     			SELECT relations.user1, relations.user2 
 				FROM relations 
@@ -1123,7 +1133,7 @@ class Service
 	private function getNotesByKeyword($profile, $keyword): array
 	{
 
-		$temporaryTableName = 'temprelation_'.uniqid('', false);
+		$temporaryTableName = 'temprelation_' . uniqid('', false);
 		Database::query("CREATE TEMPORARY TABLE $temporaryTableName 
     			SELECT relations.user1, relations.user2 
 				FROM relations 
