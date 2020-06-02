@@ -1,8 +1,9 @@
 {
-	"name": "pizarra",
-	"version": "18",
-	"description": "Conecta miles de Cubanos entre ellos y con el mundo, y nos permite dejar un trazo de tiza en esta gran pizarra global",
-	"category": "social",
-	"creator": "salvi@apretaste.org",
-	"listed": true
+  "name": "pizarra",
+  "caption": "Pizarra",
+  "description": "Conecta miles de Cubanos entre ellos y con el mundo, y nos permite dejar un trazo de tiza en esta gran pizarra global",
+  "category": "social",
+  "creator": "salvi@apretaste.org",
+  "listed": true,
+  "guest": false
 }

@@ -1,69 +1,6 @@
 "use strict";
 
-var colors = {
-	'azul': '#99F9FF',
-	'verde': '#9ADB05',
-	'rojo': '#FF415B',
-	'morado': '#58235E',
-	'naranja': '#F38200',
-	'amarillo': '#FFE600'
-};
-
 var selectedColor;
-
-var avatars = {
-	apretin: {caption: "Apretín", gender: 'M'},
-	apretina: {caption: "Apretina", gender: 'F'},
-	artista: {caption: "Artista", gender: 'M'},
-	bandido: {caption: "Bandido", gender: 'M'},
-	belleza: {caption: "Belleza", gender: 'F'},
-	chica: {caption: "Chica", gender: 'F'},
-	coqueta: {caption: "Coqueta", gender: 'F'},
-	cresta: {caption: "Cresta", gender: 'M'},
-	deportiva: {caption: "Deportiva", gender: 'F'},
-	dulce: {caption: "Dulce", gender: 'F'},
-	emo: {caption: "Emo", gender: 'M'},
-	oculto: {caption: "Oculto", gender: 'M'},
-	extranna: {caption: "Extraña", gender: 'F'},
-	fabulosa: {caption: "Fabulosa", gender: 'F'},
-	fuerte: {caption: "Fuerte", gender: 'M'},
-	ganadero: {caption: "Ganadero", gender: 'M'},
-	geek: {caption: "Geek", gender: 'F'},
-	genia: {caption: "Genia", gender: 'F'},
-	gotica: {caption: "Gótica", gender: 'F'},
-	gotico: {caption: "Gótico", gender: 'M'},
-	guapo: {caption: "Guapo", gender: 'M'},
-	hawaiano: {caption: "Hawaiano", gender: 'M'},
-	hippie: {caption: "Hippie", gender: 'M'},
-	hombre: {caption: "Hombre", gender: 'M'},
-	atento: {caption: "Atento", gender: 'M'},
-	libre: {caption: "Libre", gender: 'F'},
-	jefe: {caption: "Jefe", gender: 'M'},
-	jugadora: {caption: "Jugadora", gender: 'F'},
-	mago: {caption: "Mago", gender: 'M'},
-	metalero: {caption: "Metalero", gender: 'M'},
-	modelo: {caption: "Modelo", gender: 'F'},
-	moderna: {caption: "Moderna", gender: 'F'},
-	musico: {caption: "Músico", gender: 'M'},
-	nerd: {caption: "Nerd", gender: 'M'},
-	punk: {caption: "Punk", gender: 'M'},
-	punkie: {caption: "Punkie", gender: 'M'},
-	rap: {caption: "Rap", gender: 'M'},
-	rapear: {caption: "Rapear", gender: 'M'},
-	rapero: {caption: "Rapero", gender: 'M'},
-	rock: {caption: "Rock", gender: 'M'},
-	rockera: {caption: "Rockera", gender: 'F'},
-	rubia: {caption: "Rubia", gender: 'F'},
-	rudo: {caption: "Rudo", gender: 'M'},
-	sencilla: {caption: "Sencilla", gender: 'F'},
-	sencillo: {caption: "Sencillo", gender: 'M'},
-	sennor: {caption: "Señor", gender: 'M'},
-	sennorita: {caption: "Señorita", gender: 'F'},
-	sensei: {caption: "Sensei", gender: 'M'},
-	surfista: {caption: "Surfista", gender: 'M'},
-	tablista: {caption: "Tablista", gender: 'F'},
-	vaquera: {caption: "Vaquera", gender: 'F'}
-};
 
 $(document).ready(function () {
 	$('.fixed-action-btn').floatingActionButton();
@@ -153,7 +90,7 @@ function setAvatarCallback() {
 
 function changeColor(color) {
 	selectedColor = color;
-	$('.mini-card div.avatar').css('background-color', colors[color]);
+	$('.mini-card .person-avatar').css('background-color', colors[color]);
 }
 
 function getYears() {
@@ -320,7 +257,7 @@ function themifyNote() {
 function submitProfileData() {
 	if (myUser.id != profile.id) return; // get the array of fields and
 
-	var fields = ['first_name', 'username', 'about_me', 'gender', 'year_of_birth', 'highest_school_level', 'country', 'province', 'usstate', 'religion']; // create the JSON of data
+	var fields = ['first_name', 'username', 'about_me', 'gender', 'year_of_birth', 'highest_school_level', 'country', 'province', 'city', 'usstate', 'religion', 'occupation']; // create the JSON of data
 
 	var data = new Object();
 	fields.forEach(function (field) {
@@ -416,9 +353,10 @@ function likeCallback(data) {
 function sendCommentCallback(comment) {
 	var color = myUser.gender == "M" ? "pizarra-color-text" : color = myUser.gender == "F" ? "pink-text" : "black-text";
 	var serviceImgPath = $('serviceImgPath').attr('data');
-	var element = "\n\t<li class=\"collection-item avatar row\" id=\"last\">\n\t\t\t<div class=\"avatar circle\" style=\"" + getAvatar(myUser.avatar, serviceImgPath, 42) + " background-color: " + colors[myUser.avatarColor] + ";\"></div>\n\t\t\t<i class=\"material-icons online-icon\">brightness_1</i>\n\t\t\t<span class=\"title\">\n\t\t\t\t<a class=\"" + color + "\" onclick=\"apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'" + myUser.username + "'}});\">\n\t\t\t\t\t<b>@" + myUser.username + "</b>\n\t\t\t\t</a>\n\t\t\t\t<small class=\"grey-text text-darken-3\">" + myUser.location + " \xB7 " + Date.prototype.nowFormated() + "</small>\n\t\t\t</span>\n\t\t\t\n\t\t\t<p>" + comment + "</p>\n\t\t\t\t<div class=\"col s10 actions\">\n\t\t\t\t\t<div class=\"col s4\">\n\t\t\t\t\t\t<a class=\"like\" onclick=\"like('last','like', 'comment');\">\n\t\t\t\t\t\t\t<i class=\"material-icons\">thumb_up</i>\n\t\t\t\t\t\t\t<span>0</span>\n\t\t\t\t\t\t</a>\n\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"col s4\">\n\t\t\t\t\t\t\t<a class=\"unlike\" onclick=\"like('last','unlike', 'comment')\">\n\t\t\t\t\t\t\t\t<i class=\"material-icons\">thumb_down</i>\n\t\t\t\t\t\t\t\t<span>0</span>\n\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t</li>";
+	var element = "\n\t<li class=\"collection-item avatar row\" id=\"last\">\n\t\t\t<div class=\"person-avatar circle\" face=\"" + myUser.avatar + "\" color=\"" + myUser.avatarColor + "\" size=\"42\"></div><i class=\"material-icons online-icon\">brightness_1</i>\n\t\t\t<span class=\"title\">\n\t\t\t\t<a class=\"" + color + "\" onclick=\"apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'" + myUser.username + "'}});\">\n\t\t\t\t\t<b>@" + myUser.username + "</b>\n\t\t\t\t</a>\n\t\t\t\t<small class=\"grey-text text-darken-3\">" + myUser.location + " \xB7 " + Date.prototype.nowFormated() + "</small>\n\t\t\t</span>\n\t\t\t\n\t\t\t<p>" + comment + "</p>\n\t\t\t\t<div class=\"col s10 actions\">\n\t\t\t\t\t<div class=\"col s4\">\n\t\t\t\t\t\t<a class=\"like\" onclick=\"like('last','like', 'comment');\">\n\t\t\t\t\t\t\t<i class=\"material-icons\">thumb_up</i>\n\t\t\t\t\t\t\t<span>0</span>\n\t\t\t\t\t\t</a>\n\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"col s4\">\n\t\t\t\t\t\t\t<a class=\"unlike\" onclick=\"like('last','unlike', 'comment')\">\n\t\t\t\t\t\t\t\t<i class=\"material-icons\">thumb_down</i>\n\t\t\t\t\t\t\t\t<span>0</span>\n\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t</li>";
 	$('#comments').append(element);
 	$('#comment').val('');
+	setElementAsAvatar($('#last .person-avatar'));
 	$('html, body').animate({
 		scrollTop: $("#last").offset().top
 	}, 1000);
@@ -436,13 +374,13 @@ function sendNoteCallback(note) {
 		htmlTopics += "\n\t\t\t<a onclick=\"apretaste.send({'command': 'PIZARRA','data':{'search':'#" + topic + "'}})\">\n\t\t\t\t<b>#" + topic + "</b>\n\t\t\t</a>&nbsp;";
 	});
 	note = note.escapeHTML();
-	var element = "\n\t<li class=\"collection-item avatar row\" id=\"last\">\n\t\t<div class=\"avatar circle\" style=\"" + getAvatar(myUser.avatar, serviceImgPath, 42) + " background-color: " + colors[myUser.avatarColor] + ";\"></div>\n\t\t<i class=\"material-icons online-icon\">brightness_1</i>\n\t\t<span class=\"title\">\n\t\t\t<a class=\"" + color + "\" onclick=\"apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'" + myUser.username + "'}});\">\n\t\t\t\t<b>@" + myUser.username + "</b>\n\t\t\t</a>\n\t\t\t<small class=\"grey-text text-darken-3\">" + myUser.location + " \xB7 " + Date.prototype.nowFormated() + "</small>\n\t\t</span>\n\t\t\n\t\t<p>" + note + "</p>\n\t\t" + hasImage + "\n\t\t<p>\n\t\t\t" + htmlTopics + "\n\t\t\t</p>\n\t\t\t\n\t\t\t";
-	//element += "<div class=\"col s10 actions\">\n\t\t\t\t<div class=\"col s4\">\n\t\t\t\t\t<a class=\"like\" onclick=\"like('last','like');\">\n\t\t\t\t\t\t<i class=\"material-icons\">thumb_up</i>\n\t\t\t\t\t\t<span>0</span>\n\t\t\t\t\t</a>\n\t\t\t\t\n\t\t\t\t</div>\n\t\t\t\t\t<div class=\"col s4\">\n\t\t\t\t\t\t<a class=\"unlike\" onclick=\"like('last','unlike')\">\n\t\t\t\t\t\t\t<i class=\"material-icons\">thumb_down</i>\n\t\t\t\t\t\t\t<span>0</span>\n\t\t\t\t\t\t</a>\n\t\t\t\t\t</div>\n\t\t\t\t<div class=\"col s4\">\n\t\t\t\t\t<a onclick=\"apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'last'}});\">\n\t\t\t\t\t\t<i class=\"material-icons\">comment</i>\n\t\t\t\t\t\t<span>0</span>\n\t\t\t\t\t</a>\n\t\t\t\t</div>\n\t\t\t</div>";
-	element += "\n\t\t</li>";
+	var element = "\n\t<li class=\"collection-item avatar row\" id=\"last\">\n\t\t<div class=\"person-avatar circle\" face=\"" + myUser.avatar + "\" color=\"" + myUser.avatarColor + "\" size=\"42\"></div>\n\t\t<i class=\"material-icons online-icon\">brightness_1</i>\n\t\t<span class=\"title\">\n\t\t\t<a class=\"" + color + "\" onclick=\"apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'" + myUser.username + "'}});\">\n\t\t\t\t<b>@" + myUser.username + "</b>\n\t\t\t</a>\n\t\t\t<small class=\"grey-text text-darken-3\">" + myUser.location + " \xB7 " + Date.prototype.nowFormated() + "</small>\n\t\t</span>\n\t\t\n\t\t<p>" + note + "</p>\n\t\t" + hasImage + "\n\t\t<p>\n\t\t\t" + htmlTopics + "\n\t\t\t</p>\n\t\t\t\n\t\t\t<div class=\"col s10 actions\">\n\t\t\t\t<div class=\"col s4\">\n\t\t\t\t\t<a class=\"like\" onclick=\"like('last','like');\">\n\t\t\t\t\t\t<i class=\"material-icons\">thumb_up</i>\n\t\t\t\t\t\t<span>0</span>\n\t\t\t\t\t</a>\n\t\t\t\t\n\t\t\t\t</div>\n\t\t\t\t\t<div class=\"col s4\">\n\t\t\t\t\t\t<a class=\"unlike\" onclick=\"like('last','unlike')\">\n\t\t\t\t\t\t\t<i class=\"material-icons\">thumb_down</i>\n\t\t\t\t\t\t\t<span>0</span>\n\t\t\t\t\t\t</a>\n\t\t\t\t\t</div>\n\t\t\t\t<div class=\"col s4\">\n\t\t\t\t\t<a onclick=\"apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'last'}});\">\n\t\t\t\t\t\t<i class=\"material-icons\">comment</i>\n\t\t\t\t\t\t<span>0</span>\n\t\t\t\t\t</a>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</li>";
+
 	$('.notes .collection').prepend(element);
 	showToast('Nota publicada');
 	$('#note').val('');
 	toggleWriteModal();
+	setElementAsAvatar($('#last .person-avatar'))
 	$('html, body').animate({
 		scrollTop: $("#last").offset().top
 	}, 1000);

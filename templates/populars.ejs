@@ -6,27 +6,30 @@
     </nav>
 
     <div class="col s12" id="popular-users">
-        <%populars.forEach(function (popular) {%>
+        <% populars.forEach(function (popular) { %>
             <% var color = popular.gender == "M" ? "pizarra-color-text" : popular.gender == "F" ? "pink-text" : "black-text"; %>
             <div class="col s6 m4 l3">
-                <div class="center-align mini-card valign-wrapper center-align" onclick="apretaste.send({'command':'PIZARRA PERFIL', 'data': {'username':'@<%=popular.username%>'}});">
+                <div class="center-align mini-card valign-wrapper center-align"
+                     onclick="apretaste.send({'command':'PIZARRA PERFIL', 'data': {'username':'@<%= popular.username %>'}});">
                     <div style="width: 100%;">
-                        <div class="avatar" style="<%=getAvatar(popular.avatar, "{{APP_SERVICE_PATH}}/images", 50)%> background-color: <%=colors[popular.avatarColor]%>;">
+                        <div class="person-avatar circle" face="<%= popular.avatar %>"
+                             color="<%= popular.avatarColor %>"
+                             size="50">
                             <% if(popular.online == "1"){ %>
                                 <i class="material-icons online-icon">brightness_1</i>
                             <% } %>
                         </div>
-                        <p class="<%=color%> text-medium" style="margin: 0 8px">@<%=popular.username%></p>
-                        <p class="text-medium" style="margin: 0 8px">★<%=popular.reputation%></p>
+                        <p class="<%= color %> text-medium" style="margin: 0 8px">@<%= popular.username %></p>
+                        <p class="text-medium" style="margin: 0 8px">★<%= popular.reputation %></p>
                     </div>
                 </div>
             </div>
-        <%})%>
+        <% }) %>
     </div>
 
     <div class="col s12 center-align" id="popular-topics" style="display: none;">
         <% topics.forEach(function(topic){ %>
-            <a style="font-size: <%= topic.size+3 %>px;" class="pizarra-color-text"
+            <a style="font-size: <%= topic.size + 3 %>px;" class="pizarra-color-text"
                onclick="apretaste.send({'command':'PIZARRA','data':{'search':'#<%= topic.name %>'}})">#<%= topic.name %>  </a>
         <% }); %>
     </div>

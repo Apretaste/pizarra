@@ -3,8 +3,10 @@
     <div class="col s12">
         <ul class="collection">
             <% if (note.gender == "M") color = "pizarra-color-text"; else if (note.gender == "F") color = "pink-text"; else color = "black-text" %>
-            <li class="collection-item avatar row" id="<%=note.id%>" liked="<%=note.liked%>" unliked="<%=note.unliked%>">
-                <div class="avatar circle" style="<%=getAvatar(note.avatar, "{{APP_SERVICE_PATH}}/images", 42)%> background-color: <%=colors[note.avatarColor]%>;" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});"></div>
+            <li class="collection-item avatar row" id="<%= note.id %>" liked="<%= note.liked %>"
+                unliked="<%= note.unliked %>">
+                <div class="person-avatar circle" face="<%= note.avatar %>" color="<%= note.avatarColor %>" size="42"
+                     onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});"></div>
                 <% if(note.online == "1"){ %>
                     <i class="material-icons online-icon">brightness_1</i>
                 <% } %>
@@ -13,6 +15,7 @@
                            onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});">
 							<b>@<%= note.username %></b>
 						</a>
+                    &nbsp;
 						<small class="grey-text text-darken-3"><%= note.location %> · <%= note.inserted %></small>
 					</span>
 
@@ -20,9 +23,9 @@
                     <%- note.text %>
                 </p>
                 <div class="center-align">
-                    <%if(note.image){%>
-                    <img id="notePicture" class="responsive-img" src="{{APP_IMAGE_PATH}}/<%=note.image%>"/>
-                    <%}%>
+                    <% if(note.image){ %>
+                    <img id="notePicture" class="responsive-img" src="{{APP_IMAGE_PATH}}/<%= note.image %>"/>
+                    <% } %>
                 </div>
                 <p>
                     <% note.topics.forEach(function(topic){ %>
@@ -33,13 +36,19 @@
                 </p>
                 <div class="col s10 actions">
                     <div class="col s4">
-                        <a class="like" <%if(!note.liked){%> onclick="like('<%= note.id %>','like');" <%}%>>
+                        <a class="like"
+                        <% if(!note.liked){ %> onclick="like('<%= note.id %>','like');"
+                                <% } %>
+                        >
                             <i class="material-icons">thumb_up</i>
                             <span><%= note.likes %></span>
                         </a>
                     </div>
                     <div class="col s4">
-                        <a class="unlike" <%if(!note.unliked){%> onclick="like('<%= note.id %>','unlike')" <%}%>>
+                        <a class="unlike"
+                        <% if(!note.unliked){ %> onclick="like('<%= note.id %>','unlike')"
+                                <% } %>
+                        >
                             <i class="material-icons">thumb_down</i>
                             <span><%= note.unlikes %></span>
                         </a>
@@ -54,8 +63,10 @@
             <% note.comments.forEach(function(comment){ %>
                 <% if (comment.gender == "M") color = "pizarra-color-text"; else if (comment.gender == "F") color = "pink-text"; else color = "black-text" %>
 
-                <li class="collection-item avatar row" id="<%=comment.id%>">
-                    <div class="avatar circle" style="<%=getAvatar(comment.avatar, "{{APP_SERVICE_PATH}}/images", 42)%> background-color: <%=colors[comment.avatarColor]%>;" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= comment.username %>'}});"></div>
+                <li class="collection-item avatar row" id="<%= comment.id %>">
+                    <div class="person-avatar circle" face="<%= comment.avatar %>" color="<%= comment.avatarColor %>"
+                         size="42"
+                         onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= comment.username %>'}});"></div>
                     <% if(comment.online == "1"){ %>
                         <i class="material-icons online-icon">brightness_1</i>
                     <% } %>
@@ -71,13 +82,19 @@
                     </p>
                     <div class="col s10 actions">
                         <div class="col s4">
-                            <a class="like" <%if(!comment.liked){%> onclick="like('<%= comment.id %>','like', 'comment');" <%}%>>
+                            <a class="like"
+                            <% if(!comment.liked){ %> onclick="like('<%= comment.id %>','like', 'comment');"
+                                    <% } %>
+                            >
                                 <i class="material-icons">thumb_up</i>
                                 <span><%= comment.likes %></span>
                             </a>
                         </div>
                         <div class="col s4">
-                            <a class="unlike" <%if(!comment.unliked){%> onclick="like('<%= comment.id %>','unlike', 'comment')" <%}%>>
+                            <a class="unlike"
+                            <% if(!comment.unliked){ %> onclick="like('<%= comment.id %>','unlike', 'comment')"
+                                    <% } %>
+                            >
                                 <i class="material-icons">thumb_down</i>
                                 <span><%= comment.unlikes %></span>
                             </a>

@@ -1,68 +1,75 @@
 <div class="row notes">
-	<div class="col s12">
-		<% if(chats.length > 0) { %>
-			<ul class="collection" id="chats-list">
-				<% chats.forEach(function(chat) { %>
-					<% if (chat.gender == "M") color = "pizarra-color-text"; else if (chat.gender == "F") color = "pink-text"; else color = "black-text" %>
-					<li class="collection-item avatar row openchat" id="<%=chat.id%>" name='@<%= chat.username %>'>
-								<!-- PICTURE -->
-								<div class="avatar circle" style="<%=getAvatar(chat.avatar, "{{APP_SERVICE_PATH}}/images", 48)%> background-color: <%=colors[chat.avatarColor]%>;"></div>
-						<%if(chat.online=="1"){%>
-							<i class="material-icons online-icon">brightness_1</i>
-						<%}%>
-						<span class="title">
-							<b class="<%=color%> name">@<%= chat.username %></b>
+    <div class="col s12">
+        <% if(chats.length > 0) { %>
+            <ul class="collection" id="chats-list">
+                <% chats.forEach(function(chat) { %>
+                    <% if (chat.gender == "M") color = "pizarra-color-text"; else if (chat.gender == "F") color = "pink-text"; else color = "black-text" %>
+                    <li class="collection-item avatar row openchat" id="<%= chat.id %>" name='@<%= chat.username %>'>
+                        <!-- PICTURE -->
+                        <div class="person-avatar circle" face="<%= chat.avatar %>" color="<%= chat.avatarColor %>"
+                             size="42"></div>
+                        <% if(chat.online == "1"){ %>
+                            <i class="material-icons online-icon">brightness_1</i>
+                        <% } %>
+                        <span class="title">
+							<b class="<%= color %> name">@<%= chat.username %></b>
 						</span>
-						<!-- TEXT -->
-						<p>
-							<msg>
-								<%if(!chat.last_note_read && chat.last_note_user != myUser.id){%>
-								<b><%=chat.last_note%></b>
-								<%}else{%>
-								<%=chat.last_note%>
-								<%}%>
-							</msg>
-						</p>
+                        <!-- TEXT -->
+                        <p>
+                            <msg>
+                                <% if(!chat.last_note_read && chat.last_note_user != myUser.id){ %>
+                                <b><%= chat.last_note %></b>
+                                <% }else{ %>
+                                <%= chat.last_note %>
+                                <% } %>
+                            </msg>
+                        </p>
 
-						<span class="secondary-content">
-							<small class="right black-text"><%=chat.last_sent%></small>
+                        <span class="secondary-content">
+							<small class="right black-text"><%= chat.last_sent %></small>
 						</span>
-					</li>
+                    </li>
 
-				<% }) %>
-			</ul>
-		<% } %>
-	</div>
+                <% }) %>
+            </ul>
+        <% } %>
+    </div>
 </div>
 
 <div class="modal bottom-sheet" id="optionsModal">
-	<ul class="collection">
-		<li class="collection-item" onclick="viewProfile()"><div>Perfil<a class="secondary-content"><i class="material-icons pizarra-color-text">person</i></a></div></li>
-		<li class="collection-item" onclick="writeModalOpen()"><div>Escribir<a class="secondary-content"><i class="material-icons pizarra-color-text">message</i></a></div></li>
-		<li class="collection-item" onclick="deleteModalOpen()"><div>Borrar<a class="secondary-content"><i class="material-icons pizarra-color-text">delete</i></a></div></li>
-	</ul>
+    <ul class="collection">
+        <li class="collection-item" onclick="viewProfile()">
+            <div>Perfil<a class="secondary-content"><i class="material-icons pizarra-color-text">person</i></a></div>
+        </li>
+        <li class="collection-item" onclick="writeModalOpen()">
+            <div>Escribir<a class="secondary-content"><i class="material-icons pizarra-color-text">message</i></a></div>
+        </li>
+        <li class="collection-item" onclick="deleteModalOpen()">
+            <div>Borrar<a class="secondary-content"><i class="material-icons pizarra-color-text">delete</i></a></div>
+        </li>
+    </ul>
 </div>
 
 <div id="writeMessageModal" class="modal bottom-sheet">
-	<div class="modal-content">
-		<div class="input-field">
-          <textarea id="message" class="materialize-textarea" oninput="messageLengthValidate(500)"></textarea>
-		  <label for="message">Escriba su mensaje</label>
-		  <span class="helper-text">Restante: 500</span>
-    	</div>
-	</div>	
-	<div class="modal-footer">
-		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
-		<a onclick="sendMessage('PIZARRA')" class="modal-close waves-effect waves-green btn-flat">Enviar</a>
-	</div>
+    <div class="modal-content">
+        <div class="input-field">
+            <textarea id="message" class="materialize-textarea" oninput="messageLengthValidate(500)"></textarea>
+            <label for="message">Escriba su mensaje</label>
+            <span class="helper-text">Restante: 500</span>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
+        <a onclick="sendMessage('PIZARRA')" class="modal-close waves-effect waves-green btn-flat">Enviar</a>
+    </div>
 </div>
 
 <div id="deleteModal" class="modal">
-	<div class="modal-content">
-		<p></p>
-	</div>	
-	<div class="modal-footer">
-		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
-		<a onclick="deleteChat()" class="modal-close waves-effect waves-red btn-flat red-text">Eliminar</a>
-	</div>
+    <div class="modal-content">
+        <p></p>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
+        <a onclick="deleteChat()" class="modal-close waves-effect waves-red btn-flat red-text">Eliminar</a>
+    </div>
 </div>

@@ -1,12 +1,12 @@
 <div class="row" style="margin-bottom: 70px;">
     <nav id="colors-nav" class="valign-wrapper white">
-        <% Object.keys(colors).forEach(function (color){ %>
-        <div class="col s2 center-align" style="line-height: 1rem;">
-            <div class="color circle" style="background: <%= colors[color] %>;"
-                 onclick="changeColor('<%= color %>')"></div>
-            <br>
-            <small class="black-text"><%= color %></small>
-        </div>
+        <% Object.keys(avatarColors).forEach(function (color){ %>
+            <div class="col s2 center-align" style="line-height: 1rem;">
+                <div class="color circle" style="background: <%= avatarColors[color] %>;"
+                     onclick="changeColor('<%= color %>')"></div>
+                <br>
+                <small class="black-text"><%= color %></small>
+            </div>
         <% }) %>
     </nav>
 
@@ -15,13 +15,9 @@
             <% var color = avatars[avatar].gender == "M" ? "pizarra-color-text" : avatars[avatar].gender == "F" ? "pink-text" : "black-text"; %>
             <div class="col s6 m4 l3">
                 <div class="center-align mini-card valign-wrapper center-align" onclick="setAvatar('<%= avatar %>')">
-                    <!--label class="avatar-checkbox">
-                        <input type="checkbox" class="filled-in" <%= avatar == myUser.avatar ? 'checked="checked"' : "" %>/>
-                        <span></span>
-                    </label-->
                     <div>
-                        <div class="avatar"
-                             style="<%= getAvatar(avatar, "{{APP_SERVICE_PATH}}/images", 50) %> background-color: <%= colors[myUser.avatarColor] %>;"></div>
+                        <div class="person-avatar" face="<%= avatar %>" color="<%= myUser.avatarColor %>"
+                             size="50"></div>
                         <p class="<%= color %> text-medium" style="margin: 0 8px"><%= avatars[avatar].caption %></p>
                     </div>
                 </div>

@@ -10,10 +10,10 @@
                   onclick="apretaste.send({'command':'PIZARRA PERFIL'})"
                     <% } %>
             >
-				<div style="<%= getAvatar(myUser.avatar, "{{APP_SERVICE_PATH}}/images") %> background-color: <%= colors[myUser.avatarColor] %>;"
-                     id="top-avatar">
-					<i class="material-icons online-icon">brightness_1</i>
-				</div>
+                <div class="person-avatar" id="top-avatar" face="<%= myUser.avatar %>" color="<%= myUser.avatarColor %>"
+                     size="32">
+                    <i class="material-icons online-icon">brightness_1</i>
+                </div>
 			</span>
             <span id="avatar-info"
             <% if(typeof messages != "undefined"){ %>
@@ -40,7 +40,7 @@
                     <% if(typeof profile != "undefined" && profile.id != myUser.id){ %>
                        onclick="apretaste.send({'command':'PIZARRA CONVERSACION', 'data':{'userId':'<%= profile.id %>'}})"
                     <% }else{ %>
-                       onclick="apretaste.send({'command':'PIZARRA CHAT'})"
+                       onclick="apretaste.send({'command':'CHAT'})"
                             <% } %>
                     >
                         <i class="material-icons white-text">chat</i>
@@ -102,13 +102,13 @@
     </div>
 </div>
 
-<div id="deleteConfirmModal" class="modal bottom-sheet">
+<div id="deleteConfirmModal" class="modal">
     <div class="modal-content">
-        <p>¿Esta seguro de eliminar su nota?</p>
+        <p>¿Desea borrar esta nota de pizarra?</p>
     </div>
     <div class="modal-footer">
-        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
-        <a onclick="deleteNote()" class="modal-close waves-effect waves-green btn-flat">Eliminar</a>
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat grey-text text-darken-2">Cancelar</a>
+        <a onclick="deleteNote()" class="modal-close waves-effect waves-green btn-flat" style="font-weight: 500">Aceptar</a>
     </div>
 </div>
 

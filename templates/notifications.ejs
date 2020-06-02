@@ -11,7 +11,7 @@
 
 						<!-- TEXT -->
 						<% if(note.link) { %>
-							<a href="#!" class="black-text" onclick="apretaste.send(<%= note.link %>)"><%= note.text %></a>
+							<a href="#!" class="black-text" onclick="apretaste.send(<%= note.link %>)"><%- note.text %></a>
 						<% } else { %>
 							<%- note.text %>
 						<% } %>
