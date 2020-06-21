@@ -1,6 +1,7 @@
 "use strict";
 
 var selectedColor;
+var occupation = {'AMA_DE_CASA' :'Ama de casa', 'ESTUDIANTE':'Estudiante', 'EMPLEADO_PRIVADO':'Empleado Privado', 'EMPLEADO_ESTATAL':'Empleado Estatal', 'INDEPENDIENTE':'Trabajador Independiente', 'JUBILADO':'Jubilado', 'DESEMPLEADO':'Desempleado'};
 
 $(document).ready(function () {
 	$('.fixed-action-btn').floatingActionButton();
