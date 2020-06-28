@@ -217,7 +217,7 @@ class Service
 		// run powers for amulet VIDENTE
 		if (Amulets::isActive(Amulets::VIDENTE, $note->id_person)) {
 			$msg = "Los poderes del amuleto del Druida te avisan: A @{$request->person->username} le disgustó tu nota en Pizarra";
-			Notifications::alert($note->id_person, $msg, 'remove_red_eye', '{command:"PERFIL", data:{username:"@{$request->person->username}"}}');
+			Notifications::alert($note->id_person, $msg, 'remove_red_eye', "{command:'PERFIL', data:{username:'@{$request->person->username}'}}");
 		}
 	}
 
@@ -682,7 +682,7 @@ class Service
 			// run powers for amulet DETECTIVE
 			if (Amulets::isActive(Amulets::DETECTIVE, $person->id)) {
 				$msg = "Los poderes del amuleto del Druida te avisan: @{$request->person->username} está revisando tu perfil";
-				Notifications::alert($person->id, $msg, 'pageview', "{command:\"PERFIL\", data:{username:\"@{$request->person->username}\"}}");
+				Notifications::alert($person->id, $msg, 'pageview', "{command:'PERFIL', data:{username:'@{$request->person->username}'}}");
 			}
 
 			// run powers for amulet SHADOWMODE
@@ -1058,11 +1058,13 @@ class Service
 
 		// format the array of notes
 		$notes = [];
-		if (is_array($listOfNotes)) foreach ($listOfNotes as $note) {
-			$notes[] = $this->formatNote($note, $profile->id); // format the array of notes
-			if (count($notes) > 50) {
-				break;
-			} // only parse the first 50 notes
+		if (is_array($listOfNotes)) {
+			foreach ($listOfNotes as $note) {
+				$notes[] = $this->formatNote($note, $profile->id); // format the array of notes
+				if (count($notes) > 50) {
+					break;
+				} // only parse the first 50 notes
+			}
 		}
 
 		// return array of notes
@@ -1130,7 +1132,6 @@ class Service
 	 */
 	private function getNotesByKeyword($profile, $keyword): array
 	{
-
 		$temporaryTableName = 'temprelation_' . uniqid('', false);
 		Database::query("CREATE TEMPORARY TABLE $temporaryTableName 
     			SELECT relations.user1, relations.user2 
