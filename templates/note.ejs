@@ -19,7 +19,7 @@
 							<b>@<%= note.username %></b>
 						</a>
                     &nbsp; <% } %>
-						<small class="grey-text text-darken-3"><% if (!note.staff) {%><%= note.location %> · <% } %><%= note.inserted %></small>
+						<small class="grey-text text-darken-3">&nbsp;<% if (!note.staff) {%><%= note.location %> · <% } %><%= note.inserted %></small>
 					</span>
                 <p>
                     <%- note.text %>
