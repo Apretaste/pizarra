@@ -3,7 +3,7 @@
     <div class="col s12">
         <ul class="collection">
             <% if (note.gender == "M") color = "pizarra-color-text"; else if (note.gender == "F") color = "pink-text"; else color = "black-text" %>
-            <li class="collection-item avatar row" id="<%= note.id %>" liked="<%= note.liked %>"
+            <li class="collection-item avatar row <%= note.staff ? "staff": "" %>" id="<%= note.id %>" liked="<%= note.liked %>"
                 unliked="<%= note.unliked %>">
                 <% if (!note.staff) {%>
                     <div class="person-avatar circle" face="<%= note.avatar %>" color="<%= note.avatarColor %>" size="42"
@@ -80,7 +80,7 @@
                            onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= comment.username %>'}});">
 							<b>@<%= comment.username %></b>
 						</a>
-						<small class="grey-text text-darken-3"><%= comment.location %> · <%= comment.inserted %></small>
+						<small class="grey-text text-darken-3">&nbsp;<%= comment.location %> · <%= comment.inserted %></small>
 					</span>
                     <p>
                         <%- comment.text %>
