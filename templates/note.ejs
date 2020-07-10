@@ -5,20 +5,22 @@
             <% if (note.gender == "M") color = "pizarra-color-text"; else if (note.gender == "F") color = "pink-text"; else color = "black-text" %>
             <li class="collection-item avatar row" id="<%= note.id %>" liked="<%= note.liked %>"
                 unliked="<%= note.unliked %>">
-                <div class="person-avatar circle" face="<%= note.avatar %>" color="<%= note.avatarColor %>" size="42"
-                     onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});"></div>
-                <% if(note.online == "1"){ %>
-                    <i class="material-icons online-icon">brightness_1</i>
+                <% if (!note.staff) {%>
+                    <div class="person-avatar circle" face="<%= note.avatar %>" color="<%= note.avatarColor %>" size="42"
+                         onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});"></div>
+                    <% if(note.online == "1"){ %>
+                        <i class="material-icons online-icon">brightness_1</i>
+                    <% } %>
                 <% } %>
                 <span class="title">
+                    <% if (!note.staff) {%>
 						<a class="<%= color %>"
                            onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});">
 							<b>@<%= note.username %></b>
 						</a>
-                    &nbsp;
-						<small class="grey-text text-darken-3"><%= note.location %> · <%= note.inserted %></small>
+                    &nbsp; <% } %>
+						<small class="grey-text text-darken-3"><% if (!note.staff) {%><%= note.location %> · <% } %><%= note.inserted %></small>
 					</span>
-
                 <p>
                     <%- note.text %>
                 </p>
@@ -34,7 +36,9 @@
                         </a>&nbsp;
                     <% }); %>
                 </p>
+                <% if (!note.staff) {%>
                 <div class="col s10 actions">
+
                     <div class="col s4">
                         <a class="like"
                         <% if(!note.liked){ %> onclick="like('<%= note.id %>','like');"
@@ -54,6 +58,7 @@
                         </a>
                     </div>
                 </div>
+                <% } %>
             </li>
         </ul>
     </div>

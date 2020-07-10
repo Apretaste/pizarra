@@ -13,17 +13,15 @@
             <% notes.forEach(function(note){ %>
                 <% if (note.gender == "M") color = "pizarra-color-text"; else if (note.gender == "F") color = "pink-text"; else color = "black-text" %>
 
-                <li class="collection-item avatar row <%= note.staff ? "staff": "" %>" id="<%= note.id %>" liked="<%= note.liked %>"
-                    unliked="<%= note.unliked %>" >
-                    <div class="person-avatar circle" face="<%= note.avatar %>" color="<%= note.avatarColor %>"
-                         size="42"
-                         onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});"></div>
-                    <% if(note.online == "1"){ %>
-                        <i class="material-icons online-icon">brightness_1</i>
+                <li class="collection-item avatar row <%= note.staff ? "staff": "" %>" id="<%= note.id %>" liked="<%= note.liked %>" unliked="<%= note.unliked %>" >
+                    <% if (!note.staff) {%>
+                        <div class="person-avatar circle" face="<%= note.avatar %>" color="<%= note.avatarColor %>" size="42" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});"></div>
+                        <% if(note.online == "1"){ %>
+                            <i class="material-icons online-icon">brightness_1</i>
+                        <% } %>
                     <% } %>
                     <span class="title">
-                        <% if (!note.staff) {%><a class="<%= color %>"
-                           onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});">
+                        <% if (!note.staff) { %><a class="<%= color %>" onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});">
 							<b>@<%= note.username %></b>
 						</a><% } %>
 						<small class="grey-text text-darken-3">&nbsp;<% if (!note.staff) { %><%= note.location %> · <% } %><%= note.inserted %></small>
