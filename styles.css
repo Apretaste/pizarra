@@ -501,4 +501,5 @@ input:not([type]):focus:not([readonly])+label, input[type=text]:not(.browser-def
 
 .staff {
 	background: #c8d0ee !important;
+	border-radius: 10px !important;
 }
