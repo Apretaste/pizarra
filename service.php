@@ -1283,7 +1283,7 @@ class Service
 			'topics' => $topics,
 			'canmodify' => $note->id_person === $id,
 			'accept_comments' => (int) ($note->accept_comments ?? 1) == 1,
-			'staff' => (int) ($note->staff ?? 1) == 1
+			'staff' => (int) ($note->staff ?? 0) == 1
 		];
 	}
 
