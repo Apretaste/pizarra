@@ -318,6 +318,7 @@ class Service
 		}
 
 		$content = [
+			'person_id' => $request->person->id,
 			'note' => $note,
 			'myUser' => $myUser,
 			'activeIcon' => 1

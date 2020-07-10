@@ -106,7 +106,7 @@
     </div>
 </div>
 
-<% if (note.accept_comments == 1) { %>
+<% if (note.accept_comments == 1 || note.id_person == person_id) { %>
     <div class="fixed-action-btn">
         <a href="#newCommentModal" class="btn-floating btn-large modal-trigger pizarra-color">
             <i class="large material-icons">comment</i>
