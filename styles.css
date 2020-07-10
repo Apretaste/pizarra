@@ -496,10 +496,9 @@ input:not([type]):focus:not([readonly])+label, input[type=text]:not(.browser-def
 }
 
 .select-wrapper input.select-dropdown:focus {
-	border-bottom: 1px solid #285da0;
+	border-bottom: 1px solid #788ba1;
 }
 
 .staff {
-	border: 1px solid #eeeeee;
-	background: #ffffdd;
+	background: #c8d0ee !important;
 }
