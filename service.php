@@ -454,10 +454,14 @@ class Service
 		}
 
 		// check the note ID is valid
-		$note = Database::query("SELECT `text`,id_person FROM _pizarra_notes WHERE id='$noteId' AND active=1");
+		$note = Database::query("SELECT `text`,id_person, accept_comments FROM _pizarra_notes WHERE id='$noteId' AND active=1");
 		if ($note) {
 			$note = $note[0];
 		} else {
+			return;
+		}
+
+		if ((int) $note->accept_comments == 0) {
 			return;
 		}
 
