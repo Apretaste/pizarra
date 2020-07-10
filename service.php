@@ -1057,8 +1057,8 @@ class Service
 
 		// sort results by weight. Too complex and slow in MySQL
 		usort($listOfNotes, function ($a, $b) {
-			$a->score = 100 - $a->hours + $a->comments * 0.2 + (($a->likes - $a->unlikes * 2) * 0.4) + $a->ad * 1000;
-			$b->score = 100 - $b->hours + $b->comments * 0.2 + (($b->likes - $b->unlikes * 2) * 0.4) + $b->ad * 1000;
+			$a->score = 100 - $a->hours + $a->comments * 0.2 + (($a->likes - $a->unlikes * 2) * 0.4) + $a->ad * 1000 + $a->staff * 99999;
+			$b->score = 100 - $b->hours + $b->comments * 0.2 + (($b->likes - $b->unlikes * 2) * 0.4) + $b->ad * 1000 + $b->staff * 99999;
 			return ($b->score - $a->score) ? ($b->score - $a->score) / abs($b->score - $a->score) : 0;
 		});
 
@@ -1282,7 +1282,8 @@ class Service
 			'avatarColor' => $note->avatarColor,
 			'topics' => $topics,
 			'canmodify' => $note->id_person === $id,
-			'accept_comments' => (int) ($note->accept_comments ?? 1) == 1
+			'accept_comments' => (int) ($note->accept_comments ?? 1) == 1,
+			'staff' => (int) ($note->staff ?? 1) == 1
 		];
 	}
 
