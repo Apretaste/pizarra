@@ -106,22 +106,24 @@
     </div>
 </div>
 
-<div class="fixed-action-btn">
-    <a href="#newCommentModal" class="btn-floating btn-large modal-trigger pizarra-color">
-        <i class="large material-icons">comment</i>
-    </a>
-</div>
+<% if (note.accept_comments == 1) { %>
+    <div class="fixed-action-btn">
+        <a href="#newCommentModal" class="btn-floating btn-large modal-trigger pizarra-color">
+            <i class="large material-icons">comment</i>
+        </a>
+    </div>
 
-<div id="newCommentModal" class="modal bottom-sheet">
-    <div class="modal-content">
-        <div class="input-field">
-            <textarea id="comment" class="materialize-textarea" oninput="commentLengthValidate()"></textarea>
-            <label for="comment">Escriba su comentario</label>
-            <span class="helper-text">Restante: 250</span>
+    <div id="newCommentModal" class="modal bottom-sheet">
+        <div class="modal-content">
+            <div class="input-field">
+                <textarea id="comment" class="materialize-textarea" oninput="commentLengthValidate()"></textarea>
+                <label for="comment">Escriba su comentario</label>
+                <span class="helper-text">Restante: 250</span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
+            <a onclick="sendComment()" class="modal-close waves-effect waves-green btn-flat">Comentar</a>
         </div>
     </div>
-    <div class="modal-footer">
-        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
-        <a onclick="sendComment()" class="modal-close waves-effect waves-green btn-flat">Comentar</a>
-    </div>
-</div>
+<% } %>

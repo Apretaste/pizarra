@@ -461,7 +461,8 @@ class Service
 			return;
 		}
 
-		if ((int) $note->accept_comments == 0) {
+		// si la nota no acepta comentario de otros
+		if ((int) $note->accept_comments == 0 && (int) $note->id_person <> (int) $request->person->id) {
 			return;
 		}
 
