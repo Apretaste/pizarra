@@ -22,11 +22,11 @@
                         <i class="material-icons online-icon">brightness_1</i>
                     <% } %>
                     <span class="title">
-						<a class="<%= color %>"
+                        <% if (!note.staff) {%><a class="<%= color %>"
                            onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});">
 							<b>@<%= note.username %></b>
-						</a>
-						<small class="grey-text text-darken-3">&nbsp;<%= note.location %> · <%= note.inserted %></small>
+						</a><% } %>
+						<small class="grey-text text-darken-3">&nbsp;<% if (!note.staff) { %><%= note.location %> · <% } %><%= note.inserted %></small>
 					</span>
 
                     <% if(note.canmodify){ %>
@@ -50,25 +50,22 @@
                             </a>&nbsp;
                         <% }); %>
                     </p>
+
                     <div class="col s10 actions">
+                        <% if (!note.staff) {%>
                         <div class="col s4">
-                            <a class="like"
-                            <% if(!note.liked){ %> onclick="like('<%= note.id %>','like');"
-                                    <% } %>
-                            >
+                            <a class="like" <% if(!note.liked){ %> onclick="like('<%= note.id %>','like');" <% } %> >
                                 <i class="material-icons">thumb_up</i>
                                 <span><%= note.likes %></span>
                             </a>
                         </div>
                         <div class="col s4">
-                            <a class="unlike"
-                            <% if(!note.unliked){ %> onclick="like('<%= note.id %>','unlike')"
-                                    <% } %>
-                            >
+                            <a class="unlike" <% if(!note.unliked){ %> onclick="like('<%= note.id %>','unlike')" <% } %> >
                                 <i class="material-icons">thumb_down</i>
                                 <span><%= note.unlikes %></span>
                             </a>
                         </div>
+                        <% } %>
                         <div class="col s4">
                             <a onclick="apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'<%= note.id %>'}});">
                                 <i class="material-icons">comment</i>
