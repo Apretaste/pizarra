@@ -473,7 +473,7 @@ class Service
 		}
 
 		// save the comment
-		$comment = Database::escape($comment, 200);
+		$comment = Database::escape($comment, 250);
 		Database::query(" INSERT INTO _pizarra_comments (id_person, note, text) VALUES ('{$request->person->id}', '$noteId', '$comment');
 			UPDATE _pizarra_notes SET comments = comments+1 WHERE id='$noteId';", true);
 
