@@ -1027,7 +1027,9 @@ class Service
 		// get the records from the db
 		$listOfNotes = Database::query("
 			SELECT
-				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.staff, 
+				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, 
+			       (select count(distinct id_person) from _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments, 
+			       A.staff, 
 			    A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, 
 			    B.country, B.online, B.avatar, B.avatarColor,
