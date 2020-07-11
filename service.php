@@ -1088,8 +1088,8 @@ class Service
 
 		// sort results by weight. Too complex and slow in MySQL
 		usort($listOfNotes, function ($a, $b) {
-			$a->score = pow($a->hours, 0.5) * -1 + max($a->commentsUnique, 20) * 0.2 + (($a->likes - $a->unlikes * 2) * 0.4) + $a->ad * 1000;
-			$b->score = pow($b->hours, 0.5) * -1 + max($b->commentsUnique, 20) * 0.2 + (($b->likes - $b->unlikes * 2) * 0.4) + $b->ad * 1000;
+			$a->score = (pow($a->hours, 0.5) * -1) * 0.4 + max($a->commentsUnique, 20) * 0.2 + (($a->likes - $a->unlikes * 2) * 0.4) + $a->ad * 1000;
+			$b->score = (pow($b->hours, 0.5) * -1) * 0.4 + max($b->commentsUnique, 20) * 0.2 + (($b->likes - $b->unlikes * 2) * 0.4) + $b->ad * 1000;
 			return ($b->score - $a->score) ? ($b->score - $a->score) / abs($b->score - $a->score) : 0;
 		});
 
