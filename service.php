@@ -1069,12 +1069,8 @@ class Service
 			    B.country, B.online, B.avatar, B.avatarColor,
 				C.reputation, 
 				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
-				(SELECT COUNT(_pizarra_actions.note) FROM _pizarra_actions 
-					WHERE _pizarra_actions.note = A.id AND A.id_person = {$profile->id} 
-					  AND _pizarra_actions.action = 'like') > 0 AS isliked,
-				(SELECT COUNT(_pizarra_actions.note) FROM _pizarra_actions 
-					WHERE _pizarra_actions.note = A.id AND A.id_person = {$profile->id} 
-					  AND _pizarra_actions.action = 'unlike') > 0 AS isunliked
+				1 AS isliked,
+				0 as isunliked
 			FROM (SELECT subq3.* 
 					FROM (SELECT id, id_person
 						  FROM _pizarra_notes WHERE staff =1 and active = 1
@@ -1086,8 +1082,7 @@ class Service
 			    SELECT P.id, P.username, P.first_name, P.last_name, P.province, P.picture, 
 			           P.gender, P.country, P.online, 
 			           P.avatar, P.avatarColor
-			    FROM person P LEFT JOIN $temporaryTableName ON $temporaryTableName.user1 = P.id OR $temporaryTableName.user2 = P.id
-			    WHERE $temporaryTableName.user1 IS NULL AND $temporaryTableName.user2 IS NULL  			    
+			    FROM person P 		    
 			) B ON A.id_person = B.id 
 			JOIN _pizarra_users C ON A.id_person = C.id_person");
 
