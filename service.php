@@ -1060,8 +1060,27 @@ class Service
 
 		// sort results by weight. Too complex and slow in MySQL
 		usort($listOfNotes, function ($a, $b) {
-			$a->score = (intval($a->staff ?? 0) === 1 ? 0 : pow($a->hours, 0.5) * -1) + max($a->commentsUnique, 20) * 0.2 + (($a->likes - $a->unlikes * 2) * 0.4) + $a->ad * 1000 + ($a->staff ?? 0) * 99999;
-			$b->score = (intval($b->staff ?? 0) === 1 ? 0 : pow($b->hours, 0.5) * -1) + max($b->commentsUnique, 20) * 0.2 + (($b->likes - $b->unlikes * 2) * 0.4) + $b->ad * 1000 + ($b->staff ?? 0) * 99999;
+			$a->staff = $a->staff ?? '0';
+			$b->staff = $b->staff ?? '0';
+
+			$a->staff = ((int) $a->staff) === 1;
+			$b->staff = ((int) $b->staff) === 1;
+
+			if ($a->staff && $b->staff) {
+				return 0;
+			}
+
+			if ($a->staff && !$b->staff) {
+				return 1;
+			}
+
+			if (!$a->staff && $b->staff) {
+				return -1;
+			}
+
+			$a->score = pow($a->hours, 0.5) * -1 + max($a->commentsUnique, 20) * 0.2 + (($a->likes - $a->unlikes * 2) * 0.4) + $a->ad * 1000;
+			$b->score = pow($b->hours, 0.5) * -1 + max($b->commentsUnique, 20) * 0.2 + (($b->likes - $b->unlikes * 2) * 0.4) + $b->ad * 1000;
+
 			return ($b->score - $a->score) ? ($b->score - $a->score) / abs($b->score - $a->score) : 0;
 		});
 
