@@ -1058,34 +1058,48 @@ class Service
 			) B ON A.id_person = B.id 
 			JOIN _pizarra_users C ON A.id_person = C.id_person");
 
+		$staffNotes = Database::query("
+			SELECT
+				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, 
+			       A.comments,
+			       (select count(distinct id_person) from _pizarra_comments WHERE _pizarra_comments.note = A.id) as commentsUnique, 
+			       A.staff, 
+			    A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
+				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, 
+			    B.country, B.online, B.avatar, B.avatarColor,
+				C.reputation, 
+				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
+				(SELECT COUNT(_pizarra_actions.note) FROM _pizarra_actions 
+					WHERE _pizarra_actions.note = A.id AND A.id_person = {$profile->id} 
+					  AND _pizarra_actions.action = 'like') > 0 AS isliked,
+				(SELECT COUNT(_pizarra_actions.note) FROM _pizarra_actions 
+					WHERE _pizarra_actions.note = A.id AND A.id_person = {$profile->id} 
+					  AND _pizarra_actions.action = 'unlike') > 0 AS isunliked
+			FROM (SELECT subq3.* 
+					FROM (SELECT id, id_person
+						  FROM _pizarra_notes WHERE staff =1 and active = 1
+						  ORDER BY id DESC LIMIT 500) subq2 
+					INNER JOIN _pizarra_notes subq3 
+					ON subq2.id = subq3.id
+			      ) A
+			LEFT JOIN (
+			    SELECT P.id, P.username, P.first_name, P.last_name, P.province, P.picture, 
+			           P.gender, P.country, P.online, 
+			           P.avatar, P.avatarColor
+			    FROM person P LEFT JOIN $temporaryTableName ON $temporaryTableName.user1 = P.id OR $temporaryTableName.user2 = P.id
+			    WHERE $temporaryTableName.user1 IS NULL AND $temporaryTableName.user2 IS NULL  			    
+			) B ON A.id_person = B.id 
+			JOIN _pizarra_users C ON A.id_person = C.id_person");
+
 		// sort results by weight. Too complex and slow in MySQL
 		usort($listOfNotes, function ($a, $b) {
-			$a->staff = $a->staff ?? '0';
-			$b->staff = $b->staff ?? '0';
-
-			$a->staff = ((int) $a->staff) === 1;
-			$b->staff = ((int) $b->staff) === 1;
-
-			if ($a->staff && $b->staff) {
-				return 0;
-			}
-
-			if ($a->staff && !$b->staff) {
-				return 1;
-			}
-
-			if (!$a->staff && $b->staff) {
-				return -1;
-			}
-
 			$a->score = pow($a->hours, 0.5) * -1 + max($a->commentsUnique, 20) * 0.2 + (($a->likes - $a->unlikes * 2) * 0.4) + $a->ad * 1000;
 			$b->score = pow($b->hours, 0.5) * -1 + max($b->commentsUnique, 20) * 0.2 + (($b->likes - $b->unlikes * 2) * 0.4) + $b->ad * 1000;
-
 			return ($b->score - $a->score) ? ($b->score - $a->score) / abs($b->score - $a->score) : 0;
 		});
 
 		// format the array of notes
-		$notes = [];
+		$notes = $staffNotes;
 		if (is_array($listOfNotes)) {
 			foreach ($listOfNotes as $note) {
 				$notes[] = $this->formatNote($note, $profile->id); // format the array of notes
