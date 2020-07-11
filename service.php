@@ -1094,9 +1094,9 @@ class Service
 		});
 
 		// format the array of notes
-		$notes = $staffNotes;
+		$notes = [];
 		if (is_array($listOfNotes)) {
-			foreach ($listOfNotes as $note) {
+			foreach (array_merge($staffNotes, $listOfNotes)  as $note) {
 				$notes[] = $this->formatNote($note, $profile->id); // format the array of notes
 				if (count($notes) > 50) {
 					break;
