@@ -1039,7 +1039,7 @@ class Service
 			    A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, 
 			    B.country, B.online, B.avatar, B.avatarColor,
-				C.reputation, 
+				C.reputation, A.ownlike,
 				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
 				(SELECT COUNT(_pizarra_actions.note) FROM _pizarra_actions 
 					WHERE _pizarra_actions.note = A.id AND A.id_person = {$profile->id} 
@@ -1072,7 +1072,7 @@ class Service
 			    A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, 
 			    B.country, B.online, B.avatar, B.avatarColor,
-				C.reputation, A.ownlike
+				C.reputation, A.ownlike,
 				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
 				1 AS isliked,
 				0 as isunliked
