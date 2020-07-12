@@ -165,7 +165,7 @@ class Service
 			}
 
 			// track challenges
-			Challenges::track($request->person->id, 'pizarra-likes-100', ['publish' => true, 'likes' => 0], static function ($track) {
+			Challenges::track($note->id_person, 'pizarra-likes-100', ['publish' => true, 'likes' => 0], static function ($track) {
 				$track['publish'] = true;
 				$track['likes']++;
 				return $track;
