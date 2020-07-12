@@ -504,6 +504,14 @@ class Service
 		// complete the challenge
 		Challenges::complete('comment-pizarra-note', $request->person->id);
 
+		Challenges::track($request->person->id, 'pizarra-comments-random', [], static function ($track) use ($noteId) {
+			$track[$noteId] = $noteId;
+			if (count($track) >= 10) {
+				$track = 10;
+			}
+			return $track;
+		});
+
 		// notify users mentioned
 		$mentions = $this->findUsersMentionedOnText($comment);
 		foreach ($mentions as $mention) {
