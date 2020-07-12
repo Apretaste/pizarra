@@ -165,10 +165,11 @@ class Service
 			}
 
 			// track challenges
-			$track = Challenges::getTrack($note->id_person, 'pizarra-likes-100', ['publish' => true, 'likes' => 0]);
-			$track['publish'] = true;
-			$track['likes']++;
-			Challenges::setTrack($note->id_person, 'pizarra-likes-100', $track);
+			Challenges::track($request->person->id, 'pizarra-likes-100', ['publish' => true, 'likes' => 0], static function ($track) {
+				$track['publish'] = true;
+				$track['likes']++;
+				return $track;
+			});
 		}
 	}
 
@@ -405,9 +406,15 @@ class Service
 		Challenges::complete('write-pizarra-note', $request->person->id);
 
 		// track challenges
-		$track = Challenges::getTrack($request->person->id, 'pizarra-likes-100', ['publish' => false, 'likes' => 0]);
-		$track['publish'] = true;
-		Challenges::setTrack($request->person->id, 'pizarra-likes-100', $track);
+		Challenges::track($request->person->id, 'pizarra-likes-100', ['publish' => false, 'likes' => 0], static function ($track) {
+			$track['publish'] = true;
+			return $track;
+		});
+
+		Challenges::track($request->person->id, 'pizarra-comments-20', ['publish' => false, 'comments' => 0], static function ($track) {
+			$track['publish'] = true;
+			return $track;
+		});
 
 		// add the experience
 		Level::setExperience('PIZARRA_POST_FIRST_DAILY', $request->person->id);
