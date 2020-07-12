@@ -129,12 +129,17 @@ class Service
 		if (!empty($note)) {
 			$note = $note[0];
 
+			$ownlike = 0;
+			if (intval($note->id_person) == intval($request->person->id)) {
+				$ownlike = 1;
+			}
+
 			if (!empty($res)) {
 				if ($res[0]->action === 'unlike') {
 					// delete previous vote and add new vote
 					Database::query("
-				UPDATE $actionsTable SET `action`='like' WHERE id_person='{$request->person->id}' AND $type='{$noteId}';
-				UPDATE $rowsTable SET likes=likes+1, unlikes=unlikes-1 WHERE id='{$noteId}'");
+                        UPDATE $actionsTable SET `action`='like' WHERE id_person='{$request->person->id}' AND $type='{$noteId}';
+                        UPDATE $rowsTable SET likes=likes+1, unlikes=unlikes-1,ownlike=$ownlike WHERE id='{$noteId}'");
 
 					// create notification for the creator
 					if ($request->person->id != $note->id_person) {
@@ -147,7 +152,7 @@ class Service
 			// add new vote
 			Database::query("
 			INSERT INTO $actionsTable (id_person,$type,action) VALUES ('{$request->person->id}','{$noteId}','like');
-			UPDATE $rowsTable SET likes=likes+1 WHERE id='{$noteId}'");
+			UPDATE $rowsTable SET likes=likes+1, ownlike = $ownlike WHERE id='{$noteId}'");
 
 			$note->text = substr($note->text, 0, 30) . '...';
 
@@ -1062,12 +1067,12 @@ class Service
 			SELECT
 				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, 
 			       A.comments,
-			       (select count(distinct id_person) from _pizarra_comments WHERE _pizarra_comments.note = A.id) as commentsUnique, 
+			       (select count(distinct id_person) from _pizarra_comments WHERE _pizarra_comments.note = A.id AND _pizarra_comments.id_person <> A.id_person) as commentsUnique, 
 			       A.staff, 
 			    A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, 
 			    B.country, B.online, B.avatar, B.avatarColor,
-				C.reputation, 
+				C.reputation, A.ownlike
 				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
 				1 AS isliked,
 				0 as isunliked
@@ -1088,8 +1093,8 @@ class Service
 
 		// sort results by weight. Too complex and slow in MySQL
 		usort($listOfNotes, function ($a, $b) {
-			$a->score = (pow($a->hours, 0.5) * -1) * 0.4 + max($a->commentsUnique, 20) * 0.2 + (($a->likes - $a->unlikes * 2) * 0.4) + $a->ad * 1000;
-			$b->score = (pow($b->hours, 0.5) * -1) * 0.4 + max($b->commentsUnique, 20) * 0.2 + (($b->likes - $b->unlikes * 2) * 0.4) + $b->ad * 1000;
+			$a->score = (pow($a->hours, 0.5) * -1) * 0.4 + max($a->commentsUnique, 20) * 0.2 + ((($a->likes - intval($a->ownlike)) - $a->unlikes * 2) * 0.4) + $a->ad * 1000;
+			$b->score = (pow($b->hours, 0.5) * -1) * 0.4 + max($b->commentsUnique, 20) * 0.2 + ((($b->likes - intval($a->ownlike)) - $b->unlikes * 2) * 0.4) + $b->ad * 1000;
 			return ($b->score - $a->score) ? ($b->score - $a->score) / abs($b->score - $a->score) : 0;
 		});
 
