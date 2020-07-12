@@ -128,38 +128,47 @@ class Service
 
 		if (!empty($note)) {
 			$note = $note[0];
+			$liked = false;
 
 			if (!empty($res)) {
 				if ($res[0]->action === 'unlike') {
 					// delete previous vote and add new vote
 					Database::query("
-				UPDATE $actionsTable SET `action`='like' WHERE id_person='{$request->person->id}' AND $type='{$noteId}';
-				UPDATE $rowsTable SET likes=likes+1, unlikes=unlikes-1 WHERE id='{$noteId}'");
+                        UPDATE $actionsTable SET `action`='like' WHERE id_person='{$request->person->id}' AND $type='{$noteId}';
+                        UPDATE $rowsTable SET likes=likes+1, unlikes=unlikes-1 WHERE id='{$noteId}'");
 
 					// create notification for the creator
 					if ($request->person->id != $note->id_person) {
 						Notifications::alert($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
 					}
+
+					$liked = true;
 				}
-				return;
 			}
 
-			// add new vote
-			Database::query("
-			INSERT INTO $actionsTable (id_person,$type,action) VALUES ('{$request->person->id}','{$noteId}','like');
-			UPDATE $rowsTable SET likes=likes+1 WHERE id='{$noteId}'");
+			if (!$liked) {
+				// add new vote
+				Database::query("INSERT INTO $actionsTable (id_person,$type,action) VALUES ('{$request->person->id}','{$noteId}','like');    
+                            UPDATE $rowsTable SET likes=likes+1 WHERE id='{$noteId}'");
 
-			$note->text = substr($note->text, 0, 30) . '...';
+				$note->text = substr($note->text, 0, 30) . '...';
 
-			$this->addReputation($note->id_person, $request->person->id, $noteId, 0.3);
+				$this->addReputation($note->id_person, $request->person->id, $noteId, 0.3);
 
-			// create notification for the creator
-			if ($request->person->id !== $note->id_person) {
-				Notifications::alert($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
+				// create notification for the creator
+				if ($request->person->id !== $note->id_person) {
+					Notifications::alert($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
+				}
+
+				// complete the challenge
+				Challenges::complete('like-pizarra-note', $request->person->id);
 			}
 
-			// complete the challenge
-			Challenges::complete('like-pizarra-note', $request->person->id);
+			// track challenges
+			$track = Challenges::getTrack($note->id_person, 'pizarra-likes-100', ['publish' => true, 'likes' => 0]);
+			$track['publish'] = true;
+			$track['likes']++;
+			Challenges::setTrack($note->id_person, 'pizarra-likes-100', $track);
 		}
 	}
 
@@ -394,6 +403,11 @@ class Service
 
 		// complete the challenge
 		Challenges::complete('write-pizarra-note', $request->person->id);
+
+		// track challenges
+		$track = Challenges::getTrack($request->person->id, 'pizarra-likes-100', ['publish' => false, 'likes' => 0]);
+		$track['publish'] = true;
+		Challenges::setTrack($request->person->id, 'pizarra-likes-100', $track);
 
 		// add the experience
 		Level::setExperience('PIZARRA_POST_FIRST_DAILY', $request->person->id);
