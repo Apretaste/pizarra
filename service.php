@@ -1049,7 +1049,7 @@ class Service
 					  AND _pizarra_actions.action = 'unlike') > 0 AS isunliked
 			FROM (SELECT subq3.* 
 					FROM (SELECT DISTINCT id, id_person 
-						  FROM _pizarra_notes $where 
+						  FROM _pizarra_notes $where AND staff = 0
 						  ORDER BY id DESC LIMIT 500) subq2 
 					INNER JOIN _pizarra_notes subq3 
 					ON subq2.id = subq3.id
