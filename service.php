@@ -164,14 +164,17 @@ class Service
 				Challenges::complete('like-pizarra-note', $request->person->id);
 
 				// track challenges
-				Challenges::track( $note->id_person,'pizarra-likes-100', ['publish' => false, 'likes' => 0],
+				Challenges::track(
+					$note->id_person,
+					'pizarra-likes-100',
+					['publish' => false, 'likes' => 0],
 					static function ($track) use ($note) {
 						// si no ha publicado una nota nueva, publish sera false
 						// se pone en true en el comando escribir
 
 						if ($track['publish'] === true) {
 							$track['likes'] = $note->likes;
-							$track['likes'] = max($note->likes, $track['likes']);
+							$track['likes'] = max($note->likes + 1, $track['likes']);
 							if ($track['likes'] > 100) {
 								$track['likes'] = 100;
 							}
@@ -528,7 +531,7 @@ class Service
 			// si no ha publicado una nota nueva, publish sera false, segun el valor por defecto
 			// se pone en true en el comando ESCRIBIR
 			if ($track['publish'] === true) {
-				$track['comments'] = max($track['comments'], $note->comments);
+				$track['comments'] = max($track['comments'], $note->comments + 1);
 				if ($track['comments'] > 20) {
 					$track['comments'] = 20;
 				}
