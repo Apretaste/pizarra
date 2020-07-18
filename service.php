@@ -124,7 +124,7 @@ class Service
 
 		// check if the user already liked this note
 		$res = Database::query("SELECT * FROM $actionsTable WHERE id_person={$request->person->id} AND $type='{$noteId}'");
-		$note = Database::query("SELECT id_person, `text` FROM $rowsTable WHERE id='{$noteId}'");
+		$note = Database::query("SELECT id_person, `text`, likes FROM $rowsTable WHERE id='{$noteId}'");
 
 		if (!empty($note)) {
 			$note = $note[0];
@@ -490,7 +490,7 @@ class Service
 		}
 
 		// check the note ID is valid
-		$note = Database::query("SELECT `text`,id_person, accept_comments FROM _pizarra_notes WHERE id='$noteId' AND active=1");
+		$note = Database::query("SELECT `text`,id_person, accept_comments,comments FROM _pizarra_notes WHERE id='$noteId' AND active=1");
 		if ($note) {
 			$note = $note[0];
 		} else {
