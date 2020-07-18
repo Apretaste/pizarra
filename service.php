@@ -148,7 +148,7 @@ class Service
 
 			if (!$liked) {
 				// add new vote
-				Database::query("INSERT INTO $actionsTable (id_person,$type,action) VALUES ('{$request->person->id}','{$noteId}','like');    
+				$id = Database::query("INSERT INTO $actionsTable (id_person,$type,action) VALUES ('{$request->person->id}','{$noteId}','like');    
                             UPDATE $rowsTable SET likes=likes+1 WHERE id='{$noteId}'");
 
 				$note->text = substr($note->text, 0, 30) . '...';
@@ -162,14 +162,25 @@ class Service
 
 				// complete the challenge
 				Challenges::complete('like-pizarra-note', $request->person->id);
-			}
 
-			// track challenges
-			Challenges::track($note->id_person, 'pizarra-likes-100', ['publish' => true, 'likes' => 0], static function ($track) {
-				$track['publish'] = true;
-				$track['likes']++;
-				return $track;
-			});
+				// track challenges
+				Challenges::track( $note->id_person,'pizarra-likes-100', ['publish' => false, 'likes' => 0],
+					static function ($track) use ($note) {
+						// si no ha publicado una nota nueva, publish sera false
+						// se pone en true en el comando escribir
+
+						if ($track['publish'] === true) {
+							$track['likes'] = $note->likes;
+							$track['likes'] = max($note->likes, $track['likes']);
+							if ($track['likes'] > 100) {
+								$track['likes'] = 100;
+							}
+						}
+
+						return $track;
+					}
+				);
+			}
 		}
 	}
 
@@ -509,6 +520,20 @@ class Service
 			if (count($track) >= 10) {
 				$track = 10;
 			}
+			return $track;
+		});
+
+		Challenges::track($note->id_person, 'pizarra-comments-20', ["publish" => false, "comments" => 0], static function ($track) use ($note) {
+
+			// si no ha publicado una nota nueva, publish sera false, segun el valor por defecto
+			// se pone en true en el comando ESCRIBIR
+			if ($track['publish'] === true) {
+				$track['comments'] = max($track['comments'], $note->comments);
+				if ($track['comments'] > 20) {
+					$track['comments'] = 20;
+				}
+			}
+
 			return $track;
 		});
 
