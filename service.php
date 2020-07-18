@@ -430,7 +430,7 @@ class Service
 			return $track;
 		});
 
-		Challenges::track($request->person->id, 'pizarra-comments-20', ['publish' => false, 'comments' => 0], static function ($track) {
+		Challenges::track($request->person->id, 'pizarra-comments-20', ['publish' => false, 'comments' => []], static function ($track) {
 			$track['publish'] = true;
 			return $track;
 		});
@@ -531,14 +531,28 @@ class Service
 			return $track;
 		});
 
-		Challenges::track($note->id_person, 'pizarra-comments-20', ["publish" => false, "comments" => 0], static function ($track) use ($note) {
+		Challenges::track($note->id_person, 'pizarra-comments-20', ["publish" => false, "comments" => []], static function ($track) use ($note, $request) {
 
 			// si no ha publicado una nota nueva, publish sera false, segun el valor por defecto
 			// se pone en true en el comando ESCRIBIR
 			if ($track['publish'] === true) {
-				$track['comments'] = max($track['comments'], $note->comments + 1);
-				if ($track['comments'] > 20) {
-					$track['comments'] = 20;
+				if ($note->id_person !== $request->person->id) {
+					if (!is_array($track['comments'])) {
+						if ($track['comments'] === 20) {
+							return $track;
+						}
+						$track['comments'] = [];
+					}
+
+					$track['comments'][$note->id][$request->person->id] = true;
+				}
+
+				// si una de sus notas alcanza los 20 comentarios... coloco int=20 para dar por completado el reto
+				foreach ($track['comments'] as $comments) {
+					if (count($comments) >= 20) {
+						$track['comments'] = 20;
+						break;
+					}
 				}
 			}
 
