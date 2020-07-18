@@ -124,10 +124,11 @@ class Service
 
 		// check if the user already liked this note
 		$res = Database::query("SELECT * FROM $actionsTable WHERE id_person={$request->person->id} AND $type='{$noteId}'");
-		$note = Database::query("SELECT id_person, `text` FROM $rowsTable WHERE id='{$noteId}'");
+		$note = Database::query("SELECT id_person, `text`, likes FROM $rowsTable WHERE id='{$noteId}'");
 
 		if (!empty($note)) {
 			$note = $note[0];
+			$liked = false;
 
 			$ownlike = 0;
 			if (intval($note->id_person) == intval($request->person->id)) {
@@ -145,26 +146,49 @@ class Service
 					if ($request->person->id != $note->id_person) {
 						Notifications::alert($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
 					}
+
+					$liked = true;
 				}
-				return;
 			}
 
-			// add new vote
-			Database::query("
-			INSERT INTO $actionsTable (id_person,$type,action) VALUES ('{$request->person->id}','{$noteId}','like');
-			UPDATE $rowsTable SET likes=likes+1, ownlike = $ownlike WHERE id='{$noteId}'");
+			if (!$liked) {
+				// add new vote
+				$id = Database::query("INSERT INTO $actionsTable (id_person,$type,action) VALUES ('{$request->person->id}','{$noteId}','like');    
+                       UPDATE $rowsTable SET likes=likes+1, ownlike = $ownlike WHERE id='{$noteId}'");
 
-			$note->text = substr($note->text, 0, 30) . '...';
+				$note->text = substr($note->text, 0, 30) . '...';
 
-			$this->addReputation($note->id_person, $request->person->id, $noteId, 0.3);
+				$this->addReputation($note->id_person, $request->person->id, $noteId, 0.3);
 
-			// create notification for the creator
-			if ($request->person->id !== $note->id_person) {
-				Notifications::alert($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
+				// create notification for the creator
+				if ($request->person->id !== $note->id_person) {
+					Notifications::alert($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
+				}
+
+				// complete the challenge
+				Challenges::complete('like-pizarra-note', $request->person->id);
+
+				// track challenges
+				Challenges::track(
+					$note->id_person,
+					'pizarra-likes-100',
+					['publish' => false, 'likes' => 0],
+					static function ($track) use ($note) {
+						// si no ha publicado una nota nueva, publish sera false
+						// se pone en true en el comando escribir
+
+						if ($track['publish'] === true) {
+							$track['likes'] = $note->likes;
+							$track['likes'] = max($note->likes + 1, $track['likes']);
+							if ($track['likes'] > 100) {
+								$track['likes'] = 100;
+							}
+						}
+
+						return $track;
+					}
+				);
 			}
-
-			// complete the challenge
-			Challenges::complete('like-pizarra-note', $request->person->id);
 		}
 	}
 
@@ -400,6 +424,17 @@ class Service
 		// complete the challenge
 		Challenges::complete('write-pizarra-note', $request->person->id);
 
+		// track challenges
+		Challenges::track($request->person->id, 'pizarra-likes-100', ['publish' => false, 'likes' => 0], static function ($track) {
+			$track['publish'] = true;
+			return $track;
+		});
+
+		Challenges::track($request->person->id, 'pizarra-comments-20', ['publish' => false, 'comments' => 0], static function ($track) {
+			$track['publish'] = true;
+			return $track;
+		});
+
 		// add the experience
 		Level::setExperience('PIZARRA_POST_FIRST_DAILY', $request->person->id);
 
@@ -460,7 +495,7 @@ class Service
 		}
 
 		// check the note ID is valid
-		$note = Database::query("SELECT `text`,id_person, accept_comments FROM _pizarra_notes WHERE id='$noteId' AND active=1");
+		$note = Database::query("SELECT `text`,id_person, accept_comments,comments FROM _pizarra_notes WHERE id='$noteId' AND active=1");
 		if ($note) {
 			$note = $note[0];
 		} else {
@@ -487,6 +522,28 @@ class Service
 
 		// complete the challenge
 		Challenges::complete('comment-pizarra-note', $request->person->id);
+
+		Challenges::track($request->person->id, 'pizarra-comments-random', [], static function ($track) use ($noteId) {
+			$track[$noteId] = $noteId;
+			if (count($track) >= 10) {
+				$track = 10;
+			}
+			return $track;
+		});
+
+		Challenges::track($note->id_person, 'pizarra-comments-20', ["publish" => false, "comments" => 0], static function ($track) use ($note) {
+
+			// si no ha publicado una nota nueva, publish sera false, segun el valor por defecto
+			// se pone en true en el comando ESCRIBIR
+			if ($track['publish'] === true) {
+				$track['comments'] = max($track['comments'], $note->comments + 1);
+				if ($track['comments'] > 20) {
+					$track['comments'] = 20;
+				}
+			}
+
+			return $track;
+		});
 
 		// notify users mentioned
 		$mentions = $this->findUsersMentionedOnText($comment);
