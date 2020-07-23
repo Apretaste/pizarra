@@ -28,11 +28,42 @@ class Service
 	 */
 	public function _main(Request $request, Response $response): void
 	{
+		$notes = $this->getNotesByFriends($request->person);
+
+		$myUser = $this->preparePizarraUser($request->person);
+
+		$pathToService = SERVICE_PATH . $response->service;
+		$images[] = "$pathToService/images/img-prev.png";
+
+		// create variables for the template
+		$content = [
+			'notes' => $notes,
+			'myUser' => $myUser,
+			'title' => 'Muro'
+		];
+
+		// create the response
+		$response->setLayout('pizarra.ejs');
+		$response->SetTemplate('main.ejs', $content, $images);
+	}
+
+	/**
+	 * To list latest notes or post a new note
+	 *
+	 * @param Request $request
+	 * @param Response $response
+	 *
+	 * @throws Alert
+	 * @throws Exception
+	 * @author salvipascual
+	 *
+	 */
+	public function _global(Request $request, Response $response): void
+	{
 		// get the type of search
 		$keyword = $request->input->data->search ?? '';
 		$search = $this->getSearchType($keyword);
 		[$searchType, $searchValue] = $search;
-		$title = '';
 
 		// get the user's profile
 		$profile = $request->person;
@@ -40,19 +71,16 @@ class Service
 		// get notes if searched by topic
 		if ($searchType === 'topic') {
 			$notes = $this->getNotesByTopic($profile, $searchValue);
-			$title = "#$searchValue";
 		}
 
 		// get notes if searched by username
 		if ($searchType === 'username') {
 			$notes = $this->getNotesByUsername($profile, $searchValue);
-			$title = "Notas de @$searchValue";
 		}
 
 		// get notes if searched by keyword
 		if ($searchType === 'keyword') {
 			$notes = $this->getNotesByKeyword($profile, $searchValue);
-			$title = $searchValue;
 		}
 
 		$myUser = $this->preparePizarraUser($request->person);
@@ -91,10 +119,9 @@ class Service
 			'isProfileIncomplete' => $profile->completion < 70,
 			'notes' => $notes,
 			'popularTopics' => $topics,
-			'title' => $title,
 			'num_notifications' => $profile->notifications,
 			'myUser' => $myUser,
-			'activeIcon' => 1
+			'title' => 'Global'
 		];
 
 		// create the response
@@ -252,7 +279,7 @@ class Service
 		$result = Database::query("
 			SELECT
 				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
-				C.avatar, C.avatarColor, C.username, C.first_name, C.last_name, C.province, C.picture, C.gender, C.country, C.online,
+				B.reputation, C.avatar, C.avatarColor, C.username, C.first_name, C.last_name, C.province, C.picture, C.gender, C.country, C.online,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_notes A LEFT JOIN _pizarra_users B ON A.id_person = B.id_person LEFT JOIN person C ON C.id = B.id_person
@@ -382,7 +409,7 @@ class Service
 		}
 
 		// save note to the database
-		$cleanText = Database::escape($text, 300);
+		$cleanText = Database::escape($text, 600);
 		$sql = "INSERT INTO _pizarra_notes (id_person, `text`, image, ad, topic1, topic2, topic3) VALUES ('{$request->person->id}', '$cleanText', '$fileName', $ad, '$topic1', '$topic2', '$topic3')";
 		$noteID = Database::query($sql);
 
@@ -544,7 +571,7 @@ class Service
 			shuffle($topics);
 
 			// get the list of most popular users
-			$populars = Database::query('SELECT A.id_person, B.avatar, B.avatarColor, B.username, B.first_name, B.country, B.province, B.about_me,  B.gender, B.year_of_birth, B.highest_school_level, B.online, (SELECT SUM(amount) FROM _pizarra_reputation WHERE id_person = A.id_person) AS reputation FROM _pizarra_users A JOIN person B ON A.id_person = B.id ORDER BY reputation DESC LIMIT 10');
+			$populars = Database::query('SELECT A.id_person, B.avatar, B.avatarColor, B.username, B.gender, B.online, (SELECT SUM(amount) FROM _pizarra_reputation WHERE id_person = A.id_person) AS reputation FROM _pizarra_users A JOIN person B ON A.id_person = B.id ORDER BY reputation DESC LIMIT 10');
 			foreach ($populars as $popular) {
 				$popular->completion = Person::find($popular->id_person)->completion;
 				$popular->reputation = floor(($popular->reputation ?? 0) + $popular->completion);
@@ -574,7 +601,7 @@ class Service
 			'topics' => $topics,
 			'populars' => $populars,
 			'myUser' => $myUser,
-			'activeIcon' => 2
+			'title' => 'Tendencia'
 		]);
 	}
 
@@ -1026,7 +1053,7 @@ class Service
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, 
 			    B.country, B.online, B.avatar, B.avatarColor,
 				C.reputation, 
-				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
+				TIMESTAMPDIFF(DAY,A.inserted,CURRENT_DATE) as days,
 				(SELECT COUNT(_pizarra_actions.note) FROM _pizarra_actions 
 					WHERE _pizarra_actions.note = A.id AND A.id_person = {$profile->id} 
 					  AND _pizarra_actions.action = 'like') > 0 AS isliked,
@@ -1051,8 +1078,9 @@ class Service
 
 		// sort results by weight. Too complex and slow in MySQL
 		usort($listOfNotes, function ($a, $b) {
-			$a->score = 100 - $a->hours + $a->comments * 0.2 + (($a->likes - $a->unlikes * 2) * 0.4) + $a->ad * 1000;
-			$b->score = 100 - $b->hours + $b->comments * 0.2 + (($b->likes - $b->unlikes * 2) * 0.4) + $b->ad * 1000;
+			//$a->score = 100 - $a->days + $a->comments * 0.2 + (($a->likes - $a->unlikes * 2) * 0.4) + $a->ad * 1000;
+			$a->score = 100 - ($a->days * 10) + $a->likes + ($a->comments * 5) - ($a->unlikes * 5);
+			$b->score = 100 - ($b->days * 10) + $b->likes + ($b->comments * 5) - ($b->unlikes * 5);
 			return ($b->score - $a->score) ? ($b->score - $a->score) / abs($b->score - $a->score) : 0;
 		});
 
@@ -1169,6 +1197,42 @@ class Service
 	}
 
 	/**
+	 * Get notes by user friends
+	 *
+	 * @param Person $person
+	 *
+	 * @param int $offset
+	 * @return array|null
+	 * @throws Alert
+	 * @author salvipascual
+	 */
+	private function getNotesByFriends(Person $person, $offset = 0)
+	{
+		// get the last 50 records from the db
+		$listOfNotes = Database::query("
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor,
+			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$person->id}' AND `action` = 'like') > 0 AS isliked,
+			(SELECT COUNT(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) AS comments
+			FROM _pizarra_notes A
+			LEFT JOIN person B
+			ON A.id_person = B.id
+			LEFT JOIN _pizarra_users C
+			ON C.id_person = B.id
+			WHERE A.active=1 AND B.id IN(SELECT user2 as id FROM person_relation_friend WHERE user1 = {$person->id} UNION SELECT user1 as id FROM person_relation_friend WHERE user2 = {$person->id})
+			ORDER BY inserted DESC
+			LIMIT 20 OFFSET $offset");
+
+		// format the array of notes
+		$notes = [];
+		foreach ($listOfNotes as $note) {
+			$notes[] = $this->formatNote($note, $person->id);
+		}
+
+		// return array of notes
+		return $notes;
+	}
+
+	/**
 	 * @param $profile
 	 * @param bool $reputationRequired
 	 * @return mixed
@@ -1263,12 +1327,13 @@ class Service
 			'gender' => $note->gender,
 			'text' => $note->text,
 			'image' => $note->image,
-			'inserted' => date_format((new DateTime($note->inserted)), 'j/n/y · g:ia'),
+			'inserted' => $note->inserted,
 			'likes' => $note->likes ?? 0,
 			'unlikes' => $note->unlikes ?? 0,
 			'comments' => $note->comments ?? 0,
 			'liked' => isset($note->isliked) && $note->isliked,
 			'unliked' => isset($note->isunliked) && $note->isunliked,
+			'reputation' => $note->reputation ?? 0,
 			'ad' => $note->ad ?? false,
 			'online' => $note->online ?? false,
 			'country' => $country,

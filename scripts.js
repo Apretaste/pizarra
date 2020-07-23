@@ -1,11 +1,22 @@
 "use strict";
 
 var selectedColor;
-var occupation = {'AMA_DE_CASA' :'Ama de casa', 'ESTUDIANTE':'Estudiante', 'EMPLEADO_PRIVADO':'Empleado Privado', 'EMPLEADO_ESTATAL':'Empleado Estatal', 'INDEPENDIENTE':'Trabajador Independiente', 'JUBILADO':'Jubilado', 'DESEMPLEADO':'Desempleado'};
+var occupation = {
+	'AMA_DE_CASA': 'Ama de casa',
+	'ESTUDIANTE': 'Estudiante',
+	'EMPLEADO_PRIVADO': 'Empleado Privado',
+	'EMPLEADO_ESTATAL': 'Empleado Estatal',
+	'INDEPENDIENTE': 'Trabajador Independiente',
+	'JUBILADO': 'Jubilado',
+	'DESEMPLEADO': 'Desempleado'
+};
 
 $(document).ready(function () {
 	$('.fixed-action-btn').floatingActionButton();
 	$('.modal').modal();
+	$('.tabs').tabs();
+	$('.materialboxed').materialbox();
+
 	$('select').formSelect();
 	M.FloatingActionButton.init($('.click-to-toggle'), {
 		direction: 'left',
@@ -280,8 +291,8 @@ function submitProfileData() {
 function noteLengthValidate() {
 	var note = $('#note').val().trim();
 
-	if (note.length <= 300) {
-		$('.helper-text').html('Restante: ' + (300 - note.length));
+	if (note.length <= 600) {
+		$('.helper-text').html('Restante: ' + (600 - note.length));
 	} else {
 		$('.helper-text').html('Limite excedido');
 	}

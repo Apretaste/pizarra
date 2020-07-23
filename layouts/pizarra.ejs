@@ -1,79 +1,32 @@
-<!-- MENU -->
-<div class="row hide-on-unique" style="margin-bottom: 0;">
-    <nav>
-        <div class="nav-wrapper pizarra-color">
-            <!--Logo-->
-            <span class="brand-logo left"
-            <% if(typeof messages != "undefined"){ %>
-                  onclick="apretaste.send({'command':'PIZARRA PERFIL', 'data':{'username': '<%= myUser.username %>'}})"
-            <% }else{ %>
-                  onclick="apretaste.send({'command':'PIZARRA PERFIL'})"
-                    <% } %>
-            >
-                <div class="person-avatar" id="top-avatar" face="<%= myUser.avatar %>" color="<%= myUser.avatarColor %>"
-                     size="32">
-                    <i class="material-icons online-icon">brightness_1</i>
-                </div>
-			</span>
-            <span id="avatar-info"
-            <% if(typeof messages != "undefined"){ %>
-                  onclick="apretaste.send({'command':'PIZARRA PERFIL', 'data':{'username': '<%= myUser.username %>'}})"
-            <% }else{ %>
-                  onclick="apretaste.send({'command':'PIZARRA PERFIL'})"
-                    <% } %>
-            >
-				<b>
-					@<%= myUser.username %>
-					<br>
-					<small>★<%= myUser.reputation %></small>
-				</b>
-			</span>
-            <!--notifications & profile-->
-            <ul class="right">
-                <li class="hide" id="searchButton">
-                    <a onclick="openSearchModal()" class="black-text">
-                        <i class="material-icons white-text">search</i>
-                    </a>
-                </li>
-                <li id="chatButton">
-                    <a href="#!" class="black-text"
-                    <% if(typeof profile != "undefined" && profile.id != myUser.id){ %>
-                       onclick="apretaste.send({'command':'PIZARRA CONVERSACION', 'data':{'userId':'<%= profile.id %>'}})"
-                    <% }else{ %>
-                       onclick="apretaste.send({'command':'CHAT'})"
-                            <% } %>
+<%
+var menu = [
+    {link: '', caption: 'Muro'},
+    {link: 'GLOBAL', caption: 'Global'},
+    {link: 'POPULARES', caption: 'Tendencia'}];
+%>
+
+<!-- TABS -->
+<div class="row">
+    <div class="col s12">
+        <ul class="tabs tabs-fixed-width">
+            <% menu.forEach(function(e) { %>
+                <% var active = typeof title != "undefined" && title == e.caption ? 'active' : '' %>
+                <li class="tab">
+                    <a href="#" class="pizarra-color-text <%= active %>"
+                       onclick="apretaste.send({'command':'PIZARRA <%= e.link %>'})"
                     >
-                        <i class="material-icons white-text">chat</i>
+                        <%= e.caption %>
                     </a>
                 </li>
-            </ul>
-        </div>
-    </nav>
+            <% }); %>
+        </ul>
+    </div>
 </div>
 
 <!-- CONTENT -->
-{{APP_TEMPLATE_CODE}}
-
-<!-- FOOTER MENU -->
-<nav class="container center-align hide-on-unique footer">
-    <div class="nav-wrapper row white">
-        <div class="col s4">
-            <a href="#!" class="grey-text text-darken-3" onclick="apretaste.send({'command':'PIZARRA'})">
-                <i class="material-icons">home</i>
-            </a>
-        </div>
-        <div class="col s4">
-            <a href="#!" class="grey-text text-darken-3" onclick="apretaste.send({'command':'PIZARRA POPULARES'})">
-                <i class="material-icons">star</i>
-            </a>
-        </div>
-        <div class="col s4">
-            <a href="#!" class="grey-text text-darken-3" onclick="apretaste.send({'command':'PIZARRA NOTIFICACIONES'})">
-                <i class="material-icons">notifications</i>
-            </a>
-        </div>
-    </div>
-</nav>
+<div class="row">
+    {{APP_TEMPLATE_CODE}}
+</div>
 
 <!-- MODALS -->
 <div id="searchModal" class="modal bottom-sheet">
@@ -108,7 +61,8 @@
     </div>
     <div class="modal-footer">
         <a href="#!" class="modal-close waves-effect waves-light btn-flat grey-text text-darken-2">Cancelar</a>
-        <a onclick="deleteNote()" class="modal-close waves-effect waves-green btn-flat" style="font-weight: 500">Aceptar</a>
+        <a onclick="deleteNote()" class="modal-close waves-effect waves-green btn-flat"
+           style="font-weight: 500">Aceptar</a>
     </div>
 </div>
 
