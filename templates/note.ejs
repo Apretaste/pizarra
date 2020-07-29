@@ -1,120 +1,87 @@
-<div class="row notes">
-    <% var color; %>
-    <div class="col s12">
-        <ul class="collection">
-            <% if (note.gender == "M") color = "pizarra-color-text"; else if (note.gender == "F") color = "pink-text"; else color = "black-text" %>
-            <li class="collection-item avatar row <%= note.staff ? "staff": "" %>" id="<%= note.id %>" liked="<%= note.liked %>"
-                unliked="<%= note.unliked %>">
-                <% if (!note.staff) {%>
-                    <div class="person-avatar circle" face="<%= note.avatar %>" color="<%= note.avatarColor %>" size="42"
-                         onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});"></div>
-                    <% if(note.online == "1"){ %>
-                        <i class="material-icons online-icon">brightness_1</i>
-                    <% } %>
-                <% } %>
-                <span class="title">
-                    <% if (!note.staff) {%>
-						<a class="<%= color %>"
-                           onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});">
-							<b>@<%= note.username %></b>
-						</a>
-                    &nbsp; <% } %>
-						<small class="grey-text text-darken-3">&nbsp;<% if (!note.staff) {%><%= note.location %> · <% } %><%= note.inserted %></small>
-					</span>
-                <p>
-                    <%- note.text %>
-                </p>
-                <div class="center-align">
-                    <% if(note.image){ %>
-                    <img id="notePicture" class="responsive-img" src="{{APP_IMAGE_PATH}}/<%= note.image %>"/>
-                    <% } %>
-                </div>
-                <p>
-                    <% note.topics.forEach(function(topic){ %>
-                        <a onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'#<%= topic %>'}})">
-                            <b>#<%= topic %></b>
-                        </a>&nbsp;
-                    <% }); %>
-                </p>
-                <% if (!note.staff) {%>
-                <div class="col s10 actions">
+<div class="col s12">
+    <ul class="collection profile">
+        <li class="collection-item avatar <%= note.staff ? "staff": "" %>">
+            <% if (!note.staff) {%>
+                <div class="person-avatar circle" face="<%= note.avatar %>" color="<%= note.avatarColor %>" size="45"
+                     online="<%= note.online %>"></div>
+                <span class="title <%= note.gender %>"><%= note.username %></span>
+                <p>⚡<%= note.reputation %></p>
+                <a class="secondary-content pizarra-color-text first"
+                   onclick="apretaste.back()"><i class="material-icons">arrow_back</i></a>
+                <a class="secondary-content pizarra-color-text second"
+                   onclick="apretaste.send({command: 'chat', data: {username: '<%= note.username %>'}})">
+                    <i class="material-icons">chat</i></a>
+            <% } %>
+        </li>
+    </ul>
 
-                    <div class="col s4">
-                        <a class="like"
-                        <% if(!note.liked){ %> onclick="like('<%= note.id %>','like');"
-                                <% } %>
-                        >
-                            <i class="material-icons">thumb_up</i>
-                            <span><%= note.likes %></span>
-                        </a>
-                    </div>
-                    <div class="col s4">
-                        <a class="unlike"
-                        <% if(!note.unliked){ %> onclick="like('<%= note.id %>','unlike')"
-                                <% } %>
-                        >
-                            <i class="material-icons">thumb_down</i>
-                            <span><%= note.unlikes %></span>
-                        </a>
-                    </div>
+    <div class="card open-note" id="<%= note.id %>" liked="<%= note.liked %>"
+         unliked="<%= note.unliked %>" style="box-shadow: none">
+        <div class="content">
+            <% if(note.image){ %>
+                <img class="responsive-img materialboxed" style="margin: auto"
+                     src="{{APP_IMAGE_PATH}}/<%= note.image %>">
+            <% } %>
+            <p><%- note.text %></p>
+        </div>
+        <% if (!note.staff) {%>
+            <div class="card-action">
+                <a class="like"
+                <% if(!note.liked){ %> onclick="like('<%= note.id %>','like');"
+                        <% } %>
+                >
+                    <i class="material-icons">thumb_up</i>
+                    <span><%= note.likes %></span>
+                </a>
+
+                <a class="unlike"
+                <% if(!note.unliked){ %> onclick="like('<%= note.id %>','unlike')"
+                        <% } %>
+                >
+                    <i class="material-icons">thumb_down</i>
+                    <span><%= note.unlikes %></span>
+                </a>
+
+                <a>
+                    <i class="material-icons">comment</i>
+                    <span><%= note.comments.length %></span>
+                </a>
+
+                <a onclick="openReportModal()">
+                    <i class="material-icons">warning</i>
+                </a>
+
+                <a>
+                    <i class="material-icons">calendar_today</i>
+                    <span> <%= moment(note.inserted).format('MMM D, h:mm A') %></span>
+                </a>
+            </div>
+        <% } %>
+    </div>
+
+
+    <ul class="chat" id="comments">
+        <% note.comments.forEach(function(comment) { %>
+            <% var position = comment.username == myUser.username ? 'right' : 'left' %>
+            <li class="<%= position %>" id="<%= comment.id %>">
+                <div class="person-avatar circle" face="<%= comment.avatar %>" color="<%= comment.avatarColor %>"
+                     size="30"
+                     onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= comment.username %>'}})"></div>
+                <div class="head">
+                    <a onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= comment.username %>'}})"
+                       class="<%= comment.gender %>">@<%= comment.username %></a>
+                    <span class="date"><%= moment(comment.inserted).format('MMM D, YYYY h:mm A') %></span>
                 </div>
-                <% } %>
+                <span class="text"><%- comment.text %></span>
             </li>
-        </ul>
-    </div>
-
-    <div class="col s12">
-        <ul class="collection" id="comments">
-            <% note.comments.forEach(function(comment){ %>
-                <% if (comment.gender == "M") color = "pizarra-color-text"; else if (comment.gender == "F") color = "pink-text"; else color = "black-text" %>
-
-                <li class="collection-item avatar row" id="<%= comment.id %>">
-                    <div class="person-avatar circle" face="<%= comment.avatar %>" color="<%= comment.avatarColor %>"
-                         size="42"
-                         onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= comment.username %>'}});"></div>
-                    <% if(comment.online == "1"){ %>
-                        <i class="material-icons online-icon">brightness_1</i>
-                    <% } %>
-                    <span class="title">
-						<a class="<%= color %>"
-                           onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= comment.username %>'}});">
-							<b>@<%= comment.username %></b>
-						</a>
-						<small class="grey-text text-darken-3">&nbsp;<%= comment.location %> · <%= comment.inserted %></small>
-					</span>
-                    <p>
-                        <%- comment.text %>
-                    </p>
-                    <div class="col s10 actions">
-                        <div class="col s4">
-                            <a class="like"
-                            <% if(!comment.liked){ %> onclick="like('<%= comment.id %>','like', 'comment');"
-                                    <% } %>
-                            >
-                                <i class="material-icons">thumb_up</i>
-                                <span><%= comment.likes %></span>
-                            </a>
-                        </div>
-                        <div class="col s4">
-                            <a class="unlike"
-                            <% if(!comment.unliked){ %> onclick="like('<%= comment.id %>','unlike', 'comment')"
-                                    <% } %>
-                            >
-                                <i class="material-icons">thumb_down</i>
-                                <span><%= comment.unlikes %></span>
-                            </a>
-                        </div>
-                    </div>
-                </li>
-            <% }); %>
-        </ul>
-    </div>
+        <% }) %>
+    </ul>
 </div>
 
 <% if (note.accept_comments || note.id_person == person_id || note.canmodify) { %>
     <div class="fixed-action-btn">
         <a href="#newCommentModal" class="btn-floating btn-large modal-trigger pizarra-color">
-            <i class="large material-icons">comment</i>
+            <i class="large material-icons">add</i>
         </a>
     </div>
 
