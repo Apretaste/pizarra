@@ -1138,6 +1138,7 @@ class Service
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, 
 			    B.country, B.online, B.avatar, B.avatarColor,
 				C.reputation, A.ownlike,
+			    TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
 				TIMESTAMPDIFF(DAY,A.inserted,CURRENT_DATE) as days,
 				(SELECT COUNT(_pizarra_actions.note) FROM _pizarra_actions 
 					WHERE _pizarra_actions.note = A.id AND A.id_person = {$profile->id} 
@@ -1172,6 +1173,7 @@ class Service
 			    B.country, B.online, B.avatar, B.avatarColor,
 				C.reputation, A.ownlike,
 				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
+			    TIMESTAMPDIFF(DAY,A.inserted,CURRENT_DATE) as days,
 				1 AS isliked,
 				0 as isunliked
 			FROM (SELECT subq3.* 
