@@ -15,6 +15,8 @@ use Framework\Utils;
 
 class Service
 {
+	public $insertedNoteId = null;
+
 	/**
 	 * To list latest notes or post a new note
 	 *
@@ -440,11 +442,18 @@ class Service
 
 		// save note to the database
 		$cleanText = Database::escape($text, 600);
-		$sql = "INSERT INTO _pizarra_notes (id_person, `text`, image, ad, topic1, topic2, topic3) VALUES ('{$request->person->id}', '$cleanText', '$fileName', $ad, '$topic1', '$topic2', '$topic3')";
-		$noteID = Database::query($sql);
+		$link_command = Database::escape($request->input->data->link->command ?? '', 4000);
+		$link_icon = Database::escape($request->input->data->link->icon ?? '', 100);
+		$link_text = Database::escape($request->input->data->link->text ?? '', 600);
+
+		$sql = "INSERT INTO _pizarra_notes (id_person, `text`, image, ad, topic1, topic2, topic3, link_command, link_icon, link_text) 
+                VALUES ('{$request->person->id}', '$cleanText', '$fileName', $ad, '$topic1', '$topic2', '$topic3', 
+                NULLIF('$link_command', ''), NULLIF('$link_icon', ''), NULLIF('$link_text', ''))";
+
+		$this->insertedNoteId = Database::query($sql);
 
 		// error if the note could not be inserted
-		if (!is_numeric($noteID)) {
+		if (!is_numeric($this->insertedNoteId)) {
 			throw new RuntimeException("PIZARRA: NoteID is null after INSERT. QUERY = $sql");
 		}
 
@@ -469,7 +478,7 @@ class Service
 		foreach ($topics as $topic) {
 			$topic = str_replace('#', '', $topic);
 			$topic = Database::escape($topic, 20);
-			Database::query("INSERT INTO _pizarra_topics (topic, note, id_person) VALUES ('$topic', '$noteID', '{$request->person->id}')", true);
+			Database::query("INSERT INTO _pizarra_topics (topic, note, id_person) VALUES ('$topic', '{$this->insertedNoteId}', '{$request->person->id}')", true);
 		}
 
 		// notify users mentioned
@@ -481,8 +490,15 @@ class Service
 				continue;
 			}
 
-			Notifications::alert($m->id, "<span class=\"$color\">@{$request->person->username}</span> le ha mencionado", 'comment', "{'command':'PIZARRA NOTA', 'data':{'note':'$noteID'}}");
-			$this->addReputation($m->id, $request->person->id, $noteID, 1);
+			Notifications::alert($m->id, "<span class=\"$color\">@{$request->person->username}</span> le ha mencionado", 'comment', "{'command':'PIZARRA NOTA', 'data':{'note':'{$this->insertedNoteId}'}}");
+			$this->addReputation($m->id, $request->person->id, $this->insertedNoteId, 1);
+		}
+
+		// share link
+		if (!empty($this->insertedNoteId)) {
+			if (isset($request->input->data->link)) {
+				Database::query("UPDATE _pizarra_notes S");
+			}
 		}
 	}
 
@@ -1499,5 +1515,17 @@ class Service
 		}
 
 		return $return;
+	}
+
+	/**
+	 * PUBLICAR
+	 *
+	 * @param Request $request
+	 * @param Response $response
+	 * @throws Alert
+	 */
+	public function _publicar(Request $request, Response $response)
+	{
+		$this->_escribir($request, $response);
 	}
 }
