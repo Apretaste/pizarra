@@ -90,21 +90,6 @@ class Service
 		$pathToService = SERVICE_PATH . $response->service;
 		$images[] = "$pathToService/images/img-prev.png";
 
-		if (empty($notes)) {
-			$content = [
-				'header' => 'Lo sentimos',
-				'icon' => 'sentiment_very_dissatisfied',
-				'text' => 'No encontramos notas que vayan con su búsqueda. Puede buscar por palabras, por @username o por #Tema.',
-				'activeIcon' => 1,
-				'myUser' => $myUser
-			];
-
-			$response->setLayout('pizarra.ejs');
-			$response->setTemplate('message.ejs', $content, $images);
-
-			return;
-		}
-
 		// get most popular topics of last 7 days
 		$popularTopics = Database::query('
 			SELECT topic, count(id) as total FROM _pizarra_topics
@@ -483,7 +468,7 @@ class Service
 
 		// notify users mentioned
 		$mentions = $this->findUsersMentionedOnText($text);
-		$color = $request->person->gender === 'M' ? 'pizarra-color-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
+		$color = $request->person->gender === 'M' ? 'green-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
 		foreach ($mentions as $m) {
 			$blocks = Chats::isBlocked($request->person->id, $m->id);
 			if ($blocks->blocked > 0) {
@@ -614,7 +599,7 @@ class Service
 		}
 
 		// send a notification to the owner of the note
-		$color = $request->person->gender === 'M' ? 'pizarra-color-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
+		$color = $request->person->gender === 'M' ? 'green-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
 		if ($request->person->id !== $note->id_person) {
 			Notifications::alert($note->id_person, "<span class=\"$color\">@{$request->person->username}</span> ha comentado tu publicación", 'comment', "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}}");
 			$this->addReputation($note->id_person, $request->person->id, $noteId, 0.6);
@@ -985,7 +970,7 @@ class Service
 		$message = Database::escape($message, 499);
 		Database::query("INSERT INTO _note (from_user, to_user, `text`) VALUES ({$request->person->id},{$userTo->id},'$message')", true);
 
-		$color = $request->person->gender === 'M' ? 'pizarra-color-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
+		$color = $request->person->gender === 'M' ? 'green-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
 
 		// send notification for the app
 		Notifications::alert(

@@ -6,9 +6,9 @@
                      online="<%= note.online %>"></div>
                 <span class="title <%= note.gender %>"><%= note.username %></span>
                 <p>⚡<%= note.reputation %></p>
-                <a class="secondary-content pizarra-color-text first"
+                <a class="secondary-content green-text first"
                    onclick="apretaste.back()"><i class="material-icons">arrow_back</i></a>
-                <a class="secondary-content pizarra-color-text second"
+                <a class="secondary-content green-text second"
                    onclick="apretaste.send({command: 'chat', data: {username: '<%= note.username %>'}})">
                     <i class="material-icons">chat</i></a>
             <% } %>
@@ -80,7 +80,7 @@
 
 <% if (note.accept_comments || note.id_person == person_id || note.canmodify) { %>
     <div class="fixed-action-btn">
-        <a href="#newCommentModal" class="btn-floating btn-large modal-trigger pizarra-color">
+        <a href="#newCommentModal" class="btn-floating btn-large modal-trigger green">
             <i class="large material-icons">add</i>
         </a>
     </div>

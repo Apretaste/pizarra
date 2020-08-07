@@ -27,7 +27,7 @@ $(document).ready(function () {
 		var menuItem = $($('.footer i')[activeIcon - 1]);
 		menuItem.removeClass('grey-text');
 		menuItem.removeClass('text-darken-3');
-		menuItem.addClass('pizarra-color-text');
+		menuItem.addClass('green-text');
 	}
 
 	$(window).resize(function () {
@@ -363,7 +363,7 @@ function likeCallback(data) {
 }
 
 function sendCommentCallback(comment) {
-	var color = myUser.gender == "M" ? "pizarra-color-text" : color = myUser.gender == "F" ? "pink-text" : "black-text";
+	var color = myUser.gender == "M" ? "green-text" : color = myUser.gender == "F" ? "pink-text" : "black-text";
 	var serviceImgPath = $('serviceImgPath').attr('data');
 	var element = "\n\t<li class=\"collection-item avatar row\" id=\"last\">\n\t\t\t<div class=\"person-avatar circle\" face=\"" + myUser.avatar + "\" color=\"" + myUser.avatarColor + "\" size=\"42\"></div><i class=\"material-icons online-icon\">brightness_1</i>\n\t\t\t<span class=\"title\">\n\t\t\t\t<a class=\"" + color + "\" onclick=\"apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'" + myUser.username + "'}});\">\n\t\t\t\t\t<b>@" + myUser.username + "</b>\n\t\t\t\t</a>\n\t\t\t\t<small class=\"grey-text text-darken-3\">" + myUser.location + " \xB7 " + Date.prototype.nowFormated() + "</small>\n\t\t\t</span>\n\t\t\t\n\t\t\t<p>" + comment + "</p>\n\t\t\t\t<div class=\"col s10 actions\">\n\t\t\t\t\t<div class=\"col s4\">\n\t\t\t\t\t\t<a class=\"like\" onclick=\"like('last','like', 'comment');\">\n\t\t\t\t\t\t\t<i class=\"material-icons\">thumb_up</i>\n\t\t\t\t\t\t\t<span>0</span>\n\t\t\t\t\t\t</a>\n\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"col s4\">\n\t\t\t\t\t\t\t<a class=\"unlike\" onclick=\"like('last','unlike', 'comment')\">\n\t\t\t\t\t\t\t\t<i class=\"material-icons\">thumb_down</i>\n\t\t\t\t\t\t\t\t<span>0</span>\n\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t</li>";
 	$('#comments').append(element);
@@ -375,7 +375,7 @@ function sendCommentCallback(comment) {
 }
 
 function sendNoteCallback(note) {
-	var color = myUser.gender == "M" ? "pizarra-color-text" : color = myUser.gender == "F" ? "pink-text" : "black-text";
+	var color = myUser.gender == "M" ? "green-text" : color = myUser.gender == "F" ? "pink-text" : "black-text";
 	var serviceImgPath = $('serviceImgPath').attr('data');
 	var topics = note.match(/(^|\B)#(?![0-9_]+\b)([a-zA-Z0-9_]{1,30})(\b|\r)/g);
 	var htmlTopics = "";
@@ -412,22 +412,22 @@ function togglePopularsMenu() {
 	var option1content = $('#popular-users');
 	var option2content = $('#popular-topics');
 
-	if (option1.hasClass('pizarra-color-text')) {
-		option1.removeClass('pizarra-color-text');
+	if (option1.hasClass('green-text')) {
+		option1.removeClass('green-text');
 		option1.addClass('black-text');
 		option2.attr('onclick', '');
 		option1.attr('onclick', 'togglePopularsMenu()');
 		option2.removeClass('black-text');
-		option2.addClass('pizarra-color-text');
+		option2.addClass('green-text');
 		option1content.fadeOut();
 		option2content.fadeIn();
 	} else {
-		option2.removeClass('pizarra-color-text');
+		option2.removeClass('green-text');
 		option2.addClass('black-text');
 		option1.attr('onclick', '');
 		option2.attr('onclick', 'togglePopularsMenu()');
 		option1.removeClass('black-text');
-		option1.addClass('pizarra-color-text');
+		option1.addClass('green-text');
 		option2content.fadeOut();
 		option1content.fadeIn();
 	}

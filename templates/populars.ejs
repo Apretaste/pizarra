@@ -1,14 +1,14 @@
 <div class="row">
     <div class="col s12 center-align" id="popular-topics">
         <% topics.forEach(function(topic){ %>
-            <a style="font-size: <%= topic.size + 3 %>px;" class="pizarra-color-text"
+            <a style="font-size: <%= topic.size + 3 %>px;" class="green-text"
                onclick="apretaste.send({'command':'PIZARRA','data':{'search':'#<%= topic.name %>'}})">#<%= topic.name %>  </a>
         <% }); %>
     </div>
 
     <div class="col s12" id="popular-users">
         <% populars.forEach(function (popular) { %>
-            <% var color = popular.gender == "M" ? "pizarra-color-text" : popular.gender == "F" ? "pink-text" : "black-text"; %>
+            <% var color = popular.gender == "M" ? "green-text" : popular.gender == "F" ? "pink-text" : "black-text"; %>
             <div class="col s6 m4 l3">
                 <div class="center-align mini-card valign-wrapper center-align"
                      onclick="apretaste.send({'command':'PIZARRA PERFIL', 'data': {'username':'@<%= popular.username %>'}});">

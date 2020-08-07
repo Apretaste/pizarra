@@ -12,7 +12,7 @@ var menu = [
             <% menu.forEach(function(e) { %>
                 <% var active = typeof title != "undefined" && title == e.caption ? 'active' : '' %>
                 <li class="tab">
-                    <a href="#" class="pizarra-color-text <%= active %>"
+                    <a href="#" class="green-text <%= active %>"
                        onclick="apretaste.send({'command':'PIZARRA <%= e.link %>'})"
                     >
                         <%= e.caption %>
