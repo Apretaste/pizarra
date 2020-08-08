@@ -531,7 +531,7 @@ class Service
 		}
 
 		// si la nota no acepta comentario de otros
-		if ((int) $note->accept_comments == 0 && (int) $note->id_person <> (int) $request->person->id) {
+		if ((int)$note->accept_comments == 0 && (int)$note->id_person <> (int)$request->person->id) {
 			return;
 		}
 
@@ -739,101 +739,6 @@ class Service
 		// build the response
 		$response->setLayout('pizarra.ejs');
 		$response->setTemplate('notifications.ejs', $content);
-	}
-
-	/**
-	 * Show the user profile
-	 *
-	 * @param Request $request
-	 * @param Response $response
-	 *
-	 * @return Response|void
-	 * @throws Exception
-	 * @author salvipascual
-	 *
-	 */
-	public function _perfil(Request $request, Response $response)
-	{
-		$myUser = $this->preparePizarraUser($request->person);
-
-		if (isset($request->input->data->username) && $request->input->data->username != $request->person->username) {
-			$username = $request->input->data->username;
-			// get the user's profile
-			$person = Person::find($username);
-
-			// if user do not exist, message the requestor
-			if (empty($person)) {
-				$response->setLayout('pizarra.ejs');
-				$response->setTemplate('notFound.ejs', [
-					'origin' => 'profile',
-					'myUser' => $myUser,
-					'activeIcon' => 1
-				]);
-				return;
-			}
-
-			//check if the user is blocked
-			$blocks = Chats::isBlocked($request->person->id, $person->id);
-
-			if ($blocks->blocked || $blocks->blockedByMe) {
-				$content = [
-					'username' => $person->username,
-					'origin' => 'profile',
-					'num_notifications' => $request->person->notifications,
-					'blocks' => $blocks,
-					'myUser' => $myUser,
-					'activeIcon' => 1
-				];
-				$response->SetTemplate('blocked.ejs', $content);
-
-				return;
-			}
-
-			// run powers for amulet DETECTIVE
-			if (Amulets::isActive(Amulets::DETECTIVE, $person->id)) {
-				$msg = "Los poderes del amuleto del Druida te avisan: @{$request->person->username} está revisando tu perfil";
-				Notifications::alert($person->id, $msg, 'pageview', "{command:'PERFIL', data:{username:'@{$request->person->username}'}}");
-			}
-
-			// run powers for amulet SHADOWMODE
-			if (Amulets::isActive(Amulets::SHADOWMODE, $person->id)) {
-				return $response->setTemplate('message.ejs', [
-					'header' => 'Shadow-Mode',
-					'icon' => 'visibility_off',
-					'text' => 'La magia oscura de un amuleto rodea este perfil y te impide verlo. Por mucho que intentes romperlo, el hechizo del druida es poderoso.'
-				]);
-			}
-		} else {
-			if (isset($request->input->data->avatar)) {
-				Database::query("UPDATE _pizarra_users SET avatar = '{$request->input->data->avatar}', avatarColor='{$request->input->data->color}' WHERE id_person={$request->person->id}");
-				Database::query("UPDATE person SET avatar = '{$request->input->data->avatar}', avatarColor='{$request->input->data->color}' WHERE id={$request->person->id}");
-				$myUser->avatar = $request->input->data->avatar;
-				$myUser->avatarColor = $request->input->data->color;
-			}
-			$person = $request->person;
-		}
-
-		$user = $this->preparePizarraUser($person);
-		$person->avatar = $user->avatar;
-		$person->avatarColor = $user->avatarColor;
-		$person->reputation = $user->reputation;
-
-		// create data for the view
-		$content = [
-			'profile' => $person,
-			'myUser' => $myUser,
-			'activeIcon' => 1
-		];
-
-		if ($person->id == $request->person->id) {
-			$response->setLayout('pizarra.ejs');
-			$response->SetTemplate('ownProfile.ejs', $content);
-		} else {
-			Person::setProfileTags($person);
-
-			$response->setLayout('pizarra.ejs');
-			$response->SetTemplate('profile.ejs', $content);
-		}
 	}
 
 	/**
@@ -1202,7 +1107,7 @@ class Service
 		// format the array of notes
 		$notes = [];
 		if (is_array($listOfNotes)) {
-			foreach (array_merge($staffNotes, $listOfNotes)  as $note) {
+			foreach (array_merge($staffNotes, $listOfNotes) as $note) {
 				$notes[] = $this->formatNote($note, $profile->id); // format the array of notes
 				if (count($notes) > 50) {
 					break;
@@ -1456,8 +1361,8 @@ class Service
 			'avatarColor' => $note->avatarColor,
 			'topics' => $topics,
 			'canmodify' => $note->id_person === $id,
-			'accept_comments' => (int) ($note->accept_comments ?? 1) == 1,
-			'staff' => (int) ($note->staff ?? 0) == 1
+			'accept_comments' => (int)($note->accept_comments ?? 1) == 1,
+			'staff' => (int)($note->staff ?? 0) == 1
 		];
 	}
 

@@ -16,7 +16,7 @@
                     <% } %>
                     <% if (!note.staff) { %>
                         <a href="#!" class="<%= note.gender %>"
-                           onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}})">
+                           onclick="apretaste.send({'command': 'PERFIL', 'data': {'username':'@<%= note.username %>'}})">
                             @<%= note.username %>
                         </a>
                     <% } %>

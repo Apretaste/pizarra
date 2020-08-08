@@ -66,9 +66,9 @@
             <li class="<%= position %>" id="<%= comment.id %>">
                 <div class="person-avatar circle" face="<%= comment.avatar %>" color="<%= comment.avatarColor %>"
                      size="30"
-                     onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= comment.username %>'}})"></div>
+                     onclick="apretaste.send({'command': 'PERFIL', 'data': {'username':'@<%= comment.username %>'}})"></div>
                 <div class="head">
-                    <a onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= comment.username %>'}})"
+                    <a onclick="apretaste.send({'command': 'PERFIL', 'data': {'username':'@<%= comment.username %>'}})"
                        class="<%= comment.gender %>">@<%= comment.username %></a>
                     <span class="date"><%= moment(comment.inserted).format('MMM D, YYYY h:mm A') %></span>
                 </div>
