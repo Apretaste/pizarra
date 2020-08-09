@@ -1,17 +1,9 @@
-.pizarra-color {
-    background: #285da0;
-}
-
-.pizarra-color-text {
-    color: #285da0;
-}
-
 .btn-floating:hover {
-    background-color: #285da0;
+    background-color: #52a43f;
 }
 
 a, a > span {
-    color: #285da0 !important;
+    color: #52a43f !important;
 }
 
 .notes div.person-avatar {
@@ -381,7 +373,7 @@ html, body {
 }
 
 ul.select-dropdown > li > span {
-    color: #285da0;
+    color: #52a43f;
 }
 
 #profile-table td {
@@ -450,8 +442,8 @@ p {
 }
 
 [type="checkbox"].filled-in:checked + span:not(.lever):after {
-    border: 2px solid #285da0;
-    background-color: #285da0;
+    border: 2px solid #52a43f;
+    background-color: #52a43f;
 }
 
 .avatar-checkbox {
@@ -465,12 +457,12 @@ p {
 }
 
 input:not([type]):focus:not([readonly]), input[type=text]:not(.browser-default):focus:not([readonly]), input[type=password]:not(.browser-default):focus:not([readonly]), input[type=email]:not(.browser-default):focus:not([readonly]), input[type=url]:not(.browser-default):focus:not([readonly]), input[type=time]:not(.browser-default):focus:not([readonly]), input[type=date]:not(.browser-default):focus:not([readonly]), input[type=datetime]:not(.browser-default):focus:not([readonly]), input[type=datetime-local]:not(.browser-default):focus:not([readonly]), input[type=tel]:not(.browser-default):focus:not([readonly]), input[type=number]:not(.browser-default):focus:not([readonly]), input[type=search]:not(.browser-default):focus:not([readonly]), textarea.materialize-textarea:focus:not([readonly]) {
-    border-bottom: 1px solid #285da0;
-    box-shadow: 0 1px 0 0 #285da0;
+    border-bottom: 1px solid #52a43f;
+    box-shadow: 0 1px 0 0 #52a43f;
 }
 
 input:not([type]):focus:not([readonly]) + label, input[type=text]:not(.browser-default):focus:not([readonly]) + label, input[type=password]:not(.browser-default):focus:not([readonly]) + label, input[type=email]:not(.browser-default):focus:not([readonly]) + label, input[type=url]:not(.browser-default):focus:not([readonly]) + label, input[type=time]:not(.browser-default):focus:not([readonly]) + label, input[type=date]:not(.browser-default):focus:not([readonly]) + label, input[type=datetime]:not(.browser-default):focus:not([readonly]) + label, input[type=datetime-local]:not(.browser-default):focus:not([readonly]) + label, input[type=tel]:not(.browser-default):focus:not([readonly]) + label, input[type=number]:not(.browser-default):focus:not([readonly]) + label, input[type=search]:not(.browser-default):focus:not([readonly]) + label, textarea.materialize-textarea:focus:not([readonly]) + label {
-    color: #285da0;
+    color: #52a43f;
 }
 
 .select-wrapper input.select-dropdown:focus {
@@ -843,7 +835,7 @@ ul.chat li {
 }
 
 .indicator {
-    background: #285da0 !important;
+    background: #52a43f !important;
 }
 
 .open-note .card-action {

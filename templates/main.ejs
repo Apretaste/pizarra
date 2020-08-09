@@ -16,7 +16,7 @@
                     <% } %>
                     <% if (!note.staff) { %>
                         <a href="#!" class="<%= note.gender %>"
-                           onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}})">
+                           onclick="apretaste.send({'command': 'PERFIL', 'data': {'username':'@<%= note.username %>'}})">
                             @<%= note.username %>
                         </a>
                     <% } %>
@@ -73,22 +73,22 @@
 
 <div id="writeModal" class="container" status="closed" style="display: none;">
     <div class="row">
-        <i class="material-icons small pizarra-color-text" onclick="toggleWriteModal()">close</i>
+        <i class="material-icons small green-text" onclick="toggleWriteModal()">close</i>
         <div class="col s12">
             <textarea id="note" class="materialize-textarea" maxlength="600" placeholder="¿En qué piensas?"></textarea>
         </div>
 
         <div class="actions">
             <input type="file" id="picture" accept="image/*" class="hide">
-            <i class="material-icons small pizarra-color-text left" id="uploadPhoto">photo</i>
-            <i class="material-icons small pizarra-color-text right" onclick="sendNote()">send</i>
+            <i class="material-icons small green-text left" id="uploadPhoto">photo</i>
+            <i class="material-icons small green-text right" onclick="sendNote()">send</i>
         </div>
     </div>
 </div>
 
 <% if(title != 'Global'){ %>
     <div class="fixed-action-btn">
-        <a onclick="toggleWriteModal()" class="btn-floating btn-large pizarra-color">
+        <a onclick="toggleWriteModal()" class="btn-floating btn-large green">
             <i class="large material-icons">add</i>
         </a>
     </div>

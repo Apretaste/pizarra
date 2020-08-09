@@ -12,7 +12,7 @@
 
     <div class="col s12" id="avatar-select">
         <% Object.keys(avatars).forEach(function (avatar) { %>
-            <% var color = avatars[avatar].gender == "M" ? "pizarra-color-text" : avatars[avatar].gender == "F" ? "pink-text" : "black-text"; %>
+            <% var color = avatars[avatar].gender == "M" ? "green-text" : avatars[avatar].gender == "F" ? "pink-text" : "black-text"; %>
             <div class="col s6 m4 l3">
                 <div class="center-align mini-card valign-wrapper center-align" onclick="setAvatar('<%= avatar %>')">
                     <div>

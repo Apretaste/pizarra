@@ -90,21 +90,6 @@ class Service
 		$pathToService = SERVICE_PATH . $response->service;
 		$images[] = "$pathToService/images/img-prev.png";
 
-		if (empty($notes)) {
-			$content = [
-				'header' => 'Lo sentimos',
-				'icon' => 'sentiment_very_dissatisfied',
-				'text' => 'No encontramos notas que vayan con su búsqueda. Puede buscar por palabras, por @username o por #Tema.',
-				'activeIcon' => 1,
-				'myUser' => $myUser
-			];
-
-			$response->setLayout('pizarra.ejs');
-			$response->setTemplate('message.ejs', $content, $images);
-
-			return;
-		}
-
 		// get most popular topics of last 7 days
 		$popularTopics = Database::query('
 			SELECT topic, count(id) as total FROM _pizarra_topics
@@ -483,7 +468,7 @@ class Service
 
 		// notify users mentioned
 		$mentions = $this->findUsersMentionedOnText($text);
-		$color = $request->person->gender === 'M' ? 'pizarra-color-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
+		$color = $request->person->gender === 'M' ? 'green-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
 		foreach ($mentions as $m) {
 			$blocks = Chats::isBlocked($request->person->id, $m->id);
 			if ($blocks->blocked > 0) {
@@ -539,7 +524,7 @@ class Service
 		}
 
 		// si la nota no acepta comentario de otros
-		if ((int) $note->accept_comments == 0 && (int) $note->id_person <> (int) $request->person->id) {
+		if ((int)$note->accept_comments == 0 && (int)$note->id_person <> (int)$request->person->id) {
 			return;
 		}
 
@@ -607,7 +592,7 @@ class Service
 		}
 
 		// send a notification to the owner of the note
-		$color = $request->person->gender === 'M' ? 'pizarra-color-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
+		$color = $request->person->gender === 'M' ? 'green-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
 		if ($request->person->id !== $note->id_person) {
 			Notifications::alert($note->id_person, "<span class=\"$color\">@{$request->person->username}</span> ha comentado tu publicación", 'comment', "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}}");
 			$this->addReputation($note->id_person, $request->person->id, $noteId, 0.6);
@@ -750,101 +735,6 @@ class Service
 	}
 
 	/**
-	 * Show the user profile
-	 *
-	 * @param Request $request
-	 * @param Response $response
-	 *
-	 * @return Response|void
-	 * @throws Exception
-	 * @author salvipascual
-	 *
-	 */
-	public function _perfil(Request $request, Response $response)
-	{
-		$myUser = $this->preparePizarraUser($request->person);
-
-		if (isset($request->input->data->username) && $request->input->data->username != $request->person->username) {
-			$username = $request->input->data->username;
-			// get the user's profile
-			$person = Person::find($username);
-
-			// if user do not exist, message the requestor
-			if (empty($person)) {
-				$response->setLayout('pizarra.ejs');
-				$response->setTemplate('notFound.ejs', [
-					'origin' => 'profile',
-					'myUser' => $myUser,
-					'activeIcon' => 1
-				]);
-				return;
-			}
-
-			//check if the user is blocked
-			$blocks = Chats::isBlocked($request->person->id, $person->id);
-
-			if ($blocks->blocked || $blocks->blockedByMe) {
-				$content = [
-					'username' => $person->username,
-					'origin' => 'profile',
-					'num_notifications' => $request->person->notifications,
-					'blocks' => $blocks,
-					'myUser' => $myUser,
-					'activeIcon' => 1
-				];
-				$response->SetTemplate('blocked.ejs', $content);
-
-				return;
-			}
-
-			// run powers for amulet DETECTIVE
-			if (Amulets::isActive(Amulets::DETECTIVE, $person->id)) {
-				$msg = "Los poderes del amuleto del Druida te avisan: @{$request->person->username} está revisando tu perfil";
-				Notifications::alert($person->id, $msg, 'pageview', "{command:'PERFIL', data:{username:'@{$request->person->username}'}}");
-			}
-
-			// run powers for amulet SHADOWMODE
-			if (Amulets::isActive(Amulets::SHADOWMODE, $person->id)) {
-				return $response->setTemplate('message.ejs', [
-					'header' => 'Shadow-Mode',
-					'icon' => 'visibility_off',
-					'text' => 'La magia oscura de un amuleto rodea este perfil y te impide verlo. Por mucho que intentes romperlo, el hechizo del druida es poderoso.'
-				]);
-			}
-		} else {
-			if (isset($request->input->data->avatar)) {
-				Database::query("UPDATE _pizarra_users SET avatar = '{$request->input->data->avatar}', avatarColor='{$request->input->data->color}' WHERE id_person={$request->person->id}");
-				Database::query("UPDATE person SET avatar = '{$request->input->data->avatar}', avatarColor='{$request->input->data->color}' WHERE id={$request->person->id}");
-				$myUser->avatar = $request->input->data->avatar;
-				$myUser->avatarColor = $request->input->data->color;
-			}
-			$person = $request->person;
-		}
-
-		$user = $this->preparePizarraUser($person);
-		$person->avatar = $user->avatar;
-		$person->avatarColor = $user->avatarColor;
-		$person->reputation = $user->reputation;
-
-		// create data for the view
-		$content = [
-			'profile' => $person,
-			'myUser' => $myUser,
-			'activeIcon' => 1
-		];
-
-		if ($person->id == $request->person->id) {
-			$response->setLayout('pizarra.ejs');
-			$response->SetTemplate('ownProfile.ejs', $content);
-		} else {
-			Person::setProfileTags($person);
-
-			$response->setLayout('pizarra.ejs');
-			$response->SetTemplate('profile.ejs', $content);
-		}
-	}
-
-	/**
 	 * Chats lists with matches filter
 	 *
 	 * @param Request $request
@@ -978,7 +868,7 @@ class Service
 		$message = Database::escape($message, 499);
 		Database::query("INSERT INTO _note (from_user, to_user, `text`) VALUES ({$request->person->id},{$userTo->id},'$message')", true);
 
-		$color = $request->person->gender === 'M' ? 'pizarra-color-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
+		$color = $request->person->gender === 'M' ? 'green-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
 
 		// send notification for the app
 		Notifications::alert(
@@ -1210,7 +1100,7 @@ class Service
 		// format the array of notes
 		$notes = [];
 		if (is_array($listOfNotes)) {
-			foreach (array_merge($staffNotes, $listOfNotes)  as $note) {
+			foreach (array_merge($staffNotes, $listOfNotes) as $note) {
 				$notes[] = $this->formatNote($note, $profile->id); // format the array of notes
 				if (count($notes) > 50) {
 					break;
@@ -1464,8 +1354,8 @@ class Service
 			'avatarColor' => $note->avatarColor,
 			'topics' => $topics,
 			'canmodify' => $note->id_person === $id,
-			'accept_comments' => (int) ($note->accept_comments ?? 1) == 1,
-			'staff' => (int) ($note->staff ?? 0) == 1
+			'accept_comments' => (int)($note->accept_comments ?? 1) == 1,
+			'staff' => (int)($note->staff ?? 0) == 1
 		];
 	}
 

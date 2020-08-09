@@ -3,7 +3,7 @@
         <% if(chats.length > 0) { %>
             <ul class="collection" id="chats-list">
                 <% chats.forEach(function(chat) { %>
-                    <% if (chat.gender == "M") color = "pizarra-color-text"; else if (chat.gender == "F") color = "pink-text"; else color = "black-text" %>
+                    <% if (chat.gender == "M") color = "green-text"; else if (chat.gender == "F") color = "pink-text"; else color = "black-text" %>
                     <li class="collection-item avatar row openchat" id="<%= chat.id %>" name='@<%= chat.username %>'>
                         <!-- PICTURE -->
                         <div class="person-avatar circle" face="<%= chat.avatar %>" color="<%= chat.avatarColor %>"
@@ -39,13 +39,13 @@
 <div class="modal bottom-sheet" id="optionsModal">
     <ul class="collection">
         <li class="collection-item" onclick="viewProfile()">
-            <div>Perfil<a class="secondary-content"><i class="material-icons pizarra-color-text">person</i></a></div>
+            <div>Perfil<a class="secondary-content"><i class="material-icons green-text">person</i></a></div>
         </li>
         <li class="collection-item" onclick="writeModalOpen()">
-            <div>Escribir<a class="secondary-content"><i class="material-icons pizarra-color-text">message</i></a></div>
+            <div>Escribir<a class="secondary-content"><i class="material-icons green-text">message</i></a></div>
         </li>
         <li class="collection-item" onclick="deleteModalOpen()">
-            <div>Borrar<a class="secondary-content"><i class="material-icons pizarra-color-text">delete</i></a></div>
+            <div>Borrar<a class="secondary-content"><i class="material-icons green-text">delete</i></a></div>
         </li>
     </ul>
 </div>
