@@ -493,13 +493,6 @@ class Service
 			Notifications::alert($m->id, "<span class=\"$color\">@{$request->person->username}</span> le ha mencionado", 'comment', "{'command':'PIZARRA NOTA', 'data':{'note':'{$this->insertedNoteId}'}}");
 			$this->addReputation($m->id, $request->person->id, $this->insertedNoteId, 1);
 		}
-
-		// share link
-		if (!empty($this->insertedNoteId)) {
-			if (isset($request->input->data->link)) {
-				Database::query("UPDATE _pizarra_notes S");
-			}
-		}
 	}
 
 	/**
