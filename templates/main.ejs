@@ -1,6 +1,6 @@
 <div class="row notes">
     <div class="col s12">
-        <% if(search != null) { %>
+        <% if(typeof search != 'undefined' && search != null) { %>
             <div class="tags" style="margin-bottom: 10px">
                 <span class="chip tiny"><%= search %></span>
             </div>
