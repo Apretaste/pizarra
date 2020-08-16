@@ -2,6 +2,7 @@
     <div class="col s12 center-align" id="popular-topics">
         <div class="cloud">
             <% topics.forEach(function(topic) { %>
+                <% if (topic.trim() == '') return; %>
                 <span onclick="apretaste.send({'command':'PIZARRA GLOBAL','data':{'search':'#<%= topic.name %>'}})"
                       class="chip tag<%= topic.size %>"><%= topic.name %></span>
             <% }) %>
@@ -10,7 +11,8 @@
 
     <div class="col s12" id="popular-users">
         <% populars.ranking.forEach(function (popular) { %>
-            <div class="col s4 m2">
+            <div class="col s4 m2"
+                 onclick="apretaste.send({'command':'PERFIL', 'data': {'username':'@<%= popular.username %>'}});">
                 <div class="card user-card center-align">
                     <div class="content">
                         <div class="person-avatar circle" face="<%= popular.avatar %>"

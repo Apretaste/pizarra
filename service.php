@@ -367,7 +367,6 @@ class Service
 			'activeIcon' => 1
 		];
 
-		$response->setLayout('pizarra.ejs');
 		$response->SetTemplate('note.ejs', $content, $images);
 	}
 
