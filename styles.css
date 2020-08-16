@@ -25,14 +25,6 @@
     font-size: 1.25rem;
 }
 
-.notes .collection, .notes .collection-item {
-    border: none !important;
-}
-
-.notes .collection-item.avatar {
-    padding: .75rem 0.75rem .75rem 3.25rem !important;
-}
-
 .collection-item.avatar.row {
     margin: 0;
 }

@@ -41,7 +41,7 @@
                     <% if(note.linkText){ %>
                         <ul class="collection one-line preview" onclick="apretaste.send(<%= note.linkCommand %>)">
                             <li class="collection-item avatar">
-                                <i class="fas <%= note.linkIcon %> material-icons circle"></i>
+                                <i class="fas fa-<%= note.linkIcon %> material-icons circle"></i>
                                 <span class="title"><%= note.linkText %></span>
                             </li>
                         </ul>
