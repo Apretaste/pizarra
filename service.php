@@ -398,7 +398,9 @@ class Service
 		}
 
 		// only post notes with real content
-		if (strlen($text) < 20) {
+		$minLength = isset($request->input->data->link->command) ? 5 : 20;
+
+		if (strlen($text) < $minLength) {
 			return;
 		}
 
@@ -478,13 +480,6 @@ class Service
 			Notifications::alert($m->id, "<span class=\"$color\">@{$request->person->username}</span> le ha mencionado", 'comment', "{'command':'PIZARRA NOTA', 'data':{'note':'{$this->insertedNoteId}'}}");
 			$this->addReputation($m->id, $request->person->id, $this->insertedNoteId, 1);
 		}
-
-		// share link
-		if (!empty($this->insertedNoteId)) {
-			if (isset($request->input->data->link)) {
-				Database::query("UPDATE _pizarra_notes S");
-			}
-		}
 	}
 
 	/**
@@ -531,7 +526,7 @@ class Service
 		}
 
 		// si la nota no acepta comentario de otros
-		if ((int)$note->accept_comments == 0 && (int)$note->id_person <> (int)$request->person->id) {
+		if ((int) $note->accept_comments == 0 && (int) $note->id_person <> (int) $request->person->id) {
 			return;
 		}
 
@@ -1361,8 +1356,8 @@ class Service
 			'avatarColor' => $note->avatarColor,
 			'topics' => $topics,
 			'canmodify' => $note->id_person === $id,
-			'accept_comments' => (int)($note->accept_comments ?? 1) == 1,
-			'staff' => (int)($note->staff ?? 0) == 1
+			'accept_comments' => (int) ($note->accept_comments ?? 1) == 1,
+			'staff' => (int) ($note->staff ?? 0) == 1
 		];
 	}
 
