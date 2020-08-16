@@ -526,7 +526,7 @@ class Service
 		}
 
 		// si la nota no acepta comentario de otros
-		if ((int) $note->accept_comments == 0 && (int) $note->id_person <> (int) $request->person->id) {
+		if ((int)$note->accept_comments == 0 && (int)$note->id_person <> (int)$request->person->id) {
 			return;
 		}
 
@@ -613,66 +613,39 @@ class Service
 	 */
 	public function _populares(Request $request, Response $response): void
 	{
-		$cacheFile = TEMP_PATH . '/pizarra_populars.tmp';
-		if (file_exists($cacheFile) && time() < filemtime($cacheFile) + 15 * 60) {
-			$cache = json_decode(file_get_contents($cacheFile));
-			$topics = $cache->topics;
-			$populars = $cache->populars;
-		} else {
-			// get list of topics
-			$ts = Database::query("
+		// get list of topics
+		$ts = Database::query("
 			SELECT topic AS name, COUNT(id) AS cnt FROM _pizarra_topics
 			WHERE created > DATE_ADD(NOW(), INTERVAL -30 DAY)
 			AND topic <> 'general'
 			GROUP BY topic ORDER BY cnt DESC LIMIT 50");
 
-			// get params for the algorithm
-			$maxLetterSize = 10;
-			$minLetterSize = 0;
-			$maxTopicMentions = $ts[0]->cnt;
-			$minTopicMentions = $ts[count($ts) - 1]->cnt;
-			$rate = ($maxTopicMentions - $minTopicMentions) / ($maxLetterSize - $minLetterSize);
-			if ($rate === 0) {
-				$rate = 1;
-			} // avoid divisions by zero
+		// get params for the algorithm
+		$maxLetterSize = 10;
+		$minLetterSize = 0;
+		$maxTopicMentions = $ts[0]->cnt;
+		$minTopicMentions = $ts[count($ts) - 1]->cnt;
+		$rate = ($maxTopicMentions - $minTopicMentions) / ($maxLetterSize - $minLetterSize);
+		if ($rate === 0) {
+			$rate = 1;
+		} // avoid divisions by zero
 
-			// get topics letter size and color
-			$topics = [];
-			foreach ($ts as $t) {
-				$topic = new stdClass();
-				$topic->name = $t->name;
-				$topic->size = ($t->cnt - $minTopicMentions) / $rate;
-				$topics[] = $topic;
-			}
-
-			// set topics in random order
-			shuffle($topics);
-
-			// get the list of most popular users
-			$populars = Database::query('SELECT A.id_person, B.avatar, B.avatarColor, B.username, B.gender, B.online, (SELECT SUM(amount) FROM _pizarra_reputation WHERE id_person = A.id_person) AS reputation FROM _pizarra_users A JOIN person B ON A.id_person = B.id ORDER BY reputation DESC LIMIT 10');
-			foreach ($populars as $popular) {
-				$popular->completion = Person::find($popular->id_person)->completion;
-				$popular->reputation = floor(($popular->reputation ?? 0) + $popular->completion);
-			}
-
-			usort($populars, function ($a, $b) {
-				if ($a->reputation == $b->reputation) {
-					return 0;
-				} elseif ($a->reputation < $b->reputation) {
-					return 1;
-				} else {
-					return -1;
-				}
-			});
-
-			$cache = new stdClass();
-			$cache->populars = $populars;
-			$cache->topics = $topics;
-			file_put_contents($cacheFile, json_encode($cache));
+		// get topics letter size and color
+		$topics = [];
+		foreach ($ts as $t) {
+			$topic = new stdClass();
+			$topic->name = $t->name;
+			$topic->size = ($t->cnt - $minTopicMentions) / $rate;
+			$topics[] = $topic;
 		}
 
-		$myUser = $this->preparePizarraUser($request->person);
+		// set topics in random order
+		shuffle($topics);
 
+		// get the list of most popular users
+		$populars = $this->getPopulars();
+
+		$myUser = $this->preparePizarraUser($request->person);
 
 		$response->setLayout('pizarra.ejs');
 		$response->SetTemplate('populars.ejs', [
@@ -1356,8 +1329,8 @@ class Service
 			'avatarColor' => $note->avatarColor,
 			'topics' => $topics,
 			'canmodify' => $note->id_person === $id,
-			'accept_comments' => (int) ($note->accept_comments ?? 1) == 1,
-			'staff' => (int) ($note->staff ?? 0) == 1
+			'accept_comments' => (int)($note->accept_comments ?? 1) == 1,
+			'staff' => (int)($note->staff ?? 0) == 1
 		];
 	}
 
@@ -1412,5 +1385,36 @@ class Service
 	public function _publicar(Request $request, Response $response)
 	{
 		$this->_escribir($request, $response);
+	}
+
+
+	// Ranking
+	private function getLastSeed()
+	{
+		$seed = Database::queryFirst('select seed from ranking order by to_date desc limit 1');
+		return $seed->seed ?? null;
+	}
+
+	private function getPopulars()
+	{
+		$seed = $this->getLastSeed();
+		$concept = 'POPULARITY';
+		$sql = "select id_person, person.username, person.avatar, person.avatarColor, ranking.experience, from_date, to_date, position, person.gender 
+                from ranking inner join person on person.id =ranking.id_person 
+                where seed = '$seed' and concept = '$concept'
+                order by position LIMIT 12;";
+
+		$ranking = Database::queryCache($sql);
+
+		if (!isset($ranking[0])) {
+			$ranking = [];
+		}
+
+		return [
+			'concept' => 'POPULARITY',
+			'ranking' => $ranking,
+			'from_date' => $ranking[0]->from_date ?? '',
+			'to_date' => $ranking[0]->to_date ?? ''
+		];
 	}
 }
