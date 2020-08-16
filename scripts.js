@@ -192,7 +192,7 @@ function searchText() {
 
 	if (search.length >= 2) {
 		apretaste.send({
-			'command': 'PIZARRA',
+			'command': 'PIZARRA GLOBAL',
 			'data': {
 				'search': search
 			}
@@ -302,7 +302,7 @@ function commentLengthValidate() {
 	var comment = $('#comment').val().trim();
 
 	if (comment.length <= 250) {
-		$('.helper-text').html('Restante: ' + (250 - comment.length));
+		$('.helper-text').html(comment.length + '/' + '250');
 	} else {
 		$('.helper-text').html('Limite excedido');
 	}
@@ -348,18 +348,18 @@ function likeCallback(data) {
 	}
 
 	var counter = type == 'like' ? 'unlike' : 'like';
-	var span = $('#' + id + ' a.' + type + ' span');
+	var span = $('#' + id + ' span.' + type + ' span');
 	var count = parseInt(span.html());
 	span.html(count + 1);
 
-	if ($('#' + id + ' a.' + counter).attr('onclick') == null) {
-		span = $('#' + id + ' a.' + counter + ' span');
+	if ($('#' + id + ' span.' + counter).attr('onclick') == null) {
+		span = $('#' + id + ' span.' + counter + ' span');
 		count = parseInt(span.html());
 		span.html(count - 1);
-		$('#' + id + ' a.' + counter).attr('onclick', "like('" + id + "','" + counter + "', '" + pubType + "')");
+		$('#' + id + ' span.' + counter).attr('onclick', "like('" + id + "','" + counter + "', '" + pubType + "')");
 	}
 
-	$('#' + id + ' a.' + type).removeAttr('onclick');
+	$('#' + id + ' span.' + type).removeAttr('onclick');
 }
 
 function sendCommentCallback(comment) {

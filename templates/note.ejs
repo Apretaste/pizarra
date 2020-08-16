@@ -44,8 +44,7 @@
                             <span><%= note.unlikes %></span>
                         </span>
             <% } %>
-            <span class="chip" style="background-color: transparent;"
-                  onclick="apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'<%= note.id %>'}});">
+            <span class="chip" style="background-color: transparent;">
                         <i class="material-icons icon">comment</i>
                         <span><%= note.comments.length %></span>
                     </span>
@@ -85,7 +84,7 @@
             <div class="input-field">
                 <textarea id="comment" class="materialize-textarea" oninput="commentLengthValidate()"></textarea>
                 <label for="comment">Escriba su comentario</label>
-                <span class="helper-text">Restante: 250</span>
+                <span class="helper-text">0/250</span>
             </div>
         </div>
         <div class="modal-footer">

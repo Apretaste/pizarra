@@ -1,5 +1,11 @@
 <div class="row notes">
     <div class="col s12">
+        <% if(search != null) { %>
+            <div class="tags" style="margin-bottom: 10px">
+                <span class="chip tiny"><%= search %></span>
+            </div>
+        <% } %>
+
         <% if(notes.length == 0){ %>
             <p class="middle-center center grey-text">No hay notas disponibles en esta sección.</p>
         <% } %>
@@ -31,6 +37,15 @@
                              onclick="apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'<%= note.id %>'}});">
                     <% } %>
                     <p><%- note.text %></p>
+
+                    <% if(note.linkText){ %>
+                        <ul class="collection one-line preview" onclick="apretaste.send(<%= note.linkCommand %>)">
+                            <li class="collection-item avatar">
+                                <i class="fas <%= note.linkIcon %> material-icons circle"></i>
+                                <span class="title"><%= note.linkText %></span>
+                            </li>
+                        </ul>
+                    <% } %>
                 </div>
                 <div class="card-action grey lighten-4">
                     <% if (!note.staff) { %>
@@ -87,10 +102,33 @@
     </div>
 </div>
 
+<!-- MODALS -->
+<div id="searchModal" class="modal bottom-sheet">
+    <div class="modal-content">
+        <p>Inserte @username, #tema o un texto a buscar</p>
+        <div class="input-field">
+            <input type="text" id="search" class="validate">
+            <label for="search">Busqueda</label>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
+        <a onclick="searchText()" class="waves-effect waves-green btn-flat green-text modal-close">Enviar</a>
+    </div>
+</div>
+
 <% if(title != 'Global'){ %>
     <div class="fixed-action-btn">
         <a onclick="toggleWriteModal()" class="btn-floating btn-large green">
             <i class="large material-icons">add</i>
+        </a>
+    </div>
+<% } else { %>
+    <!-- SEARCH -->
+    <div class="fixed-action-btn">
+        <a class="btn-floating btn-large waves-effect waves-light green" href="#!"
+           onclick="openSearchModal()">
+            <i class="material-icons">search</i>
         </a>
     </div>
 <% } %>

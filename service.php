@@ -63,7 +63,7 @@ class Service
 	public function _global(Request $request, Response $response): void
 	{
 		// get the type of search
-		$keyword = $request->input->data->search ?? '';
+		$keyword = $request->input->data->search ?? null;
 		$search = $this->getSearchType($keyword);
 		[$searchType, $searchValue] = $search;
 
@@ -108,7 +108,8 @@ class Service
 			'popularTopics' => $topics,
 			'num_notifications' => $profile->notifications,
 			'myUser' => $myUser,
-			'title' => 'Global'
+			'title' => 'Global',
+			'search' => $keyword
 		];
 
 		// create the response
@@ -1329,7 +1330,10 @@ class Service
 			'topics' => $topics,
 			'canmodify' => $note->id_person === $id,
 			'accept_comments' => (int)($note->accept_comments ?? 1) == 1,
-			'staff' => (int)($note->staff ?? 0) == 1
+			'staff' => (int)($note->staff ?? 0) == 1,
+			'linkCommand' => $note->link_command ?? false,
+			'linkIcon' => $note->link_icon ?? false,
+			'linkText' => $note->link_text ?? false,
 		];
 	}
 
