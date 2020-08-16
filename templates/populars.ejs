@@ -2,7 +2,7 @@
     <div class="col s12 center-align" id="popular-topics">
         <div class="cloud">
             <% topics.forEach(function(topic) { %>
-                <% if (topic.trim() == '') return; %>
+                <% if (topic.name.trim() == '') return; %>
                 <span onclick="apretaste.send({'command':'PIZARRA GLOBAL','data':{'search':'#<%= topic.name %>'}})"
                       class="chip tag<%= topic.size %>"><%= topic.name %></span>
             <% }) %>

@@ -621,7 +621,7 @@ class Service
 
 		// get params for the algorithm
 		$maxLetterSize = 10;
-		$minLetterSize = 0;
+		$minLetterSize = 1;
 		$maxTopicMentions = $ts[0]->cnt;
 		$minTopicMentions = $ts[count($ts) - 1]->cnt;
 		$rate = ($maxTopicMentions - $minTopicMentions) / ($maxLetterSize - $minLetterSize);
@@ -634,7 +634,7 @@ class Service
 		foreach ($ts as $t) {
 			$topic = new stdClass();
 			$topic->name = $t->name;
-			$topic->size = ($t->cnt - $minTopicMentions) / $rate;
+			$topic->size = ceil(($t->cnt - $minTopicMentions) / $rate);
 			$topics[] = $topic;
 		}
 

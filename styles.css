@@ -114,6 +114,10 @@ b {
     bottom: 0;
 }
 
+.modal.bottom-sheet {
+    max-height: 100% !important;
+}
+
 img.responsive-img {
     max-height: 45vh;
 }
