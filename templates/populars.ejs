@@ -9,7 +9,7 @@
     </div>
 
     <div class="col s12" id="popular-users">
-        <% populars.forEach(function (popular) { %>
+        <% populars.ranking.forEach(function (popular) { %>
             <div class="col s4 m2">
                 <div class="card user-card center-align">
                     <div class="content">
@@ -17,7 +17,11 @@
                              color="<%= popular.avatarColor %>"
                              size="40" online="1">
                         </div>
-                        <span class="M">@<%= popular.username %></span>
+                        <span class="<%= popular.gender %>">@<%= popular.username %></span><br>
+                        <span>
+                            <i class="fa fa-fire fa-1x"></i>
+                            <%= popular.experience %>
+                        </span>
                     </div>
                 </div>
             </div>
