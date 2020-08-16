@@ -1,10 +1,13 @@
 <div class="row">
     <div class="col s12 center-align" id="popular-topics">
-        <% topics.forEach(function(topic){ %>
-            <a style="font-size: <%= topic.size + 3 %>px;" class="green-text"
-               onclick="apretaste.send({'command':'PIZARRA GLOBAL','data':{'search':'#<%= topic.name %>'}})">#<%= topic.name %>  </a>
-        <% }); %>
+        <div class="cloud">
+            <% topics.forEach(function(topic) { %>
+                <span onclick="apretaste.send({'command':'PIZARRA GLOBAL','data':{'search':'#<%= topic.name %>'}})"
+                      class="chip tag<%= topic.size %>"><%= topic.name %></span>
+            <% }) %>
+        </div>
     </div>
+
 
     <div class="col s12" id="popular-users">
         <% populars.forEach(function (popular) { %>

@@ -2,10 +2,6 @@
     background-color: #52a43f;
 }
 
-a, a > span {
-    color: #52a43f !important;
-}
-
 .notes div.person-avatar {
     left: 0 !important;
     background-size: contain;
@@ -466,13 +462,13 @@ input:not([type]):focus:not([readonly]) + label, input[type=text]:not(.browser-d
 }
 
 .select-wrapper input.select-dropdown:focus {
-	border-bottom: 1px solid #788ba1;
+    border-bottom: 1px solid #788ba1;
 }
 
 .staff {
-	background: #c8d0ee !important;
-	border-radius: 10px !important;
-	margin-top: 5px !important;
+    background: #c8d0ee !important;
+    border-radius: 10px !important;
+    margin-top: 5px !important;
 }
 
 /* Barebones */
@@ -513,6 +509,13 @@ input:not([type]):focus:not([readonly]) + label, input[type=text]:not(.browser-d
 
 .chip.tiny .icon {
     line-height: 20px;
+}
+
+.chip.clear {
+    color: rgba(0, 0, 0, 0.87);
+    margin: 0px;
+    padding: 0px;
+    background-color: transparent;
 }
 
 /* TAGS CLOUD */
@@ -636,10 +639,16 @@ input:not([type]):focus:not([readonly]) + label, input[type=text]:not(.browser-d
     right: 60px !important;
 }
 
+/* PREVIEW COLLECTION */
+
+.collection.preview {
+    margin: 20px 0px 0px 0px;
+}
+
 /* ONE LINE COLLECTION */
 
 .collection.one-line .avatar {
-    min-height: 0px;
+    min-height: 63px;
 }
 
 /* NUMBERS LIST */
@@ -825,11 +834,24 @@ ul.chat li {
     padding-top: 20px;
 }
 
-/* New styles */
-.note .card-action {
-    padding: 0.5rem 0.75rem;
+/* FLOAT BUTTON */
+
+.btn-floating.second {
+    margin-right: -10px;
+    width: 45px;
+    height: 45px;
+    line-height: 58px;
 }
 
+.btn-floating.third {
+    bottom: 45px;
+    left: 87px;
+    width: 45px;
+    height: 45px;
+    line-height: 58px;
+}
+
+/* New styles */
 .note .card-action i, .open-note .card-action i {
     font-size: 1.3rem;
 }
@@ -846,6 +868,6 @@ ul.chat li {
     margin-right: 8px !important;
 }
 
-#comments{
+#comments {
     margin-bottom: 56px;
 }

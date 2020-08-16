@@ -632,8 +632,8 @@ class Service
 			GROUP BY topic ORDER BY cnt DESC LIMIT 50");
 
 			// get params for the algorithm
-			$maxLetterSize = 30;
-			$minLetterSize = 10;
+			$maxLetterSize = 10;
+			$minLetterSize = 0;
 			$maxTopicMentions = $ts[0]->cnt;
 			$minTopicMentions = $ts[count($ts) - 1]->cnt;
 			$rate = ($maxTopicMentions - $minTopicMentions) / ($maxLetterSize - $minLetterSize);
@@ -646,7 +646,7 @@ class Service
 			foreach ($ts as $t) {
 				$topic = new stdClass();
 				$topic->name = $t->name;
-				$topic->size = (($t->cnt - $minTopicMentions) / $rate) + $minLetterSize;
+				$topic->size = ($t->cnt - $minTopicMentions) / $rate;
 				$topics[] = $topic;
 			}
 
@@ -1238,7 +1238,7 @@ class Service
 			ON A.id_person = B.id
 			LEFT JOIN _pizarra_users C
 			ON C.id_person = B.id
-			WHERE A.active=1 AND B.id IN(SELECT user2 as id FROM person_relation_friend WHERE user1 = {$person->id} UNION SELECT user1 as id FROM person_relation_friend WHERE user2 = {$person->id})
+			WHERE A.active=1 AND (B.id IN(SELECT user2 as id FROM person_relation_friend WHERE user1 = {$person->id} UNION SELECT user1 as id FROM person_relation_friend WHERE user2 = {$person->id}) OR B.id={$person->id})
 			ORDER BY inserted DESC
 			LIMIT 20 OFFSET $offset");
 
