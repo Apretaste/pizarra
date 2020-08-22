@@ -596,7 +596,7 @@ class Service
 
 		// send a notification to the owner of the note
 		$color = $request->person->gender === 'M' ? 'green-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
-		if ($request->person->id !== $note->id_person) {
+		if ($request->person->id != $note->id_person) {
 			Notifications::alert($note->id_person, "@{$request->person->username} ha comentado tu publicación", 'comment', "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}}");
 			$this->addReputation($note->id_person, $request->person->id, $noteId, 0.6);
 		}
