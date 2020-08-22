@@ -388,20 +388,64 @@ function sendCommentCallback(comment) {
 }
 
 function sendNoteCallback(note) {
-	var color = myUser.gender == "M" ? "green-text" : color = myUser.gender == "F" ? "pink-text" : "black-text";
 	var serviceImgPath = $('serviceImgPath').attr('data');
 	var topics = note.match(/(^|\B)#(?![0-9_]+\b)([a-zA-Z0-9_]{1,30})(\b|\r)/g);
 	var htmlTopics = "";
 	topics = topics != null ? topics.splice(0, 3) : [myUser.topic];
-	var hasImage = typeof notePicture != "undefined" ? "<img class=\"responsive-img\" src=\"" + serviceImgPath + "/img-prev.png\" onclick=\"apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'last'}});\">" : "";
+	var hasImage = typeof notePicture != "undefined" ? "<img class=\"responsive-img\" style=\"width: 100%\" src=\"" + serviceImgPath + "/img-prev.png\" onclick=\"apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'last'}});\">" : "";
 	topics.forEach(function (topic) {
 		topic = topic.replace('#', '');
-		htmlTopics += "\n\t\t\t<a onclick=\"apretaste.send({'command': 'PIZARRA','data':{'search':'#" + topic + "'}})\">\n\t\t\t\t<b>#" + topic + "</b>\n\t\t\t</a>&nbsp;";
+		htmlTopics +=
+			'<div class="chip small" onclick="apretaste.send({\'command\': \'PIZARRA GLOBAL\',\'data\':{\'search\':\'#' + +topic + '\'}})">\n' +
+			'    <i class="fa fa-hashtag"></i>' + topic +
+			'</div>';
 	});
 	note = note.escapeHTML();
-	var element = "\n\t<li class=\"collection-item avatar row\" id=\"last\">\n\t\t<div class=\"person-avatar circle\" face=\"" + myUser.avatar + "\" color=\"" + myUser.avatarColor + "\" size=\"42\"></div>\n\t\t<i class=\"material-icons online-icon\">brightness_1</i>\n\t\t<span class=\"title\">\n\t\t\t<a class=\"" + color + "\" onclick=\"apretaste.send({'command': 'PERFIL', 'data': {'username':'" + myUser.username + "'}});\">\n\t\t\t\t<b>@" + myUser.username + "</b>\n\t\t\t</a>\n\t\t\t<small class=\"grey-text text-darken-3\">" + myUser.location + " \xB7 " + Date.prototype.nowFormated() + "</small>\n\t\t</span>\n\t\t\n\t\t<p>" + note + "</p>\n\t\t" + hasImage + "\n\t\t<p>\n\t\t\t" + htmlTopics + "\n\t\t\t</p>\n\t\t\t\n\t\t\t<div class=\"col s10 actions\">\n\t\t\t\t<div class=\"col s4\">\n\t\t\t\t\t<a class=\"like\" onclick=\"like('last','like');\">\n\t\t\t\t\t\t<i class=\"material-icons\">thumb_up</i>\n\t\t\t\t\t\t<span>0</span>\n\t\t\t\t\t</a>\n\t\t\t\t\n\t\t\t\t</div>\n\t\t\t\t\t<div class=\"col s4\">\n\t\t\t\t\t\t<a class=\"unlike\" onclick=\"like('last','unlike')\">\n\t\t\t\t\t\t\t<i class=\"material-icons\">thumb_down</i>\n\t\t\t\t\t\t\t<span>0</span>\n\t\t\t\t\t\t</a>\n\t\t\t\t\t</div>\n\t\t\t\t<div class=\"col s4\">\n\t\t\t\t\t<a onclick=\"apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'last'}});\">\n\t\t\t\t\t\t<i class=\"material-icons\">comment</i>\n\t\t\t\t\t\t<span>0</span>\n\t\t\t\t\t</a>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</li>";
 
-	$('.notes .collection').prepend(element);
+	var element =
+		'<div class="card note" id="last" liked="false"\n' +
+		'                 unliked="false">\n' +
+		'                <div class="card-person grey lighten-5">\n' +
+		'                        <div class="person-avatar circle left"\n' +
+		'                             face="' + myUser.avatar + '" color="' + myUser.avatarColor + '"\n' +
+		'                             size="30" online="1">\n' +
+		'                        </div>\n' +
+		'                        <a href="#!" class="' + myUser.gender + '"\n' +
+		'                           onclick="apretaste.send({\'command\': \'PERFIL\', \'data\': {\'username\':\'' + myUser.username + '\'}})">\n' +
+		'                            @' + myUser.username + '\n' +
+		'                        </a>\n' +
+		'                    <span class="chip tiny clear right">\n' +
+		'                        <i class="material-icons icon">perm_contact_calendar</i>\n' +
+		moment().format('MMM D, h:mm A') + '\n' +
+		'                    </span>\n' +
+		'                </div>\n' +
+		'                <div class="card-content">\n' +
+		hasImage +
+		'                    <p>' + note + '</p>\n' +
+		'                    <div class="tags">\n' +
+		htmlTopics +
+		'                    </div>\n' +
+		'                </div>\n' +
+		'                <div class="card-action grey lighten-4">\n' +
+		'                        <span class="chip like" style="background-color: transparent; padding-left: 0;"\n' +
+		'                        onclick="like(\'last\',\'like\');">' +
+		'                            <i class="material-icons icon">thumb_up</i>\n' +
+		'                            <span>0</span>\n' +
+		'                        </span>\n' +
+		'                        <span class="chip unlike" style="background-color: transparent;"\n' +
+		'                        onclick="like(\'last\',\'unlike\')">' +
+		'                            <i class="material-icons icon">thumb_down</i>\n' +
+		'                            <span>0</span>\n' +
+		'                        </span>\n' +
+		'                    <span class="chip" style="background-color: transparent;"\n' +
+		'                          onclick="apretaste.send({\'command\': \'PIZARRA NOTA\',\'data\':{\'note\':\'last\'}});">\n' +
+		'                        <i class="material-icons icon">comment</i>\n' +
+		'                        <span>0</span>\n' +
+		'                    </span>\n' +
+		'                </div>\n' +
+		'            </div>';
+
+	$('.notes > .col').prepend(element);
 	showToast('Nota publicada');
 	$('#note').val('');
 	toggleWriteModal();
