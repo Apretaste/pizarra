@@ -375,16 +375,45 @@ function likeCallback(data) {
 	$('#' + id + ' span.' + type).removeAttr('onclick');
 }
 
+function openProfile(username) {
+	apretaste.send({
+		'command': 'PERFIL',
+		'data': {'username': '@' + username}
+	});
+}
+
+// Callback functions
+
 function sendCommentCallback(comment) {
-	var color = myUser.gender == "M" ? "green-text" : color = myUser.gender == "F" ? "pink-text" : "black-text";
-	var serviceImgPath = $('serviceImgPath').attr('data');
-	var element = "\n\t<li class=\"collection-item avatar row\" id=\"last\">\n\t\t\t<div class=\"person-avatar circle\" face=\"" + myUser.avatar + "\" color=\"" + myUser.avatarColor + "\" size=\"42\"></div><i class=\"material-icons online-icon\">brightness_1</i>\n\t\t\t<span class=\"title\">\n\t\t\t\t<a class=\"" + color + "\" onclick=\"apretaste.send({'command': 'PERFIL', 'data': {'username':'" + myUser.username + "'}});\">\n\t\t\t\t\t<b>@" + myUser.username + "</b>\n\t\t\t\t</a>\n\t\t\t\t<small class=\"grey-text text-darken-3\">" + myUser.location + " \xB7 " + Date.prototype.nowFormated() + "</small>\n\t\t\t</span>\n\t\t\t\n\t\t\t<p>" + comment + "</p>\n\t\t\t\t<div class=\"col s10 actions\">\n\t\t\t\t\t<div class=\"col s4\">\n\t\t\t\t\t\t<a class=\"like\" onclick=\"like('last','like', 'comment');\">\n\t\t\t\t\t\t\t<i class=\"material-icons\">thumb_up</i>\n\t\t\t\t\t\t\t<span>0</span>\n\t\t\t\t\t\t</a>\n\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class=\"col s4\">\n\t\t\t\t\t\t\t<a class=\"unlike\" onclick=\"like('last','unlike', 'comment')\">\n\t\t\t\t\t\t\t\t<i class=\"material-icons\">thumb_down</i>\n\t\t\t\t\t\t\t\t<span>0</span>\n\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t</li>";
+	var element =
+		"<li class=\"right\" id=\"last\">\n" +
+		"    <div class=\"person-avatar circle\" face=\"" + myUser.avatar + "\" color=\"" + myUser.avatarColor + "\"\n" +
+		"         size=\"30\" onclick=\"openProfile('" + myUser.username + "')\"></div>\n" +
+		"    <div class=\"head\">\n" +
+		"        <a onclick=\"openProfile('" + myUser.username + "')\"\n" +
+		"           class=\"" + myUser.gender + "\">@" + myUser.username + "</a>\n" +
+		"        <span class=\"date\">" + moment().format('MMM D, YYYY h:mm A') + "</span>\n" +
+		"    </div>\n" +
+		"    <span class=\"text\">" + comment + "</span>\n" +
+		"</li>"
+
+	$('#no-comments').remove();
+
 	$('#comments').append(element);
 	$('#comment').val('');
-	setElementAsAvatar($('#last .person-avatar'));
 	$('html, body').animate({
-		scrollTop: $("#last").offset().top
+		scrollTop: $("#last").offset().top - 64
 	}, 1000);
+
+	var commentsCounter = $('#commentsCounter');
+
+	commentsCounter.html(parseInt(commentsCounter.html()) + 1);
+
+	$('.person-avatar').each(function (i, item) {
+		setElementAsAvatar(item)
+	});
+
+	toggleWriteModal();
 }
 
 function sendNoteCallback(note) {

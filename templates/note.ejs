@@ -63,24 +63,22 @@
                 <% } %>
                 <span class="chip" style="background-color: transparent;">
                         <i class="material-icons icon">comment</i>
-                        <span><%= note.comments.length %></span>
+                        <span id="commentsCounter"><%= note.comments.length %></span>
                     </span>
             </div>
         </div>
 
         <ul class="chat" id="comments">
             <% note.comments.forEach(function(comment) { %>
-                <% var position = comment.username == myUser.username ? 'right' : 'left' %>
-                <li class="<%= position %>" id="<%= comment.id %>">
+                <li class="<%= comment.username == myUser.username ? "right" : "left" %>" id="<%= comment.id %>">
                     <div class="person-avatar circle" face="<%= comment.avatar %>" color="<%= comment.avatarColor %>"
-                         size="30"
-                         onclick="apretaste.send({'command': 'PERFIL', 'data': {'username':'@<%= comment.username %>'}})"></div>
+                         size="30" onclick="openProfile('<%= comment.username %>')"></div>
                     <div class="head">
-                        <a onclick="apretaste.send({'command': 'PERFIL', 'data': {'username':'@<%= comment.username %>'}})"
+                        <a onclick="openProfile('<%= comment.username %>')"
                            class="<%= comment.gender %>">@<%= comment.username %></a>
                         <span class="date"><%= moment(comment.inserted).format('MMM D, YYYY h:mm A') %></span>
                     </div>
-                    <span class="text"><%- comment.text %></span>
+                    <span class="text"><%= comment.text %></span>
                 </li>
             <% }) %>
         </ul>
