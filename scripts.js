@@ -190,6 +190,32 @@ function sendComment() {
 	}
 }
 
+function openReportModal() {
+	M.Modal.getInstance($('#reportModal')).open();
+}
+
+function reportNote() {
+	var message = $('#reportMessage').val().trim();
+
+	if (message.length < 10) {
+		showToast('Especifique la razon de su reporte');
+		return;
+	}
+
+	apretaste.send({
+		command: 'PIZARRA REPORTAR',
+		data: {
+			message: message,
+			id: note.id
+		},
+		callback: {
+			name: 'showToast',
+			data: 'Reporte enviado'
+		},
+		redirect: false
+	});
+}
+
 function searchText() {
 	var search = $('#search').val().trim();
 
@@ -318,6 +344,16 @@ function commentLengthValidate() {
 		$('.helper-text').html(comment.length + '/' + '250');
 	} else {
 		$('.helper-text').html('Limite excedido');
+	}
+}
+
+function reportLengthValidate() {
+	var message = $('#reportMessage').val().trim();
+
+	if (message.length <= 250) {
+		$('#reportModal .helper-text').html(message.length + '/' + '250');
+	} else {
+		$('#reportModal .helper-text').html('Limite excedido');
 	}
 }
 

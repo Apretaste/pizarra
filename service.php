@@ -932,6 +932,18 @@ class Service
 		}
 	}
 
+	public function _reportar(Request $request, Response &$response)
+	{
+		$message = $request->input->data->message ?? false;
+		$noteId = $request->input->data->id ?? false;
+		if ($message && $noteId) {
+			Database::query(
+				"INSERT INTO _flags(service, person_id, reported_id, explanation) 
+					VALUES('pizarra', {$request->person->id}, '$noteId', '$message')"
+			);
+		}
+	}
+
 	/**
 	 * Search what type of search the user is doing
 	 *

@@ -65,6 +65,12 @@
                         <i class="material-icons icon">comment</i>
                         <span id="commentsCounter"><%= note.comments.length %></span>
                     </span>
+
+                <% if(note.id_person != myUser.id){ %>
+                    <span class="chip" onclick="openReportModal()" style="background-color: transparent;">
+                        <i class="material-icons icon">flag</i>&nbsp;
+                    </span>
+                <% } %>
             </div>
         </div>
 
@@ -116,3 +122,17 @@
         </a>
     </div>
 <% } %>
+
+<div id="reportModal" class="modal">
+    <div class="modal-content">
+        <div class="input-field">
+            <textarea id="reportMessage" class="materialize-textarea" oninput="reportLengthValidate()"></textarea>
+            <label for="reportMessage">Explique la razón del reporte</label>
+            <span class="helper-text">0/250</span>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a onclick="hideKeyboard()" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
+        <a onclick="reportNote()" class="modal-close waves-effect waves-green btn-flat green-text">Enviar</a>
+    </div>
+</div>
