@@ -936,7 +936,10 @@ class Service
 	{
 		$message = $request->input->data->message ?? false;
 		$noteId = $request->input->data->id ?? false;
+
 		if ($message && $noteId) {
+			$message = Database::escape($message, 250);
+
 			Database::query(
 				"INSERT INTO _flags(service, person_id, reported_id, explanation) 
 					VALUES('pizarra', {$request->person->id}, '$noteId', '$message')"

@@ -200,6 +200,9 @@ function reportNote() {
 	if (message.length < 10) {
 		showToast('Especifique la razon de su reporte');
 		return;
+	} else if (message.length > 250) {
+		showToast('Mensaje demasiado largo');
+		return;
 	}
 
 	apretaste.send({
