@@ -1,81 +1,92 @@
-<div class="col s12">
-    <div class="card note" id="<%= note.id %>" liked="<%= note.liked %>"
-         unliked="<%= note.unliked %>">
-        <div class="card-person grey lighten-5">
-            <% if (!note.staff) { %>
-                <div class="person-avatar circle left"
-                     face="<%= note.avatar %>" color="<%= note.avatarColor %>"
-                     size="30" online="<%= note.online %>">
-                </div>
-            <% } %>
-            <% if (!note.staff) { %>
-                <a href="#!" class="<%= note.gender %>"
-                   onclick="apretaste.send({'command': 'PERFIL', 'data': {'username':'@<%= note.username %>'}})">
-                    @<%= note.username %>
-                </a>
-            <% } %>
-            <span class="chip tiny clear right">
+<div class="row">
+    <div class="col s12">
+        <div class="card note" id="<%= note.id %>" liked="<%= note.liked %>"
+             unliked="<%= note.unliked %>">
+            <div class="card-person grey lighten-5">
+                <% if (!note.staff) { %>
+                    <div class="person-avatar circle left"
+                         face="<%= note.avatar %>" color="<%= note.avatarColor %>"
+                         size="30" online="<%= note.online %>">
+                    </div>
+                <% } %>
+                <% if (!note.staff) { %>
+                    <a href="#!" class="<%= note.gender %>"
+                       onclick="apretaste.send({'command': 'PERFIL', 'data': {'username':'@<%= note.username %>'}})">
+                        @<%= note.username %>
+                    </a>
+                <% } %>
+                <span class="chip tiny clear right">
                         <i class="material-icons icon">perm_contact_calendar</i>
                         <%= moment(note.inserted).format('MMM D, h:mm A') %>
                     </span>
-        </div>
-        <div class="card-content">
-            <% if(note.image){ %>
-                <img class="responsive-img" style="width: 100%" src="{{APP_IMAGE_PATH}}/<%= note.image %>">
-            <% } %>
-            <p><%- note.text %></p>
+            </div>
+            <div class="card-content">
+                <% if(note.image){ %>
+                    <img class="responsive-img" style="width: 100%" src="{{APP_IMAGE_PATH}}/<%= note.image %>">
+                <% } %>
+                <p><%- note.text %></p>
 
-            <% if(note.linkText){ %>
-                <ul class="collection one-line preview" onclick="apretaste.send(<%= atob(note.linkCommand) %>)">
-                    <li class="collection-item avatar">
-                        <i class="fas fa-<%= note.linkIcon %> material-icons circle"></i>
-                        <span class="title"><%= note.linkText %></span>
-                    </li>
-                </ul>
-            <% } %>
-        </div>
-        <div class="card-action grey lighten-4">
-            <% if (!note.staff) { %>
-                <span class="chip like" style="background-color: transparent; padding-left: 0;"
-                <% if(!note.liked){ %> onclick="like('<%= note.id %>','like');"
-                        <% } %>
-                >
+                <% if(note.linkText){ %>
+                    <ul class="collection one-line preview" onclick="apretaste.send(<%= atob(note.linkCommand) %>)">
+                        <li class="collection-item avatar">
+                            <i class="fas fa-<%= note.linkIcon %> material-icons circle"></i>
+                            <span class="title"><%= note.linkText %></span>
+                        </li>
+                    </ul>
+                <% } %>
+
+                <div class="tags">
+                    <% note.topics.forEach(function(topic){ %>
+                        <div class="chip small">
+                            <i class="fa fa-hashtag"></i> <%= topic %>
+                        </div>
+                    <% }) %>
+                </div>
+            </div>
+            <div class="card-action grey lighten-4">
+                <% if (!note.staff) { %>
+                    <span class="chip like" style="background-color: transparent; padding-left: 0;"
+                    <% if(!note.liked){ %> onclick="like('<%= note.id %>','like');"
+                            <% } %>
+                    >
                             <i class="material-icons icon">thumb_up</i>
                             <span><%= note.likes %></span>
                         </span>
 
-                <span class="chip unlike" style="background-color: transparent;"
-                <% if(!note.unliked){ %> onclick="like('<%= note.id %>','unlike')"
-                        <% } %>
-                >
+                    <span class="chip unlike" style="background-color: transparent;"
+                    <% if(!note.unliked){ %> onclick="like('<%= note.id %>','unlike')"
+                            <% } %>
+                    >
                             <i class="material-icons icon">thumb_down</i>
                             <span><%= note.unlikes %></span>
                         </span>
-            <% } %>
-            <span class="chip" style="background-color: transparent;">
+                <% } %>
+                <span class="chip" style="background-color: transparent;">
                         <i class="material-icons icon">comment</i>
                         <span><%= note.comments.length %></span>
                     </span>
+            </div>
         </div>
-    </div>
 
-    <ul class="chat" id="comments">
-        <% note.comments.forEach(function(comment) { %>
-            <% var position = comment.username == myUser.username ? 'right' : 'left' %>
-            <li class="<%= position %>" id="<%= comment.id %>">
-                <div class="person-avatar circle" face="<%= comment.avatar %>" color="<%= comment.avatarColor %>"
-                     size="30"
-                     onclick="apretaste.send({'command': 'PERFIL', 'data': {'username':'@<%= comment.username %>'}})"></div>
-                <div class="head">
-                    <a onclick="apretaste.send({'command': 'PERFIL', 'data': {'username':'@<%= comment.username %>'}})"
-                       class="<%= comment.gender %>">@<%= comment.username %></a>
-                    <span class="date"><%= moment(comment.inserted).format('MMM D, YYYY h:mm A') %></span>
-                </div>
-                <span class="text"><%- comment.text %></span>
-            </li>
-        <% }) %>
-    </ul>
+        <ul class="chat" id="comments">
+            <% note.comments.forEach(function(comment) { %>
+                <% var position = comment.username == myUser.username ? 'right' : 'left' %>
+                <li class="<%= position %>" id="<%= comment.id %>">
+                    <div class="person-avatar circle" face="<%= comment.avatar %>" color="<%= comment.avatarColor %>"
+                         size="30"
+                         onclick="apretaste.send({'command': 'PERFIL', 'data': {'username':'@<%= comment.username %>'}})"></div>
+                    <div class="head">
+                        <a onclick="apretaste.send({'command': 'PERFIL', 'data': {'username':'@<%= comment.username %>'}})"
+                           class="<%= comment.gender %>">@<%= comment.username %></a>
+                        <span class="date"><%= moment(comment.inserted).format('MMM D, YYYY h:mm A') %></span>
+                    </div>
+                    <span class="text"><%- comment.text %></span>
+                </li>
+            <% }) %>
+        </ul>
+    </div>
 </div>
+
 
 <% if (note.accept_comments || note.id_person == person_id || note.canmodify) { %>
     <div class="fixed-action-btn">
@@ -96,8 +107,8 @@
             </div>
         </div>
         <div class="modal-footer">
-            <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
-            <a onclick="sendComment()" class="modal-close waves-effect waves-green btn-flat">Comentar</a>
+            <a onclick="hideKeyboard()" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
+            <a onclick="sendComment()" class="modal-close waves-effect waves-green btn-flat green-text">Enviar</a>
         </div>
     </div>
 <% } else { %>

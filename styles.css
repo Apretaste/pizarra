@@ -854,6 +854,10 @@ ul.chat li {
     font-size: 1.3rem;
 }
 
+.note .card-action{
+    padding: 8px 24px;
+}
+
 .indicator {
     background: #52a43f !important;
 }

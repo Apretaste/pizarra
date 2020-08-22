@@ -46,6 +46,14 @@
                             </li>
                         </ul>
                     <% } %>
+
+                    <div class="tags">
+                        <% note.topics.forEach(function(topic){ %>
+                            <div class="chip small">
+                                <i class="fa fa-hashtag"></i> <%= topic %>
+                            </div>
+                        <% }) %>
+                    </div>
                 </div>
                 <div class="card-action grey lighten-4">
                     <% if (!note.staff) { %>

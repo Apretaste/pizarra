@@ -478,7 +478,7 @@ class Service
 				continue;
 			}
 
-			Notifications::alert($m->id, "<span class=\"$color\">@{$request->person->username}</span> le ha mencionado", 'comment', "{'command':'PIZARRA NOTA', 'data':{'note':'{$this->insertedNoteId}'}}");
+			Notifications::alert($m->id, "@{$request->person->username} le ha mencionado", 'comment', "{'command':'PIZARRA NOTA', 'data':{'note':'{$this->insertedNoteId}'}}");
 			$this->addReputation($m->id, $request->person->id, $this->insertedNoteId, 1);
 		}
 	}
@@ -597,7 +597,7 @@ class Service
 		// send a notification to the owner of the note
 		$color = $request->person->gender === 'M' ? 'green-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
 		if ($request->person->id !== $note->id_person) {
-			Notifications::alert($note->id_person, "<span class=\"$color\">@{$request->person->username}</span> ha comentado tu publicación", 'comment', "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}}");
+			Notifications::alert($note->id_person, "@{$request->person->username} ha comentado tu publicación", 'comment', "{'command':'PIZARRA NOTA', 'data':{'note':'$noteId'}}");
 			$this->addReputation($note->id_person, $request->person->id, $noteId, 0.6);
 		}
 	}
@@ -849,7 +849,7 @@ class Service
 		// send notification for the app
 		Notifications::alert(
 			$userTo->id,
-			"<span class=\"$color\">@{$request->person->username}</span> le ha enviado un mensaje",
+			"@{$request->person->username} le ha enviado un mensaje",
 			'message',
 			"{'command':'PIZARRA CONVERSACION', 'data':{'userId':'{$request->person->id}'}}"
 		);
@@ -1406,7 +1406,7 @@ class Service
 		$sql = "select id_person, person.username, person.avatar, person.avatarColor, ranking.experience, from_date, to_date, position, person.gender 
                 from ranking inner join person on person.id =ranking.id_person 
                 where seed = '$seed' and concept = '$concept'
-                order by position LIMIT 12;";
+                order by position LIMIT 9;";
 
 		$ranking = Database::queryCache($sql);
 

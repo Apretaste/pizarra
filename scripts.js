@@ -130,6 +130,7 @@ function toggleWriteModal() {
 		}).attr('status', 'opened');
 		$('#note').focus();
 	} else {
+		hideKeyboard();
 		$('#writeModal').slideToggle({
 			direction: "up"
 		}).attr('status', 'closed');
@@ -146,6 +147,7 @@ function searchChat() {
 var activeNote;
 
 function sendNote() {
+	hideKeyboard();
 	var note = $('#note').val().trim();
 
 	if (note.length >= 20) {
@@ -167,6 +169,7 @@ function sendNote() {
 }
 
 function sendComment() {
+	hideKeyboard();
 	var comment = $('#comment').val().trim();
 
 	if (comment.length >= 2) {
@@ -214,6 +217,16 @@ function deleteNote() {
 			'data': activeNote
 		}
 	});
+}
+
+function hideKeyboard() {
+	if (
+		document.activeElement &&
+		document.activeElement.blur &&
+		typeof document.activeElement.blur === 'function'
+	) {
+		document.activeElement.blur()
+	}
 }
 
 function deleteCallback(id) {
