@@ -11,7 +11,7 @@
         <% } %>
 
         <% notes.forEach(function(note){ %>
-            <div class="card note" id="<%= note.id %>" liked="<%= note.liked %>"
+            <div class="card note <%= note.ad === '1' ? 'ad' : '' %>" id="<%= note.id %>" liked="<%= note.liked %>"
                  unliked="<%= note.unliked %>">
                 <div class="card-person grey lighten-5">
                     <% if (!note.staff) { %>

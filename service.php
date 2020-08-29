@@ -1019,15 +1019,10 @@ class Service
 
         // get the records from the db
         $listOfNotes = Database::query("
-			SELECT
-				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, 
-			       A.comments,
-			       (select count(distinct id_person) from _pizarra_comments WHERE _pizarra_comments.note = A.id) as commentsUnique, 
-			       A.staff, 
-			    A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
+			SELECT A.*,
+			(select count(distinct id_person) from _pizarra_comments WHERE _pizarra_comments.note = A.id) as commentsUnique, 
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, 
-			    B.country, B.online, B.avatar, B.avatarColor,
-				C.reputation, A.ownlike,
+			    B.country, B.online, B.avatar, B.avatarColor, C.reputation,
 			    TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
 				TIMESTAMPDIFF(DAY,A.inserted,CURRENT_DATE) as days,
 				(SELECT COUNT(_pizarra_actions.note) FROM _pizarra_actions 
@@ -1053,15 +1048,10 @@ class Service
 			JOIN _pizarra_users C ON A.id_person = C.id_person");
 
         $staffNotes = !$search ? Database::query("
-			SELECT
-				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, 
-			       A.comments,
-			       (select count(distinct id_person) from _pizarra_comments WHERE _pizarra_comments.note = A.id AND _pizarra_comments.id_person <> A.id_person) as commentsUnique, 
-			       A.staff, 
-			    A.inserted, A.ad, A.topic1, A.topic2, A.topic3,
+			SELECT A.*,
+			(select count(distinct id_person) from _pizarra_comments WHERE _pizarra_comments.note = A.id AND _pizarra_comments.id_person <> A.id_person) as commentsUnique, 
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, 
-			    B.country, B.online, B.avatar, B.avatarColor,
-				C.reputation, A.ownlike,
+			    B.country, B.online, B.avatar, B.avatarColor, C.reputation,
 				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
 			    TIMESTAMPDIFF(DAY,A.inserted,CURRENT_DATE) as days,
 				1 AS isliked,

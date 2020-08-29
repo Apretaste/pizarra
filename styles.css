@@ -854,7 +854,7 @@ ul.chat li {
     font-size: 1.3rem;
 }
 
-.note .card-action{
+.note .card-action {
     padding: 8px 24px;
 }
 
@@ -873,3 +873,11 @@ ul.chat li {
 #comments {
     margin-bottom: 56px;
 }
+
+/*.ad {
+    background-color: #e6ee9c;
+}
+
+.ad li{
+    background-color: #e6ee9c !important;
+}*/
