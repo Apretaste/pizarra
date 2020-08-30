@@ -26,15 +26,17 @@
                             @<%= note.username %>
                         </a>
                     <% } %>
-                    <% if(note.ad === '1'){ %>
-                        <div class="chip small">
-                            <i class="fa fa-ad"></i> Patrocinada
-                        </div>
-                    <% } %>
+
                     <span class="chip tiny clear right">
                         <i class="material-icons icon">perm_contact_calendar</i>
                         <%= moment(note.inserted).format('MMM D, h:mm A') %>
                     </span>
+
+                    <% if(note.ad === '1'){ %>
+                        <div class="chip small right">
+                            <i class="fa fa-ad"></i>
+                        </div>
+                    <% } %>
                 </div>
                 <div class="card-content">
                     <% if(note.image){ %>
