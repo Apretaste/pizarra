@@ -35,7 +35,16 @@ class Service
         $myUser = $this->preparePizarraUser($request->person);
 
         $pathToService = SERVICE_PATH . $response->service;
-        $images[] = "$pathToService/images/img-prev.png";
+        $images = ["$pathToService/images/img-prev.png"];
+
+        if ($request->person->showImages) {
+            foreach ($notes as $note) {
+                if ($note['image']) {
+                    $pizarraImgDir = SHARED_PUBLIC_PATH . '/content/pizarra';
+                    $images[] = "$pizarraImgDir/{$note['image']}";
+                }
+            }
+        }
 
         // create variables for the template
         $content = [
@@ -90,23 +99,18 @@ class Service
         $pathToService = SERVICE_PATH . $response->service;
         $images[] = "$pathToService/images/img-prev.png";
 
-        // get most popular topics of last 7 days
-        $popularTopics = Database::query('
-			SELECT topic, count(id) as total FROM _pizarra_topics
-			WHERE created > DATE_ADD(NOW(), INTERVAL -7 DAY)
-			GROUP BY topic ORDER BY total DESC LIMIT 10');
-
-        $topics = [];
-        foreach ($popularTopics as $topic) {
-            $topics[] = $topic->topic;
+        if ($request->person->showImages) {
+            foreach ($notes as $note) {
+                if ($note['image']) {
+                    $pizarraImgDir = SHARED_PUBLIC_PATH . '/content/pizarra';
+                    $images[] = "$pizarraImgDir/{$note['image']}";
+                }
+            }
         }
 
         // create variables for the template
         $content = [
-            'isProfileIncomplete' => $profile->completion < 70,
             'notes' => $notes,
-            'popularTopics' => $topics,
-            'num_notifications' => $profile->notifications,
             'myUser' => $myUser,
             'title' => 'Global',
             'search' => $keyword
@@ -519,7 +523,7 @@ class Service
         }
 
         // check the note ID is valid
-        $note = Database::query("SELECT `text`,id_person, accept_comments,comments FROM _pizarra_notes WHERE id='$noteId' AND active=1");
+        $note = Database::query("SELECT id, `text`,id_person, accept_comments,comments FROM _pizarra_notes WHERE id='$noteId' AND active=1");
         if ($note) {
             $note = $note[0];
         } else {

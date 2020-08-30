@@ -7,7 +7,7 @@
         <% } %>
 
         <% if(notes.length == 0){ %>
-            <p class="middle-center center grey-text">No hay notas disponibles en esta sección.</p>
+            <p class="middle-center center grey-text">No encontramos ninguna nota para su búsqueda.</p>
         <% } %>
 
         <% notes.forEach(function(note){ %>
@@ -33,8 +33,14 @@
                 </div>
                 <div class="card-content">
                     <% if(note.image){ %>
-                        <img class="responsive-img" style="width: 100%" src="{{APP_SERVICE_PATH}}/images/img-prev.png"
-                             onclick="apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'<%= note.id %>'}});">
+                        <% if(showImages){ %>
+                            <img class="responsive-img" style="width: 100%" onclick="openNote('<%= note.id %>');"
+                                 src="{{APP_IMAGE_PATH}}/<%= note.image %>">
+                        <% } else { %>
+                            <img class="responsive-img" style="width: 100%"
+                                 src="{{APP_SERVICE_PATH}}/images/img-prev.png"
+                                 onclick="openNote('<%= note.id %>');">
+                        <% } %>
                     <% } %>
                     <p><%- note.text %></p>
 

@@ -144,6 +144,10 @@ function openSearchModal() {
 function searchChat() {
 }
 
+function openNote(id){
+	apretaste.send({'command': 'PIZARRA NOTA','data':{'note':id}});
+}
+
 var activeNote;
 
 function sendNote() {
