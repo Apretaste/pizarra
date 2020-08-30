@@ -38,9 +38,6 @@
                 </div>
                 <div class="card-content">
                     <% if(note.image){ %>
-                        <% var showImages = {{
-                            APP_SHOW_IMAGES
-                        }}; %>
                         <% if(showImages){ %>
                             <img class="responsive-img" style="width: 100%" onclick="openNote('<%= note.id %>');"
                                  src="{{APP_IMAGE_PATH}}/<%= note.image %>">
