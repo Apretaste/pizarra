@@ -448,10 +448,10 @@ function sendCommentCallback(comment) {
         scrollTop: $("#last").offset().top - 64
     }, 1000);
 
-    $('#commentsCounter').html('0');
+    $('#newCommentModal .helper-text').html('0/250');
 
     $('.person-avatar').each(function (i, item) {
-        item.html('');
+        item.innerHTML = '';
         setElementAsAvatar(item)
     });
 
