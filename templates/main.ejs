@@ -11,7 +11,7 @@
         <% } %>
 
         <% notes.forEach(function(note){ %>
-            <div class="card note <%= note.ad === '1' ? 'ad' : '' %>" id="<%= note.id %>" liked="<%= note.liked %>"
+            <div class="card note" id="<%= note.id %>" liked="<%= note.liked %>"
                  unliked="<%= note.unliked %>">
                 <div class="card-person grey lighten-5">
                     <% if (!note.staff) { %>
@@ -26,6 +26,11 @@
                             @<%= note.username %>
                         </a>
                     <% } %>
+                    <% if(note.ad === '1'){ %>
+                        <div class="chip small">
+                            <i class="fa fa-ad"></i> Patrocinada
+                        </div>
+                    <% } %>
                     <span class="chip tiny clear right">
                         <i class="material-icons icon">perm_contact_calendar</i>
                         <%= moment(note.inserted).format('MMM D, h:mm A') %>
@@ -33,7 +38,9 @@
                 </div>
                 <div class="card-content">
                     <% if(note.image){ %>
-                    <%var showImages = {{APP_SHOW_IMAGES}};%>
+                        <% var showImages = {{
+                            APP_SHOW_IMAGES
+                        }}; %>
                         <% if(showImages){ %>
                             <img class="responsive-img" style="width: 100%" onclick="openNote('<%= note.id %>');"
                                  src="{{APP_IMAGE_PATH}}/<%= note.image %>">
