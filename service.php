@@ -1217,7 +1217,7 @@ class Service
 			LEFT JOIN _pizarra_users C
 			ON C.id_person = B.id
 			WHERE A.active=1 AND (B.id IN(SELECT user2 as id FROM person_relation_friend WHERE user1 = {$person->id} UNION SELECT user1 as id FROM person_relation_friend WHERE user2 = {$person->id}) OR B.id={$person->id})
-			ORDER BY inserted DESC
+			ORDER BY A.ad DESC, inserted DESC
 			LIMIT 20 OFFSET $offset");
 
         // format the array of notes
