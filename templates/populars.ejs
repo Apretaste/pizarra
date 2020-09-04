@@ -25,7 +25,7 @@
             <% topics.forEach(function(topic) { %>
                 <% if (topic.name.trim() == '') return; %>
                 <span onclick="apretaste.send({'command':'PIZARRA GLOBAL','data':{'search':'#<%= topic.name %>'}})"
-                      class="chip tag<%= topic.size %>"><%= topic.name %></span>
+                      class="chip tag<%= topic.size %>"><i class="fa fa-hashtag"></i> <%= topic.name %></span>
             <% }) %>
         </div>
     </div>
