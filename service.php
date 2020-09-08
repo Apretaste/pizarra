@@ -947,7 +947,7 @@ class Service
 			$message = Database::escape($message, 250);
 
 			Database::query(
-				"INSERT INTO _flags(service, person_id, reported_id, explanation) 
+				"INSERT INTO flags(service, person_id, reported_id, explanation) 
 					VALUES('pizarra', {$request->person->id}, '$noteId', '$message')"
 			);
 		}
