@@ -1,120 +1,104 @@
-<div class="row notes">
-    <% var color; %>
+<div class="row">
     <div class="col s12">
-        <ul class="collection">
-            <% if (note.gender == "M") color = "pizarra-color-text"; else if (note.gender == "F") color = "pink-text"; else color = "black-text" %>
-            <li class="collection-item avatar row <%= note.staff ? "staff": "" %>" id="<%= note.id %>" liked="<%= note.liked %>"
-                unliked="<%= note.unliked %>">
-                <% if (!note.staff) {%>
-                    <div class="person-avatar circle" face="<%= note.avatar %>" color="<%= note.avatarColor %>" size="42"
-                         onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});"></div>
-                    <% if(note.online == "1"){ %>
-                        <i class="material-icons online-icon">brightness_1</i>
-                    <% } %>
+        <div class="card note <%= note.ad === '1' ? 'ad' : '' %>" id="<%= note.id %>" liked="<%= note.liked %>"
+             unliked="<%= note.unliked %>">
+            <div class="card-person grey lighten-5">
+                <% if (!note.staff) { %>
+                    <div class="person-avatar circle left"
+                         face="<%= note.avatar %>" color="<%= note.avatarColor %>"
+                         size="30" online="<%= note.online %>">
+                    </div>
                 <% } %>
-                <span class="title">
-                    <% if (!note.staff) {%>
-						<a class="<%= color %>"
-                           onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= note.username %>'}});">
-							<b>@<%= note.username %></b>
-						</a>
-                    &nbsp; <% } %>
-						<small class="grey-text text-darken-3">&nbsp;<% if (!note.staff) {%><%= note.location %> · <% } %><%= note.inserted %></small>
-					</span>
-                <p>
-                    <%- note.text %>
-                </p>
-                <div class="center-align">
-                    <% if(note.image){ %>
-                    <img id="notePicture" class="responsive-img" src="{{APP_IMAGE_PATH}}/<%= note.image %>"/>
-                    <% } %>
-                </div>
-                <p>
+                <% if (!note.staff) { %>
+                    <a href="#!" class="<%= note.gender %>"
+                       onclick="apretaste.send({'command': 'PERFIL', 'data': {'username':'@<%= note.username %>'}})">
+                        @<%= note.username %>
+                    </a>
+                <% } %>
+                <span class="chip tiny clear right">
+                        <i class="material-icons icon">perm_contact_calendar</i>
+                        <%= moment(note.inserted).format('MMM D, h:mm A') %>
+                    </span>
+            </div>
+            <div class="card-content">
+                <% if(note.image){ %>
+                    <img class="responsive-img" style="width: 100%" src="{{APP_IMAGE_PATH}}/<%= note.image %>">
+                <% } %>
+                <p><%- note.text %></p>
+
+                <% if(note.linkText){ %>
+                    <ul class="collection one-line preview" onclick="apretaste.send(<%= atob(note.linkCommand) %>)">
+                        <li class="collection-item avatar">
+                            <i class="fas fa-<%= note.linkIcon %> material-icons circle"></i>
+                            <span class="title"><%= note.linkText %></span>
+                        </li>
+                    </ul>
+                <% } %>
+
+                <div class="tags">
                     <% note.topics.forEach(function(topic){ %>
-                        <a onclick="apretaste.send({'command': 'PIZARRA','data':{'search':'#<%= topic %>'}})">
-                            <b>#<%= topic %></b>
-                        </a>&nbsp;
-                    <% }); %>
-                </p>
-                <% if (!note.staff) {%>
-                <div class="col s10 actions">
-
-                    <div class="col s4">
-                        <a class="like"
-                        <% if(!note.liked){ %> onclick="like('<%= note.id %>','like');"
-                                <% } %>
-                        >
-                            <i class="material-icons">thumb_up</i>
-                            <span><%= note.likes %></span>
-                        </a>
-                    </div>
-                    <div class="col s4">
-                        <a class="unlike"
-                        <% if(!note.unliked){ %> onclick="like('<%= note.id %>','unlike')"
-                                <% } %>
-                        >
-                            <i class="material-icons">thumb_down</i>
-                            <span><%= note.unlikes %></span>
-                        </a>
-                    </div>
+                        <div class="chip small">
+                            <i class="fa fa-hashtag"></i> <%= topic %>
+                        </div>
+                    <% }) %>
                 </div>
+            </div>
+            <div class="card-action grey lighten-4">
+                <% if (!note.staff) { %>
+                    <span class="chip like" style="background-color: transparent; padding-left: 0;"
+                    <% if(!note.liked){ %> onclick="like('<%= note.id %>','like');"
+                            <% } %>
+                    >
+                            <i class="material-icons icon">thumb_up</i>
+                            <span><%= note.likes %></span>
+                        </span>
+
+                    <span class="chip unlike" style="background-color: transparent;"
+                    <% if(!note.unliked){ %> onclick="like('<%= note.id %>','unlike')"
+                            <% } %>
+                    >
+                            <i class="material-icons icon">thumb_down</i>
+                            <span><%= note.unlikes %></span>
+                        </span>
                 <% } %>
-            </li>
-        </ul>
-    </div>
+                <span class="chip" style="background-color: transparent;">
+                        <i class="material-icons icon">comment</i>
+                        <span id="commentsCounter"><%= note.comments.length %></span>
+                    </span>
 
-    <div class="col s12">
-        <ul class="collection" id="comments">
-            <% note.comments.forEach(function(comment){ %>
-                <% if (comment.gender == "M") color = "pizarra-color-text"; else if (comment.gender == "F") color = "pink-text"; else color = "black-text" %>
+                <% if(note.id_person != myUser.id){ %>
+                    <span class="chip" onclick="openReportModal()" style="background-color: transparent;">
+                        <i class="material-icons icon">flag</i>&nbsp;
+                    </span>
+                <% } %>
+            </div>
+        </div>
 
-                <li class="collection-item avatar row" id="<%= comment.id %>">
+        <ul class="chat" id="comments">
+            <% note.comments.forEach(function(comment) { %>
+                <li class="<%= comment.username == myUser.username ? "right" : "left" %>" id="<%= comment.id %>">
                     <div class="person-avatar circle" face="<%= comment.avatar %>" color="<%= comment.avatarColor %>"
-                         size="42"
-                         onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= comment.username %>'}});"></div>
-                    <% if(comment.online == "1"){ %>
-                        <i class="material-icons online-icon">brightness_1</i>
-                    <% } %>
-                    <span class="title">
-						<a class="<%= color %>"
-                           onclick="apretaste.send({'command': 'PIZARRA PERFIL', 'data': {'username':'@<%= comment.username %>'}});">
-							<b>@<%= comment.username %></b>
-						</a>
-						<small class="grey-text text-darken-3">&nbsp;<%= comment.location %> · <%= comment.inserted %></small>
-					</span>
-                    <p>
-                        <%- comment.text %>
-                    </p>
-                    <div class="col s10 actions">
-                        <div class="col s4">
-                            <a class="like"
-                            <% if(!comment.liked){ %> onclick="like('<%= comment.id %>','like', 'comment');"
-                                    <% } %>
-                            >
-                                <i class="material-icons">thumb_up</i>
-                                <span><%= comment.likes %></span>
-                            </a>
-                        </div>
-                        <div class="col s4">
-                            <a class="unlike"
-                            <% if(!comment.unliked){ %> onclick="like('<%= comment.id %>','unlike', 'comment')"
-                                    <% } %>
-                            >
-                                <i class="material-icons">thumb_down</i>
-                                <span><%= comment.unlikes %></span>
-                            </a>
-                        </div>
+                         size="30" onclick="openProfile('<%= comment.username %>')"></div>
+                    <div class="head">
+                        <a onclick="openProfile('<%= comment.username %>')"
+                           class="<%= comment.gender %>">@<%= comment.username %></a>
+                        <span class="date"><%= moment(comment.inserted).format('MMM D, YYYY h:mm A') %></span>
                     </div>
+                    <span class="text"><%= comment.text %></span>
                 </li>
-            <% }); %>
+            <% }) %>
         </ul>
     </div>
 </div>
 
+
 <% if (note.accept_comments || note.id_person == person_id || note.canmodify) { %>
     <div class="fixed-action-btn">
-        <a href="#newCommentModal" class="btn-floating btn-large modal-trigger pizarra-color">
-            <i class="large material-icons">comment</i>
+        <a class="btn-floating waves-effect waves-light grey second" onclick="apretaste.back()">
+            <i class="material-icons">arrow_back</i>
+        </a>
+        <a href="#newCommentModal" class="btn-floating btn-large waves-effect waves-light modal-trigger green">
+            <i class="material-icons">add</i>
         </a>
     </div>
 
@@ -123,12 +107,32 @@
             <div class="input-field">
                 <textarea id="comment" class="materialize-textarea" oninput="commentLengthValidate()"></textarea>
                 <label for="comment">Escriba su comentario</label>
-                <span class="helper-text">Restante: 250</span>
+                <span class="helper-text">0/250</span>
             </div>
         </div>
         <div class="modal-footer">
-            <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
-            <a onclick="sendComment()" class="modal-close waves-effect waves-green btn-flat">Comentar</a>
+            <a onclick="hideKeyboard()" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
+            <a onclick="sendComment()" class="modal-close waves-effect waves-green btn-flat green-text">Enviar</a>
         </div>
     </div>
+<% } else { %>
+    <div class="fixed-action-btn">
+        <a class="btn-floating btn-large green" onclick="apretaste.back()">
+            <i class="material-icons">arrow_back</i>
+        </a>
+    </div>
 <% } %>
+
+<div id="reportModal" class="modal">
+    <div class="modal-content">
+        <div class="input-field">
+            <textarea id="reportMessage" class="materialize-textarea" oninput="reportLengthValidate()"></textarea>
+            <label for="reportMessage">Explique la razón del reporte</label>
+            <span class="helper-text">0/250</span>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a onclick="hideKeyboard()" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
+        <a onclick="reportNote()" class="modal-close waves-effect waves-green btn-flat green-text">Enviar</a>
+    </div>
+</div>

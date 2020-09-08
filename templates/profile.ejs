@@ -1,11 +1,11 @@
 <div class="row">
-    <div id="img-pre" class="pizarra-color"></div>
+    <div id="img-pre" class="green"></div>
 
     <!-- PICTURE -->
     <div class="person-avatar circle" id="profile-rounded-img" face="<%= profile.avatar %>"
          color="<%= profile.avatarColor %>" size="<%= ($(window).height() / 4) + 8 %>"></div>
 
-    <% var color = profile.gender == "M" ? "pizarra-color-text" : profile.gender == "F" ? "pink-text" : "black-text"; %>
+    <% var color = profile.gender == "M" ? "green-text" : profile.gender == "F" ? "pink-text" : "black-text"; %>
 
     <div class="row" id="edit-fields">
         <div class="col s12" style="padding: 0 1.5rem;">

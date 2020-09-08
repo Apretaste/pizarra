@@ -77,7 +77,7 @@ CREATE TABLE `_pizarra_notes` (
   `id` int(11) NOT NULL,
   `id_person` int(11) NOT NULL,
   `email` char(100) DEFAULT NULL,
-  `text` varchar(300) NOT NULL,
+  `text` varchar(600) NOT NULL,
   `likes` int(5) NOT NULL DEFAULT '0',
   `unlikes` int(5) NOT NULL DEFAULT '0',
   `comments` int(5) NOT NULL DEFAULT '0',
