@@ -1335,6 +1335,7 @@ class Service
 			'unliked' => isset($note->isunliked) && $note->isunliked,
 			'reputation' => $note->reputation ?? 0,
 			'ad' => $note->ad ?? false,
+			'silenced' => $note->silenced ?? false,
 			'online' => $note->online ?? false,
 			'country' => $country,
 			'avatar' => $avatar,
