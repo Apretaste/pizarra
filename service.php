@@ -1012,7 +1012,11 @@ class Service
 	 */
 	private function getNotesByTopic($profile, $topic, $search = false): array
 	{
-		$where = $topic !== 'general' ? "WHERE (_pizarra_notes.topic1='$topic' OR _pizarra_notes.topic2='$topic' OR _pizarra_notes.topic3='$topic') AND active=1" : 'WHERE _pizarra_notes.active=1';
+		$silencedQuery = 'SELECT topic FROM _pizarra_topics_silenced';
+
+		$where = $topic !== 'general'
+			? "WHERE (_pizarra_notes.topic1='$topic' OR _pizarra_notes.topic2='$topic' OR _pizarra_notes.topic3='$topic') AND active=1"
+			: "WHERE _pizarra_notes.active=1 AND (_pizarra_notes.topic1 NOT IN($silencedQuery) AND _pizarra_notes.topic2 NOT IN($silencedQuery) AND _pizarra_notes.topic3 NOT IN($silencedQuery))";
 		// set the topic as default for the user
 
 		Database::query("UPDATE _pizarra_users SET default_topic='$topic' WHERE id_person='{$profile->id}'");
