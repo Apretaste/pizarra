@@ -38,6 +38,13 @@
                             <i class="fa fa-ad"></i>
                         </div>
                     <% } %>
+
+                    <% if(note.silenced === '1'){ %>
+                        <div class="chip small right"
+                             style="margin-top: 2px;">
+                            <i class="fas fa-volume-mute"></i>
+                        </div>
+                    <% } %>
                 </div>
                 <div class="card-content">
                     <% if(note.image){ %>
