@@ -381,6 +381,7 @@ class Service
 			'activeIcon' => 1
 		];
 
+		$response->setCache(60);
 		$response->SetTemplate('note.ejs', $content, $images);
 	}
 
@@ -397,7 +398,6 @@ class Service
 		$text = $request->input->data->text; // strip_tags
 		$image = $request->input->data->image ?? false;
 		$fileName = '';
-		$ad = 0;
 
 		// get the image name and path
 		if ($image) {
@@ -430,24 +430,14 @@ class Service
 		$topic2 = isset($topics[1]) ? str_replace('#', '', $topics[1]) : '';
 		$topic3 = isset($topics[2]) ? str_replace('#', '', $topics[2]) : '';
 
-		// run powers for amulet PRIORIDAD
-		if (Amulets::isActive(Amulets::PRIORIDAD, $request->person->id)) {
-			// make the note into an ad
-			$ad = 1;
-
-			// alert the user
-			$msg = 'Los poderes del amuleto del druida harán que la nota que publicaste sea vista por muchas más personas';
-			Notifications::alert($request->person->id, $msg, 'local_florist', '{command:"PIROPAZO PERFIL"}}');
-		}
-
 		// save note to the database
 		$cleanText = Database::escape($text, 600);
 		$link_command = Database::escape($request->input->data->link->command ?? '', 4000);
 		$link_icon = Database::escape($request->input->data->link->icon ?? '', 100);
 		$link_text = Database::escape($request->input->data->link->text ?? '', 600);
 
-		$sql = "INSERT INTO _pizarra_notes (id_person, `text`, image, ad, topic1, topic2, topic3, link_command, link_icon, link_text) 
-                VALUES ('{$request->person->id}', '$cleanText', '$fileName', $ad, '$topic1', '$topic2', '$topic3', 
+		$sql = "INSERT INTO _pizarra_notes (id_person, `text`, image, topic1, topic2, topic3, link_command, link_icon, link_text) 
+                VALUES ('{$request->person->id}', '$cleanText', '$fileName', '$topic1', '$topic2', '$topic3', 
                 NULLIF('$link_command', ''), NULLIF('$link_icon', ''), NULLIF('$link_text', ''))";
 
 		$this->insertedNoteId = Database::query($sql);
@@ -539,7 +529,7 @@ class Service
 		}
 
 		// si la nota no acepta comentario de otros
-		if ((int) $note->accept_comments == 0 && (int) $note->id_person <> (int) $request->person->id) {
+		if ((int)$note->accept_comments == 0 && (int)$note->id_person <> (int)$request->person->id) {
 			return;
 		}
 
@@ -1358,8 +1348,8 @@ class Service
 			'avatarColor' => $note->avatarColor,
 			'topics' => $topics,
 			'canmodify' => $note->id_person === $id,
-			'accept_comments' => (int) ($note->accept_comments ?? 1) == 1,
-			'staff' => (int) ($note->staff ?? 0) == 1,
+			'accept_comments' => (int)($note->accept_comments ?? 1) == 1,
+			'staff' => (int)($note->staff ?? 0) == 1,
 			'linkCommand' => $note->link_command ?? false,
 			'linkIcon' => $note->link_icon ?? false,
 			'linkText' => $note->link_text ?? false,
