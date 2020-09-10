@@ -868,7 +868,7 @@ ul.chat li {
     margin-bottom: 56px;
 }
 
-.materialboxed .active {
+.materialboxed.active {
     object-fit: contain !important;
 }
 
