@@ -120,8 +120,11 @@ class Service
 		];
 
 		// create the response
-		if (!$search) $response->setCache(30);
-		else $response->setCache(60);
+		if (!$search) {
+			$response->setCache(30);
+		} else {
+			$response->setCache(60);
+		}
 		$response->setLayout('pizarra.ejs');
 		$response->SetTemplate('main.ejs', $content, $images);
 	}
@@ -536,7 +539,7 @@ class Service
 		}
 
 		// si la nota no acepta comentario de otros
-		if ((int)$note->accept_comments == 0 && (int)$note->id_person <> (int)$request->person->id) {
+		if ((int) $note->accept_comments == 0 && (int) $note->id_person <> (int) $request->person->id) {
 			return;
 		}
 
@@ -557,7 +560,13 @@ class Service
 		Challenges::complete('comment-pizarra-note', $request->person->id);
 
 		Challenges::track($request->person->id, 'pizarra-comments-random', [], static function ($track) use ($noteId) {
-			$track[$noteId] = $noteId;
+
+			// quizas el reto esta completado, pero aun esta en challenge_current con un 10, no un array
+
+			if (is_array($track)) {
+				$track[$noteId] = $noteId;
+			}
+
 			if (count($track) >= 10) {
 				$track = 10;
 			}
@@ -1349,8 +1358,8 @@ class Service
 			'avatarColor' => $note->avatarColor,
 			'topics' => $topics,
 			'canmodify' => $note->id_person === $id,
-			'accept_comments' => (int)($note->accept_comments ?? 1) == 1,
-			'staff' => (int)($note->staff ?? 0) == 1,
+			'accept_comments' => (int) ($note->accept_comments ?? 1) == 1,
+			'staff' => (int) ($note->staff ?? 0) == 1,
 			'linkCommand' => $note->link_command ?? false,
 			'linkIcon' => $note->link_icon ?? false,
 			'linkText' => $note->link_text ?? false,
