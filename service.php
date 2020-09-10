@@ -117,9 +117,9 @@ class Service
 
 		// create the response
 		if (!$search) {
-			$response->setCache(30);
-		} else {
 			$response->setCache(60);
+		} else {
+			$response->setCache(30);
 		}
 		$response->setLayout('pizarra.ejs');
 		$response->SetTemplate('main.ejs', $content, $images);
@@ -653,6 +653,7 @@ class Service
 
 		$myUser = $this->preparePizarraUser($request->person);
 
+		$response->setCache(360);
 		$response->setLayout('pizarra.ejs');
 		$response->SetTemplate('populars.ejs', [
 			'topics' => $topics,
