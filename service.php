@@ -34,9 +34,7 @@ class Service
 
 		$myUser = $this->preparePizarraUser($request->person);
 
-		$pathToService = SERVICE_PATH . $response->service;
-		$images = ["$pathToService/images/img-prev.png"];
-
+		$images = [];
 		if ($request->person->showImages) {
 			foreach ($notes as $note) {
 				if ($note['image']) {
@@ -97,9 +95,7 @@ class Service
 		}
 
 		$myUser = $this->preparePizarraUser($request->person);
-
-		$pathToService = SERVICE_PATH . $response->service;
-		$images[] = "$pathToService/images/img-prev.png";
+		$images = [];
 
 		if ($request->person->showImages) {
 			foreach ($notes as $note) {
@@ -419,7 +415,9 @@ class Service
 
 		// get all the topics from the post
 		preg_match_all('/#\w*/', $text, $topics);
-		$topics = empty($topics[0]) ? [Database::query("SELECT default_topic FROM _pizarra_users WHERE id_person='{$request->person->id}'")[0]->default_topic] : $topics[0];
+		$topics = $topics[0];// get all the topics from the post
+		preg_match_all('/#\w*/', $text, $topics);
+		$topics = $topics[0];
 
 		// cut and escape values
 		foreach ($topics as $i => $iValue) {
@@ -473,7 +471,6 @@ class Service
 
 		// notify users mentioned
 		$mentions = $this->findUsersMentionedOnText($text);
-		$color = $request->person->gender === 'M' ? 'green-text' : ($request->person->gender === 'F' ? 'pink-text' : 'black-text');
 		foreach ($mentions as $m) {
 			$blocks = Chats::isBlocked($request->person->id, $m->id);
 			if ($blocks->blocked > 0) {
@@ -1373,7 +1370,7 @@ class Service
 
 		// filter the ones that exist
 		$return = [];
-		if ($matches[0]) {
+		if (!empty($matches[0])) {
 			// get string of possible matches
 			$usernames = "'" . implode("','", $matches[0]) . "'";
 			$usernames = str_replace('@', '', $usernames);
