@@ -461,12 +461,6 @@ input:not([type]):focus:not([readonly]) + label, input[type=text]:not(.browser-d
     border-bottom: 1px solid #788ba1;
 }
 
-.staff {
-    background: #c8d0ee !important;
-    border-radius: 10px !important;
-    margin-top: 5px !important;
-}
-
 /* Barebones */
 
 /* GLOBAL */
