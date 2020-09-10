@@ -304,7 +304,7 @@ class Service
 		$result = Database::query("
 			SELECT
 				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3, 
-				A.accept_comments, A.staff, A.link_text, A.link_icon, A.link_command, B.reputation, C.avatar, C.avatarColor, 
+				A.accept_comments, A.link_text, A.link_icon, A.link_command, B.reputation, C.avatar, C.avatarColor, 
 				C.username, C.first_name, C.last_name, C.province, C.picture, C.gender, C.country, C.online,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
@@ -847,7 +847,7 @@ class Service
 					  AND _pizarra_actions.action = 'unlike') > 0 AS isunliked
 			FROM (SELECT subq3.* 
 					FROM (SELECT DISTINCT id, id_person 
-						  FROM _pizarra_notes $where AND staff = 0 AND silenced = 0
+						  FROM _pizarra_notes $where AND ad = 0 AND silenced = 0
 						  ORDER BY id DESC LIMIT 500) subq2 
 					INNER JOIN _pizarra_notes subq3 
 					ON subq2.id = subq3.id
@@ -859,9 +859,9 @@ class Service
 			    FROM person P LEFT JOIN $temporaryTableName ON $temporaryTableName.user1 = P.id OR $temporaryTableName.user2 = P.id
 			    WHERE $temporaryTableName.user1 IS NULL AND $temporaryTableName.user2 IS NULL  			    
 			) B ON A.id_person = B.id 
-			JOIN _pizarra_users C ON A.id_person = C.id_person");
+			JOIN _pizarra_users C ON A.id_person = C.id_person LIMIT 40");
 
-		$staffNotes = !$search ? Database::query("
+		$adNotes = !$search ? Database::query("
 			SELECT A.*,
 			(select count(distinct id_person) from _pizarra_comments WHERE _pizarra_comments.note = A.id AND _pizarra_comments.id_person <> A.id_person) as commentsUnique, 
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, 
@@ -872,7 +872,7 @@ class Service
 				0 as isunliked
 			FROM (SELECT subq3.* 
 					FROM (SELECT id, id_person
-						  FROM _pizarra_notes WHERE staff =1 and active = 1
+						  FROM _pizarra_notes WHERE ad=1 and active=1
 						  ORDER BY id DESC LIMIT 500) subq2 
 					INNER JOIN _pizarra_notes subq3 
 					ON subq2.id = subq3.id
@@ -883,7 +883,7 @@ class Service
 			           P.avatar, P.avatarColor
 			    FROM person P 		    
 			) B ON A.id_person = B.id 
-			JOIN _pizarra_users C ON A.id_person = C.id_person") : [];
+			JOIN _pizarra_users C ON A.id_person = C.id_person ORDER BY RAND() LIMIT 1") : [];
 
 		// sort results by weight. Too complex and slow in MySQL
 		usort($listOfNotes, function ($a, $b) {
@@ -895,7 +895,7 @@ class Service
 		// format the array of notes
 		$notes = [];
 		if (is_array($listOfNotes)) {
-			foreach (array_merge($staffNotes, $listOfNotes) as $note) {
+			foreach (array_merge($adNotes, $listOfNotes) as $note) {
 				$notes[] = $this->formatNote($note, $profile->id); // format the array of notes
 				if (count($notes) > 50) {
 					break;
@@ -1151,7 +1151,6 @@ class Service
 			'topics' => $topics,
 			'canmodify' => $note->id_person === $id,
 			'accept_comments' => (int)($note->accept_comments ?? 1) == 1,
-			'staff' => (int)($note->staff ?? 0) == 1,
 			'linkCommand' => $note->link_command ?? false,
 			'linkIcon' => $note->link_icon ?? false,
 			'linkText' => $note->link_text ?? false,

@@ -17,18 +17,17 @@
             <div class="card note" id="<%= note.id %>" liked="<%= note.liked %>"
                  unliked="<%= note.unliked %>">
                 <div class="card-person grey lighten-5">
-                    <% if (!note.staff) { %>
-                        <div class="person-avatar circle left"
-                             face="<%= note.avatar %>" color="<%= note.avatarColor %>"
-                             size="30" online="<%= note.online %>">
-                        </div>
-                    <% } %>
-                    <% if (!note.staff) { %>
-                        <a href="#!" class="<%= note.gender %>"
-                           onclick="apretaste.send({'command': 'PERFIL', 'data': {'username':'@<%= note.username %>'}})">
-                            @<%= note.username %>
-                        </a>
-                    <% } %>
+
+                    <div class="person-avatar circle left"
+                         face="<%= note.avatar %>" color="<%= note.avatarColor %>"
+                         size="30" online="<%= note.online %>">
+                    </div>
+
+                    <a href="#!" class="<%= note.gender %>"
+                       onclick="apretaste.send({'command': 'PERFIL', 'data': {'username':'@<%= note.username %>'}})">
+                        @<%= note.username %>
+                    </a>
+
 
                     <span class="chip tiny clear right">
                         <i class="material-icons icon">perm_contact_calendar</i>
@@ -52,7 +51,7 @@
                 <div class="card-content">
                     <% if(note.image){ %>
                         <% if(showImages){ %>
-                            <img class="responsive-img" style="width: 100%" onclick="openNote('<%= note.id %>');"
+                            <img class="responsive-img materialboxed" style="width: 100%; object-fit: cover;"
                                  src="{{APP_IMAGE_PATH}}/<%= note.image %>">
                         <% } else { %>
                             <img class="responsive-img" style="width: 100%"
@@ -80,23 +79,22 @@
                     </div>
                 </div>
                 <div class="card-action grey lighten-4">
-                    <% if (!note.staff) { %>
-                        <span class="chip like" style="background-color: transparent; padding-left: 0;"
-                        <% if(!note.liked){ %> onclick="like('<%= note.id %>','like');"
-                                <% } %>
-                        >
-                            <i class="material-icons icon">thumb_up</i>
-                            <span><%= note.likes %></span>
-                        </span>
+                    <span class="chip like" style="background-color: transparent; padding-left: 0;"
+                    <% if(!note.liked){ %> onclick="like('<%= note.id %>','like');"
+                            <% } %>
+                    >
+                        <i class="material-icons icon">thumb_up</i>
+                        <span><%= note.likes %></span>
+                    </span>
 
-                        <span class="chip unlike" style="background-color: transparent;"
-                        <% if(!note.unliked){ %> onclick="like('<%= note.id %>','unlike')"
-                                <% } %>
-                        >
-                            <i class="material-icons icon">thumb_down</i>
-                            <span><%= note.unlikes %></span>
-                        </span>
-                    <% } %>
+                    <span class="chip unlike" style="background-color: transparent;"
+                    <% if(!note.unliked){ %> onclick="like('<%= note.id %>','unlike')"
+                            <% } %>
+                    >
+                        <i class="material-icons icon">thumb_down</i>
+                        <span><%= note.unlikes %></span>
+                    </span>
+
                     <span class="chip" style="background-color: transparent;"
                           onclick="apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'<%= note.id %>'}});">
                         <i class="material-icons icon">comment</i>
