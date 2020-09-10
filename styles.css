@@ -868,6 +868,10 @@ ul.chat li {
     margin-bottom: 56px;
 }
 
+.materialboxed .active {
+    object-fit: contain !important;
+}
+
 /*.ad {
     background-color: #e6ee9c;
 }
