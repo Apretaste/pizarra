@@ -35,11 +35,17 @@ class Service
 		$myUser = $this->preparePizarraUser($request->person);
 
 		$images = [];
+
 		if ($request->person->showImages) {
-			foreach ($notes as $note) {
-				if ($note['image']) {
+			for ($i = 0; $i < count($notes); $i++) {
+				if ($notes[$i]['image']) {
 					$pizarraImgDir = SHARED_PUBLIC_PATH . '/content/pizarra';
-					$images[] = "$pizarraImgDir/{$note['image']}";
+					$imgPath = "$pizarraImgDir/{$notes[$i]['image']}";
+
+					$optimized = Images::optimize($imgPath); // This is cached so no worries
+					if (filesize($optimized) > 50000) {
+						array_splice($notes, $i, 1);
+					} else $images[] = $imgPath;
 				}
 			}
 		}
