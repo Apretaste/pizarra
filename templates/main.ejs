@@ -5,9 +5,12 @@
                 <span class="chip tiny"><%= search %></span>
             </div>
         <% } %>
-
-        <% if(notes.length == 0){ %>
-            <p class="middle-center center grey-text">No encontramos ninguna nota para su búsqueda.</p>
+        <% if(notes.length === 0){ %>
+            <% if(typeof search != 'undefined'){ %>
+                <p class="middle-center center grey-text">No encontramos ninguna nota para su búsqueda.</p>
+            <% } else if(title === 'Muro'){ %>
+                <p class="middle-center center grey-text">Acá se mostrarán las notas que publiquen sus amigos.</p>
+            <% } %>
         <% } %>
 
         <% notes.forEach(function(note){ %>
