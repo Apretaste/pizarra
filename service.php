@@ -55,6 +55,7 @@ class Service
 		];
 
 		// create the response
+		$response->setCache(60);
 		$response->setLayout('pizarra.ejs');
 		$response->SetTemplate('main.ejs', $content, $images);
 	}
@@ -119,6 +120,8 @@ class Service
 		];
 
 		// create the response
+		if (!$search) $response->setCache(30);
+		else $response->setCache(60);
 		$response->setLayout('pizarra.ejs');
 		$response->SetTemplate('main.ejs', $content, $images);
 	}
