@@ -558,11 +558,12 @@ class Service
 
 			if (is_array($track)) {
 				$track[$noteId] = $noteId;
+
+                if (count($track) >= 10) {
+                    $track = 10;
+                }
 			}
 
-			if (count($track) >= 10) {
-				$track = 10;
-			}
 			return $track;
 		});
 
