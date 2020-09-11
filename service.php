@@ -559,9 +559,9 @@ class Service
 			if (is_array($track)) {
 				$track[$noteId] = $noteId;
 
-                if (count($track) >= 10) {
-                    $track = 10;
-                }
+				if (count($track) >= 10) {
+					$track = 10;
+				}
 			}
 
 			return $track;
@@ -1126,12 +1126,13 @@ class Service
 		$note->text = str_replace('\"', '"', $note->text);
 		$note->text = str_replace("\'", "'", $note->text);
 
-		$note->text = htmlentities($note->text);
 		$note->text = str_replace("\n", '<br>', $note->text);
 
 		while (json_encode($note->text, JSON_THROW_ON_ERROR, 512) === '') {
 			$note->text = substr($note->text, 0, -2);
 		}
+
+		$note->text = html_entity_decode($note->text);
 
 		// add the text to the array
 		return [
