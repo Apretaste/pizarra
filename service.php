@@ -45,7 +45,9 @@ class Service
 					$optimized = Images::optimize($imgPath); // This is cached so no worries
 					if (filesize($optimized) > 50000) {
 						array_splice($notes, $i, 1);
-					} else $images[] = $imgPath;
+					} else {
+						$images[] = $imgPath;
+					}
 				}
 			}
 		}
@@ -532,7 +534,7 @@ class Service
 		}
 
 		// si la nota no acepta comentario de otros
-		if ((int)$note->accept_comments == 0 && (int)$note->id_person <> (int)$request->person->id) {
+		if ((int) $note->accept_comments == 0 && (int) $note->id_person <> (int) $request->person->id) {
 			return;
 		}
 
@@ -1158,7 +1160,7 @@ class Service
 			'avatarColor' => $note->avatarColor,
 			'topics' => $topics,
 			'canmodify' => $note->id_person === $id,
-			'accept_comments' => (int)($note->accept_comments ?? 1) == 1,
+			'accept_comments' => (int) ($note->accept_comments ?? 1) == 1,
 			'linkCommand' => $note->link_command ?? false,
 			'linkIcon' => $note->link_icon ?? false,
 			'linkText' => $note->link_text ?? false,
@@ -1216,6 +1218,19 @@ class Service
 	public function _publicar(Request $request, Response $response)
 	{
 		$this->_escribir($request, $response);
+
+		$shareCommand = $request->input->data->link->command ?? '';
+		switch ($shareCommand) {
+			case 'CHISTE VER':
+				Challenges::complete('share-joke', $request->person->id);
+				break;
+			case 'NOTICIAS HISTORIA':
+				Challenges::complete('share-news', $request->person->id);
+				break;
+			case 'DONEHAY VER':
+				Challenges::complete('share-dondehay', $request->person->id);
+				break;
+		}
 	}
 
 
