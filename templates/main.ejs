@@ -48,8 +48,8 @@
                         </div>
                     <% } %>
                 </div>
-                <div class="card-content">
-                    <% if(note.image){ %>
+                <% if(note.image){ %>
+                    <div class="card-image">
                         <% if(showImages){ %>
                             <img class="responsive-img materialboxed" style="width: 100%; object-fit: cover;"
                                  src="{{APP_IMAGE_PATH}}/<%= note.image %>">
@@ -58,7 +58,11 @@
                                  src="{{APP_SERVICE_PATH}}/images/img-prev.png"
                                  onclick="openNote('<%= note.id %>');">
                         <% } %>
-                    <% } %>
+                        <!-- <span class="card-title"></span> -->
+                    </div>
+                <% } %>
+                <div class="card-content">
+
                     <p><%- note.text %></p>
 
                     <% if(note.linkText){ %>
