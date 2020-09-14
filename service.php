@@ -1128,7 +1128,7 @@ class Service
         $note->text = strip_tags($note->text);
 		$note->text = str_replace('\"', '"', $note->text);
 		$note->text = str_replace("\'", "'", $note->text);
-		$note->text = str_replace("\n", '<br>', $note->text);
+		$note->text = nl2br($note->text);
 
 		while (json_encode($note->text, JSON_THROW_ON_ERROR, 512) === '') {
 			$note->text = substr($note->text, 0, -2);
