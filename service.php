@@ -399,7 +399,7 @@ class Service
 	 */
 	public function _escribir(Request $request, Response $response): void
 	{
-		$text = $request->input->data->text; // strip_tags
+		$text = strip_tags($request->input->data->text); // strip_tags
 		$image = $request->input->data->image ?? false;
 		$fileName = '';
 
@@ -1125,9 +1125,9 @@ class Service
 		$country = empty(trim($note->country)) ? 'cu' : strtolower($note->country);
 
 		// remove \" and \' from the note
+        $note->text = strip_tags($note->text);
 		$note->text = str_replace('\"', '"', $note->text);
 		$note->text = str_replace("\'", "'", $note->text);
-
 		$note->text = str_replace("\n", '<br>', $note->text);
 
 		while (json_encode($note->text, JSON_THROW_ON_ERROR, 512) === '') {
