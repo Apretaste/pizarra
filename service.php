@@ -409,9 +409,7 @@ class Service
 			$fileName = Utils::randomHash();
 			$filePath = "$pizarraImgDir/$fileName.jpg";
 
-			// save the optimized image on the user folder
-			file_put_contents($filePath, base64_decode($image));
-			Images::optimize($filePath);
+			Images::saveBase64Image($image, $filePath);
 		}
 
 		// only post notes with real content
@@ -534,7 +532,7 @@ class Service
 		}
 
 		// si la nota no acepta comentario de otros
-		if ((int) $note->accept_comments == 0 && (int) $note->id_person <> (int) $request->person->id) {
+		if ((int)$note->accept_comments == 0 && (int)$note->id_person <> (int)$request->person->id) {
 			return;
 		}
 
@@ -1125,7 +1123,7 @@ class Service
 		$country = empty(trim($note->country)) ? 'cu' : strtolower($note->country);
 
 		// remove \" and \' from the note
-        $note->text = strip_tags($note->text);
+		$note->text = strip_tags($note->text);
 		$note->text = str_replace('\"', '"', $note->text);
 		$note->text = str_replace("\'", "'", $note->text);
 		$note->text = nl2br($note->text);
@@ -1160,7 +1158,7 @@ class Service
 			'avatarColor' => $note->avatarColor,
 			'topics' => $topics,
 			'canmodify' => $note->id_person === $id,
-			'accept_comments' => (int) ($note->accept_comments ?? 1) == 1,
+			'accept_comments' => (int)($note->accept_comments ?? 1) == 1,
 			'linkCommand' => $note->link_command ?? false,
 			'linkIcon' => $note->link_icon ?? false,
 			'linkText' => $note->link_text ?? false,
