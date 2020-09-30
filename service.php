@@ -413,7 +413,7 @@ class Service
 		}
 
 		// only post notes with real content
-		$minLength = isset($request->input->data->link->command) ? 5 : 20;
+		$minLength = isset($request->input->data->link->command) ? 0 : 20;
 
 		if (strlen($text) < $minLength) {
 			return;
@@ -1218,6 +1218,7 @@ class Service
 		$this->_escribir($request, $response);
 
 		$shareCommand = $request->input->data->link->command ?? '';
+
 		switch ($shareCommand) {
 			case 'CHISTE VER':
 				Challenges::complete('share-joke', $request->person->id);
