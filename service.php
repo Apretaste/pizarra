@@ -1236,7 +1236,7 @@ class Service
 	// Ranking
 	private function getLastSeed()
 	{
-		$seed = Database::queryFirst('select seed from ranking order by to_date desc limit 1');
+		$seed = Database::queryFirst('select max(seed) as seed from ranking');
 		return $seed->seed ?? null;
 	}
 
