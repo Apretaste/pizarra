@@ -633,27 +633,30 @@ class Service
 			AND topic <> 'general'
 			GROUP BY topic ORDER BY cnt DESC LIMIT 50");
 
-		// get params for the algorithm
-		$maxLetterSize = 10;
-		$minLetterSize = 1;
-		$maxTopicMentions = $ts[0]->cnt;
-		$minTopicMentions = $ts[count($ts) - 1]->cnt;
-		$rate = ($maxTopicMentions - $minTopicMentions) / ($maxLetterSize - $minLetterSize);
-		if ($rate === 0) {
-			$rate = 1;
-		} // avoid divisions by zero
-
-		// get topics letter size and color
 		$topics = [];
-		foreach ($ts as $t) {
-			$topic = new stdClass();
-			$topic->name = $t->name;
-			$topic->size = ceil(($t->cnt - $minTopicMentions) / $rate);
-			$topics[] = $topic;
-		}
 
-		// set topics in random order
-		shuffle($topics);
+		if (isset($ts[0])) {
+			// get params for the algorithm
+			$maxLetterSize = 10;
+			$minLetterSize = 1;
+			$maxTopicMentions = $ts[0]->cnt;
+			$minTopicMentions = $ts[count($ts) - 1]->cnt;
+			$rate = ($maxTopicMentions - $minTopicMentions) / ($maxLetterSize - $minLetterSize);
+			if ($rate === 0) {
+				$rate = 1;
+			} // avoid divisions by zero
+
+			// get topics letter size and color
+			foreach ($ts as $t) {
+				$topic = new stdClass();
+				$topic->name = $t->name;
+				$topic->size = ceil(($t->cnt - $minTopicMentions) / $rate);
+				$topics[] = $topic;
+			}
+
+			// set topics in random order
+			shuffle($topics);
+		}
 
 		// get the list of most popular users
 		$populars = $this->getPopulars();
