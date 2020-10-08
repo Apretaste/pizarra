@@ -1043,7 +1043,7 @@ class Service
 			ORDER BY A.ad DESC, inserted DESC
 			LIMIT 20 OFFSET $offset");*/
 		$listOfNotes = Database::query("
-			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, A.likes as isliked 
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, B.online, A.likes as isliked 
 			-- , (SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$person->id}' AND `action` = 'like') > 0 AS isliked,
 			-- (SELECT COUNT(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) AS comments
 			FROM _pizarra_notes A
@@ -1262,7 +1262,7 @@ class Service
 	{
 		$seed = $this->getLastSeed();
 		$concept = 'POPULARITY';
-		$sql = "select id_person, person.username, person.avatar, person.avatarColor, ranking.experience, from_date, to_date, position, person.gender 
+		$sql = "select id_person, person.username, person.avatar, person.avatarColor, person.online, ranking.experience, from_date, to_date, position, person.gender 
                 from ranking inner join person on person.id =ranking.id_person 
                 where seed = '$seed' and concept = '$concept'
                 order by position LIMIT 9;";

@@ -749,7 +749,7 @@ ul.chat li {
     float: none;
 }
 
-.chat .left .person-avatar {
+.chat .left .person-avatar, .chat .right .reply-button {
     position: relative;
     top: 25px;
     left: -35px;
@@ -764,12 +764,23 @@ ul.chat li {
     float: right;
 }
 
-.chat .right .person-avatar {
+.chat .right .person-avatar, .chat .left .reply-button {
     position: relative;
     top: 25px;
     right: -35px;
     margin-top: -30px;
     float: right;
+}
+
+.reply-button {
+    background-color: rgb(154, 219, 5);
+    width: 30px;
+    height: 30px;
+    border-radius: 100%;
+}
+
+#comments .right .chip{
+    color: white;
 }
 
 .chat .date {

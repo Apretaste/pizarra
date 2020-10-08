@@ -76,7 +76,7 @@
 
                     <div class="tags">
                         <% note.topics.forEach(function(topic){ %>
-                            <div class="chip small">
+                            <div class="chip small" onclick="searchTopic('<%= topic %>')">
                                 <i class="fa fa-hashtag"></i> <%= topic %>
                             </div>
                         <% }) %>
