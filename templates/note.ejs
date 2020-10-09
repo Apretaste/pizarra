@@ -36,7 +36,7 @@
 
                 <div class="tags">
                     <% note.topics.forEach(function(topic){ %>
-                        <div class="chip small">
+                        <div class="chip small" onclick="searchTopic('<%= topic %>')">
                             <i class="fa fa-hashtag"></i> <%= topic %>
                         </div>
                     <% }) %>
@@ -66,7 +66,7 @@
 
                 <% if(note.id_person != myUser.id){ %>
                     <span class="chip" onclick="openReportModal()" style="background-color: transparent;">
-                        <i class="material-icons icon">flag</i>&nbsp;
+                        <i class="material-icons icon">cancel</i>&nbsp;
                     </span>
                 <% } %>
             </div>
@@ -82,7 +82,29 @@
                            class="<%= comment.gender %>">@<%= comment.username %></a>
                         <span class="date"><%= moment(comment.inserted).format('MMM D, YYYY h:mm A') %></span>
                     </div>
-                    <span class="text"><%- comment.text %></span>
+                    <span class="text" style="word-break: break-all;"><%- comment.text %></span>
+                    <br>
+                    <% if(comment.username != myUser.username){ %>
+                        <div class="reply-button center-align" onclick="replyUser('<%= comment.username %>')">
+                            <i class="material-icons white-text">reply</i>
+                        </div>
+                    <% } %>
+
+                    <span class="chip like" style="background-color: transparent; padding-left: 0;"
+                    <% if(!comment.liked){ %> onclick="like('<%= comment.id %>','like', 'comment');"
+                            <% } %>
+                    >
+                            <i class="material-icons icon">thumb_up</i>
+                            <span><%= comment.likes %></span>
+                        </span>
+
+                    <span class="chip unlike" style="background-color: transparent;"
+                    <% if(!comment.unliked){ %> onclick="like('<%= comment.id %>','unlike', 'comment')"
+                            <% } %>
+                    >
+                            <i class="material-icons icon">thumb_down</i>
+                            <span><%= comment.unlikes %></span>
+                        </span>
                 </li>
             <% }) %>
         </ul>
@@ -102,6 +124,18 @@
 
     <div id="newCommentModal" class="modal bottom-sheet">
         <div class="modal-content">
+            <div class="tags" style="margin-bottom: 10px">
+                <% var uniqueUsernames = [myUser.username]; %>
+                <% note.comments.forEach(function(comment) { %>
+                    <% if(uniqueUsernames.indexOf(comment.username) === -1){ %>
+                        <% uniqueUsernames.push(comment.username) %>
+                        <span class="chip tiny" onclick="replyUser('<%= comment.username %>')">
+                        @<%= comment.username %>
+                    </span>
+                    <% } %>
+                <% }) %>
+            </div>
+
             <div class="input-field">
                 <textarea id="comment" class="materialize-textarea" oninput="commentLengthValidate()"></textarea>
                 <label for="comment">Escriba su comentario</label>
@@ -125,7 +159,7 @@
     <div class="modal-content">
         <div class="input-field">
             <textarea id="reportMessage" class="materialize-textarea" oninput="reportLengthValidate()"></textarea>
-            <label for="reportMessage">Explique la razón del reporte</label>
+            <label for="reportMessage">¿Crees que deberíamos revisar esta nota? Díganos por qué.</label>
             <span class="helper-text">0/250</span>
         </div>
     </div>

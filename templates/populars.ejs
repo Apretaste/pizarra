@@ -1,13 +1,13 @@
 <div class="row" style="margin-top: 0.25rem">
     <div class="col s12" id="popular-users">
         <% populars.ranking.forEach(function (popular) { %>
-            <div class="col s4 m2"
+            <div class="col s4 m3"
                  onclick="apretaste.send({'command':'PERFIL', 'data': {'username':'@<%= popular.username %>'}});">
                 <div class="card user-card center-align">
                     <div class="content">
                         <div class="person-avatar circle" face="<%= popular.avatar %>"
                              color="<%= popular.avatarColor %>"
-                             size="40" online="1">
+                             size="40" online="<%= popular.online %>">
                         </div>
                         <span class="<%= popular.gender %>">@<%= popular.username %></span>
                     </div>
@@ -28,4 +28,14 @@
             <% }) %>
         </div>
     </div>
+
+    <div class="col s12 center-align">
+        <p class="grey-text">
+            Lee los
+            <span onclick="apretaste.send({command: 'terminos pizarra'})" style="text-decoration: underline">
+                términos de servicio
+            </span> de la Pizarra
+        </p>
+    </div>
+
 </div>

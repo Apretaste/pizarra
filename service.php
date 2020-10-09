@@ -1262,7 +1262,7 @@ class Service
 	{
 		$seed = $this->getLastSeed();
 		$concept = 'POPULARITY';
-		$sql = "select id_person, person.username, person.avatar, person.avatarColor, ranking.experience, from_date, to_date, position, person.gender 
+		$sql = "select id_person, person.username, person.avatar, person.avatarColor, person.online, ranking.experience, from_date, to_date, position, person.gender 
                 from ranking inner join person on person.id =ranking.id_person 
                 where seed = '$seed' and concept = '$concept'
                 order by position LIMIT 9;";
