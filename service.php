@@ -1043,8 +1043,8 @@ class Service
 			ORDER BY A.ad DESC, inserted DESC
 			LIMIT 20 OFFSET $offset");*/
 		$listOfNotes = Database::query("
-			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, A.likes as isliked 
-			-- , (SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$person->id}' AND `action` = 'like') > 0 AS isliked,
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor,         
+			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$person->id}' AND `action` = 'like') > 0 AS isliked
 			-- (SELECT COUNT(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) AS comments
 			FROM _pizarra_notes A
 			LEFT JOIN person B
