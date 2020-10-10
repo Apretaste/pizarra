@@ -749,7 +749,7 @@ ul.chat li {
     float: none;
 }
 
-.chat .left .person-avatar, .chat .right .reply-button {
+.chat .left .person-avatar {
     position: relative;
     top: 25px;
     left: -35px;
@@ -764,7 +764,7 @@ ul.chat li {
     float: right;
 }
 
-.chat .right .person-avatar, .chat .left .reply-button {
+.chat .right .person-avatar{
     position: relative;
     top: 25px;
     right: -35px;
@@ -772,15 +772,28 @@ ul.chat li {
     float: right;
 }
 
-.reply-button {
-    background-color: rgb(154, 219, 5);
-    width: 30px;
-    height: 30px;
-    border-radius: 100%;
+.chat .actions {
+    margin-bottom: -5px;
 }
 
-#comments .right .chip{
-    color: white;
+.chat .actions .chip {
+    margin-right: 30px;
+}
+
+.chat .left .actions .chip {
+    color: #546e7a;
+}
+
+.chat .right .actions .chip {
+    color: #eceff1;
+}
+
+.flag {
+    width: 20px !important;
+    height: 16px !important;
+    float: none !important;
+    margin: 2px 0 0 0 !important;
+    border-radius: 0 !important;
 }
 
 .chat .date {

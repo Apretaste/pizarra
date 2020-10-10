@@ -28,10 +28,20 @@
                         @<%= note.username %>
                     </a>
 
-
                     <span class="chip tiny clear right">
                         <i class="material-icons icon">perm_contact_calendar</i>
                         <%= moment(note.inserted).format('MMM D, h:mm A') %>
+                    </span>
+
+                    <span class="chip tiny clear right" style="margin-right: 4px;">
+                        <% if (note.country === 'cu' && note.province != null){ %>
+
+                            <i class="fas fa-map-marker-alt icon"></i>
+                            <%= note.province %>
+
+                        <% } else { %>
+                            <img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= note.country %>.png"/>
+                        <% } %>
                     </span>
 
                     <% if(note.ad === '1'){ %>
@@ -125,6 +135,18 @@
     <div class="row">
         <i class="material-icons small green-text" onclick="toggleWriteModal()">close</i>
         <div class="col s12">
+            <div class="tags" style="margin: 10px 0">
+                <% myPopularTopics.forEach(function(topic) { %>
+                    <span class="chip tiny" onclick="appendTag('<%= topic.name %>')">
+                        #<%= topic.name %>
+                    </span>
+                <% }) %>
+                <% popularTopics.forEach(function(topic) { %>
+                    <span class="chip tiny" onclick="appendTag('<%= topic.name %>')">
+                        #<%= topic.name %>
+                    </span>
+                <% }) %>
+            </div>
             <textarea id="note" class="materialize-textarea" maxlength="600" placeholder="¿En qué piensas?"></textarea>
         </div>
 

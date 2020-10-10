@@ -84,27 +84,30 @@
                     </div>
                     <span class="text" style="word-break: break-all;"><%- comment.text %></span>
                     <br>
-                    <% if(comment.username != myUser.username){ %>
-                        <div class="reply-button center-align" onclick="replyUser('<%= comment.username %>')">
-                            <i class="material-icons white-text">reply</i>
-                        </div>
-                    <% } %>
 
-                    <span class="chip like" style="background-color: transparent; padding-left: 0;"
-                    <% if(!comment.liked){ %> onclick="like('<%= comment.id %>','like', 'comment');"
-                            <% } %>
-                    >
-                            <i class="material-icons icon">thumb_up</i>
+                    <div class="actions">
+                        <span class="chip clear like"
+                        <% if(!comment.liked){ %> onclick="like('<%= comment.id %>','like', 'comment');"
+                                <% } %>
+                        >
+                            <i class="fas fa-thumbs-up"></i>
                             <span><%= comment.likes %></span>
                         </span>
 
-                    <span class="chip unlike" style="background-color: transparent;"
-                    <% if(!comment.unliked){ %> onclick="like('<%= comment.id %>','unlike', 'comment')"
-                            <% } %>
-                    >
-                            <i class="material-icons icon">thumb_down</i>
+                        <span class="chip clear unlike"
+                        <% if(!comment.unliked){ %> onclick="like('<%= comment.id %>','unlike', 'comment')"
+                                <% } %>
+                        >
+                            <i class="fas fa-thumbs-down"></i>
                             <span><%= comment.unlikes %></span>
                         </span>
+
+                        <% if(comment.username != myUser.username){ %>
+                            <span class="chip clear" onclick="replyUser('<%= comment.username %>')">
+                                <i class="fas fa-reply"></i>
+                            </span>
+                        <% } %>
+                    </div>
                 </li>
             <% }) %>
         </ul>

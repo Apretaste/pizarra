@@ -52,12 +52,23 @@ class Service
 			}
 		}
 
+		$popularTopics = $this->getPopularTopics();
+		array_splice($popularTopics, 0, 4);
+
+		$myPopularTopics = Database::query("
+			SELECT topic AS name, COUNT(id) AS cnt FROM _pizarra_topics
+			WHERE created > DATE_ADD(NOW(), INTERVAL -30 DAY)
+			AND topic <> 'general' AND id_person='{$request->person->id}'
+			GROUP BY topic ORDER BY cnt DESC LIMIT 4");
+
 		// create variables for the template
 		$content = [
 			'notes' => $notes,
 			'myUser' => $myUser,
 			'title' => 'Muro',
-			'showImages' => $request->person->showImages
+			'showImages' => $request->person->showImages,
+			'popularTopics' => $popularTopics,
+			'myPopularTopics' => $myPopularTopics,
 		];
 
 		// create the response
@@ -627,27 +638,23 @@ class Service
 	public function _populares(Request $request, Response $response): void
 	{
 		// get list of topics
-		$ts = Database::query("
-			SELECT topic AS name, COUNT(id) AS cnt FROM _pizarra_topics
-			WHERE created > DATE_ADD(NOW(), INTERVAL -30 DAY)
-			AND topic <> 'general'
-			GROUP BY topic ORDER BY cnt DESC LIMIT 50");
+		$popularTopics = $this->getPopularTopics();
 
 		$topics = [];
 
-		if (isset($ts[0])) {
+		if (isset($popularTopics[0])) {
 			// get params for the algorithm
 			$maxLetterSize = 10;
 			$minLetterSize = 1;
-			$maxTopicMentions = $ts[0]->cnt;
-			$minTopicMentions = $ts[count($ts) - 1]->cnt;
+			$maxTopicMentions = $popularTopics[0]->cnt;
+			$minTopicMentions = $popularTopics[count($popularTopics) - 1]->cnt;
 			$rate = ($maxTopicMentions - $minTopicMentions) / ($maxLetterSize - $minLetterSize);
 			if ($rate === 0) {
 				$rate = 1;
 			} // avoid divisions by zero
 
 			// get topics letter size and color
-			foreach ($ts as $t) {
+			foreach ($popularTopics as $t) {
 				$topic = new stdClass();
 				$topic->name = $t->name;
 				$topic->size = ceil(($t->cnt - $minTopicMentions) / $rate);
@@ -1027,21 +1034,21 @@ class Service
 	private function getNotesByFriends(Person $person, $offset = 0)
 	{
 		// get the last 50 records from the db
-	/*	$listOfNotes = Database::query("
-			SELECT DISTINCTROW A.*, B.username, B.first_name, B.last_name, B.province, 
-							   B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, likes as isliked
-			FROM (_pizarra_notes A
-				INNER JOIN person B ON A.id_person = B.id
-				INNER JOIN _pizarra_users C ON C.id_person = B.id)
-					 LEFT JOIN person_relation_friend D
-							   ON ((D.user1 = A.id_person AND D.user2 = {$person->id}) 
-									   OR (D.user2 = A.id_person AND D.user1 = {$person->id}))
-			WHERE A.active = 1
-				AND B.id = {$person->id} -- es una nota del usuario
-			   OR (D.user1 = {$person->id} AND D.user2 is not null) -- es una nota de un amigo
-			   OR (D.user2 = {$person->id} AND D.user1 is not null) -- es una nota de otro amigo
-			ORDER BY A.ad DESC, inserted DESC
-			LIMIT 20 OFFSET $offset");*/
+		/*	$listOfNotes = Database::query("
+				SELECT DISTINCTROW A.*, B.username, B.first_name, B.last_name, B.province,
+								   B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, likes as isliked
+				FROM (_pizarra_notes A
+					INNER JOIN person B ON A.id_person = B.id
+					INNER JOIN _pizarra_users C ON C.id_person = B.id)
+						 LEFT JOIN person_relation_friend D
+								   ON ((D.user1 = A.id_person AND D.user2 = {$person->id})
+										   OR (D.user2 = A.id_person AND D.user1 = {$person->id}))
+				WHERE A.active = 1
+					AND B.id = {$person->id} -- es una nota del usuario
+				   OR (D.user1 = {$person->id} AND D.user2 is not null) -- es una nota de un amigo
+				   OR (D.user2 = {$person->id} AND D.user1 is not null) -- es una nota de otro amigo
+				ORDER BY A.ad DESC, inserted DESC
+				LIMIT 20 OFFSET $offset");*/
 		$listOfNotes = Database::query("
 			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, B.online, A.likes as isliked 
 			-- , (SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$person->id}' AND `action` = 'like') > 0 AS isliked,
@@ -1139,6 +1146,7 @@ class Service
 
 		// get the country and flag
 		$country = empty(trim($note->country)) ? 'cu' : strtolower($note->country);
+		$province = !empty($note->province) ? \Framework\Core::$provincesShort[$note->province] : null;
 
 		// remove \" and \' from the note
 		$note->text = strip_tags($note->text);
@@ -1172,6 +1180,7 @@ class Service
 			'silenced' => $note->silenced ?? false,
 			'online' => $note->online ?? false,
 			'country' => $country,
+			'province' => $province,
 			'avatar' => $avatar,
 			'avatarColor' => $note->avatarColor,
 			'topics' => $topics,
@@ -1283,5 +1292,14 @@ class Service
 			'from_date' => $ranking[0]->from_date ?? '',
 			'to_date' => $ranking[0]->to_date ?? ''
 		];
+	}
+
+	private function getPopularTopics()
+	{
+		return Database::queryCache("
+			SELECT topic AS name, COUNT(id) AS cnt FROM _pizarra_topics
+			WHERE created > DATE_ADD(NOW(), INTERVAL -30 DAY)
+			AND topic <> 'general'
+			GROUP BY topic ORDER BY cnt DESC LIMIT 50");
 	}
 }

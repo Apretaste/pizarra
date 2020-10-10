@@ -145,10 +145,20 @@ function replyUser(user) {
 	var comment = $('#comment');
 	var currentComment = comment.val();
 
-	if (currentComment.length == 0) comment.val('@' + user);
+	if (currentComment.length === 0) comment.val('@' + user);
 	else comment.val(currentComment + ' @' + user);
 	M.Modal.getInstance($('#newCommentModal')).open();
 	comment.focus();
+}
+
+function appendTag(tag) {
+	var content = $('#note');
+	var currentContent = content.val();
+
+	if (currentContent.length === 0) content.val('#' + tag);
+	else content.val(currentContent + ' #' + tag);
+
+	content.focus();
 }
 
 function searchChat() {
@@ -206,6 +216,7 @@ function sendComment() {
 
 function openReportModal() {
 	M.Modal.getInstance($('#reportModal')).open();
+	$('#reportMessage').focus();
 }
 
 function reportNote() {
