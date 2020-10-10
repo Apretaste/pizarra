@@ -44,7 +44,7 @@
             </div>
             <div class="card-action grey lighten-4">
                 <span class="chip like" style="background-color: transparent; padding-left: 0;"
-                <% if(!note.liked){ %> onclick="like('<%= note.id %>','like');"
+                <% if(!note.liked){ %> onclick="like('<%= note.id %>','like', 'note');"
                         <% } %>
                 >
                     <i class="material-icons icon">thumb_up</i>
@@ -52,7 +52,7 @@
                 </span>
 
                 <span class="chip unlike" style="background-color: transparent;"
-                <% if(!note.unliked){ %> onclick="like('<%= note.id %>','unlike')"
+                <% if(!note.unliked){ %> onclick="like('<%= note.id %>','unlike', 'note')"
                         <% } %>
                 >
                     <i class="material-icons icon">thumb_down</i>
