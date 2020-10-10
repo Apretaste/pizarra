@@ -1,5 +1,3 @@
-"use strict";
-
 var selectedColor;
 var occupation = {
 	'AMA_DE_CASA': 'Ama de casa',
