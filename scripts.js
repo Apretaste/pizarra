@@ -891,121 +891,6 @@ function setMessagesEventListener() {
 	}).on("mouseup", function (event) {
 		clearTimeout(timer);
 	});
-} // Polyfill
-
-function _typeof(obj) {
-	if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-		_typeof = function _typeof(obj) {
-			return typeof obj;
-		};
-	} else {
-		_typeof = function _typeof(obj) {
-			return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-		};
-	}
-	return _typeof(obj);
-}
-
-if (!Object.keys) {
-	Object.keys = function () {
-		'use strict';
-
-		var hasOwnProperty = Object.prototype.hasOwnProperty,
-			hasDontEnumBug = !{
-				toString: null
-			}.propertyIsEnumerable('toString'),
-			dontEnums = ['toString', 'toLocaleString', 'valueOf', 'hasOwnProperty', 'isPrototypeOf', 'propertyIsEnumerable', 'constructor'],
-			dontEnumsLength = dontEnums.length;
-		return function (obj) {
-			if (_typeof(obj) !== 'object' && (typeof obj !== 'function' || obj === null)) {
-				throw new TypeError('Object.keys called on non-object');
-			}
-
-			var result = [],
-				prop,
-				i;
-
-			for (prop in obj) {
-				if (hasOwnProperty.call(obj, prop)) {
-					result.push(prop);
-				}
-			}
-
-			if (hasDontEnumBug) {
-				for (i = 0; i < dontEnumsLength; i++) {
-					if (hasOwnProperty.call(obj, dontEnums[i])) {
-						result.push(dontEnums[i]);
-					}
-				}
-			}
-
-			return result;
-		};
-	}();
-}
-
-if (!String.prototype.includes) {
-	(function () {
-		'use strict'; // needed to support `apply`/`call` with `undefined`/`null`
-
-		var toString = {}.toString;
-
-		var defineProperty = function () {
-			// IE 8 only supports `Object.defineProperty` on DOM elements
-			try {
-				var object = {};
-				var $defineProperty = Object.defineProperty;
-				var result = $defineProperty(object, object, object) && $defineProperty;
-			} catch (error) {
-			}
-
-			return result;
-		}();
-
-		var indexOf = ''.indexOf;
-
-		var includes = function includes(search) {
-			if (this == null) {
-				throw TypeError();
-			}
-
-			var string = String(this);
-
-			if (search && toString.call(search) == '[object RegExp]') {
-				throw TypeError();
-			}
-
-			var stringLength = string.length;
-			var searchString = String(search);
-			var searchLength = searchString.length;
-			var position = arguments.length > 1 ? arguments[1] : undefined; // `ToInteger`
-
-			var pos = position ? Number(position) : 0;
-
-			if (pos != pos) {
-				// better `isNaN`
-				pos = 0;
-			}
-
-			var start = Math.min(Math.max(pos, 0), stringLength); // Avoid the `indexOf` call if no match is possible
-
-			if (searchLength + start > stringLength) {
-				return false;
-			}
-
-			return indexOf.call(string, searchString, pos) != -1;
-		};
-
-		if (defineProperty) {
-			defineProperty(String.prototype, 'includes', {
-				'value': includes,
-				'configurable': true,
-				'writable': true
-			});
-		} else {
-			String.prototype.includes = includes;
-		}
-	})();
 }
 
 String.prototype.escapeHTML = function () {
@@ -1039,8 +924,7 @@ Date.prototype.nowFormated = function () {
 	if (h > 12) {
 		h -= 12;
 	}
-
-	;
+	
 	var ap = pm ? "pm" : "am";
 	format = format.replace(/\{ap\}/g, ap);
 	var hh = h;
