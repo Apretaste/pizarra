@@ -1034,31 +1034,17 @@ class Service
 	private function getNotesByFriends(Person $person, $offset = 0)
 	{
 		// get the last 50 records from the db
-		/*	$listOfNotes = Database::query("
-				SELECT DISTINCTROW A.*, B.username, B.first_name, B.last_name, B.province,
-								   B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, likes as isliked
-				FROM (_pizarra_notes A
-					INNER JOIN person B ON A.id_person = B.id
-					INNER JOIN _pizarra_users C ON C.id_person = B.id)
-						 LEFT JOIN person_relation_friend D
-								   ON ((D.user1 = A.id_person AND D.user2 = {$person->id})
-										   OR (D.user2 = A.id_person AND D.user1 = {$person->id}))
-				WHERE A.active = 1
-					AND B.id = {$person->id} -- es una nota del usuario
-				   OR (D.user1 = {$person->id} AND D.user2 is not null) -- es una nota de un amigo
-				   OR (D.user2 = {$person->id} AND D.user1 is not null) -- es una nota de otro amigo
-				ORDER BY A.ad DESC, inserted DESC
-				LIMIT 20 OFFSET $offset");*/
 		$listOfNotes = Database::query("
-			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, B.online, A.likes as isliked 
-			-- , (SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$person->id}' AND `action` = 'like') > 0 AS isliked,
-			-- (SELECT COUNT(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) AS comments
-			FROM _pizarra_notes A
-			LEFT JOIN person B
-			ON A.id_person = B.id
-			LEFT JOIN _pizarra_users C
-			ON C.id_person = B.id
-			WHERE A.active=1 AND (B.id IN(SELECT user2 as id FROM person_relation_friend WHERE user1 = {$person->id} UNION SELECT user1 as id FROM person_relation_friend WHERE user2 = {$person->id}) OR B.id={$person->id})
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor,         
+				EXISTS(SELECT id FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$person->id}' AND `action` = 'like') AS isliked
+			FROM _pizarra_notes A 
+			    INNER JOIN person B ON A.id_person = B.id
+				INNER JOIN _pizarra_users C	ON C.id_person = B.id
+			WHERE A.active = 1 
+				AND (B.id IN(SELECT IF(user1 = {$person->id}, user2, user1) AS id 
+								FROM person_relation_friend 
+								WHERE user1 = {$person->id} OR user2 = {$person->id}) 
+				OR B.id = {$person->id})
 			ORDER BY A.ad DESC, inserted DESC
 			LIMIT 20 OFFSET $offset");
 
