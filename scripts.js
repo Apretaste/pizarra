@@ -907,35 +907,3 @@ String.prototype.escapeHTML = function () {
 		return htmlEscapes[match];
 	});
 };
-
-Date.prototype.nowFormated = function () {
-	var now = new Date(); // This current millisecond on user's computer.
-
-	var format = "{D}/{M}/{Y} · {h}:{m}{ap}";
-	var Month = now.getMonth() + 1;
-	format = format.replace(/\{M\}/g, Month);
-	var Mday = now.getDate();
-	format = format.replace(/\{D\}/g, Mday);
-	var Year = now.getFullYear().toString().slice(2);
-	format = format.replace(/\{Y\}/g, Year);
-	var h = now.getHours();
-	var pm = h > 11;
-
-	if (h > 12) {
-		h -= 12;
-	}
-	
-	var ap = pm ? "pm" : "am";
-	format = format.replace(/\{ap\}/g, ap);
-	var hh = h;
-	format = format.replace(/\{h\}/g, hh);
-	var mm = now.getMinutes();
-
-	if (mm < 10) {
-		mm = "0" + mm;
-	}
-
-	format = format.replace(/\{m\}/g, mm);
-	return format;
-};
-
