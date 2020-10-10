@@ -125,13 +125,24 @@ class Service
 			}
 		}
 
+		$popularTopics = $this->getPopularTopics();
+		array_splice($popularTopics, 0, 4);
+
+		$myPopularTopics = Database::query("
+			SELECT topic AS name, COUNT(id) AS cnt FROM _pizarra_topics
+			WHERE created > DATE_ADD(NOW(), INTERVAL -30 DAY)
+			AND topic <> 'general' AND id_person='{$request->person->id}'
+			GROUP BY topic ORDER BY cnt DESC LIMIT 4");
+
 		// create variables for the template
 		$content = [
 			'notes' => $notes,
 			'myUser' => $myUser,
 			'title' => 'Global',
 			'search' => $keyword,
-			'showImages' => $request->person->showImages
+			'showImages' => $request->person->showImages,
+			'popularTopics' => $popularTopics,
+			'myPopularTopics' => $myPopularTopics,
 		];
 
 		// create the response
