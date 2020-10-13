@@ -127,6 +127,11 @@
 
     <div id="newCommentModal" class="modal bottom-sheet">
         <div class="modal-content">
+            <div class="input-field">
+                <textarea id="comment" class="materialize-textarea" oninput="remainder()"></textarea>
+                <label for="comment">Escriba su comentario (<span id="remainder">0</span>/250)</label>
+            </div>
+
             <div class="tags" style="margin-bottom: 10px">
                 <% var uniqueUsernames = [myUser.username]; %>
                 <% note.comments.forEach(function(comment) { %>
@@ -137,11 +142,6 @@
                     </span>
                     <% } %>
                 <% }) %>
-            </div>
-
-            <div class="input-field">
-                <textarea id="comment" class="materialize-textarea" oninput="remainder()"></textarea>
-                <label for="comment">Escriba su comentario (<span id="remainder">0</span>/250)</label>
             </div>
         </div>
         <div class="modal-footer">

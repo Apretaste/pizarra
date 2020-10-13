@@ -135,6 +135,8 @@
     <div class="row">
         <i class="material-icons small green-text" onclick="toggleWriteModal()">close</i>
         <div class="col s12">
+            <textarea id="note" class="materialize-textarea" maxlength="600" placeholder="¿En qué piensas?"></textarea>
+
             <div class="input-tags">
                 <p class="blue-grey-text">Escoja sus temas</p>
                 <% myPopularTopics.forEach(function(topic) { %>
@@ -148,11 +150,6 @@
                     </span>
                 <% }) %>
             </div>
-
-            <div class="tags" style="margin: 10px 0">
-
-            </div>
-            <textarea id="note" class="materialize-textarea" maxlength="600" placeholder="¿En qué piensas?"></textarea>
         </div>
 
         <div class="actions">
