@@ -140,9 +140,8 @@
             </div>
 
             <div class="input-field">
-                <textarea id="comment" class="materialize-textarea" oninput="commentLengthValidate()"></textarea>
-                <label for="comment">Escriba su comentario</label>
-                <span class="helper-text">0/250</span>
+                <textarea id="comment" class="materialize-textarea" oninput="remainder()"></textarea>
+                <label for="comment">Escriba su comentario (<span id="remainder">0</span>/250)</label>
             </div>
         </div>
         <div class="modal-footer">

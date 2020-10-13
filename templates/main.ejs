@@ -135,17 +135,22 @@
     <div class="row">
         <i class="material-icons small green-text" onclick="toggleWriteModal()">close</i>
         <div class="col s12">
-            <div class="tags" style="margin: 10px 0">
+            <div class="input-tags">
+                <p class="blue-grey-text">Escoja sus temas</p>
                 <% myPopularTopics.forEach(function(topic) { %>
                     <span class="chip tiny" onclick="appendTag('<%= topic.name %>')">
-                        #<%= topic.name %>
+                        <i class="fas fa-hashtag"></i> <%= topic.name %>
                     </span>
                 <% }) %>
                 <% popularTopics.forEach(function(topic) { %>
                     <span class="chip tiny" onclick="appendTag('<%= topic.name %>')">
-                        #<%= topic.name %>
+                        <i class="fas fa-hashtag"></i> <%= topic.name %>
                     </span>
                 <% }) %>
+            </div>
+
+            <div class="tags" style="margin: 10px 0">
+
             </div>
             <textarea id="note" class="materialize-textarea" maxlength="600" placeholder="¿En qué piensas?"></textarea>
         </div>

@@ -53,7 +53,7 @@ class Service
 		}
 
 		$popularTopics = $this->getPopularTopics();
-		array_splice($popularTopics, 0, 4);
+		$popularTopics = array_splice($popularTopics, 0, 4);
 
 		$myPopularTopics = Database::query("
 			SELECT topic AS name, COUNT(id) AS cnt FROM _pizarra_topics
@@ -297,7 +297,7 @@ class Service
 		Database::query("UPDATE _pizarra_users SET reputation=reputation-1 WHERE id_person='{$note->id_person}'");
 
 		// run powers for amulet VIDENTE
-		if (Amulets::isActive(Amulets::VIDENTE, $note->id_person)) {
+		if (Amulets::isActive(Amulets::VIDENTE, $note->id_person) && $type === 'note') {
 			$msg = "Los poderes del amuleto del Druida te avisan: A @{$request->person->username} le disgustó tu nota en Pizarra";
 			Notifications::alert($note->id_person, $msg, 'remove_red_eye', "{command:'PIZARRA NOTA', data: {note: '@{$request->input->data->note}'}}");
 		}
