@@ -1,17 +1,18 @@
 <?php
 
-use Apretaste\Amulets;
-use Apretaste\Challenges;
 use Apretaste\Chats;
 use Apretaste\Level;
-use Apretaste\Notifications;
 use Apretaste\Person;
+use Apretaste\Amulets;
 use Apretaste\Request;
 use Apretaste\Response;
-use Framework\Alert;
-use Framework\Database;
-use Framework\Images;
+use Apretaste\Challenges;
+use Apretaste\Notifications;
 use Framework\Utils;
+use Framework\Alert;
+use Framework\Images;
+use Framework\Database;
+use Framework\GoogleAnalytics;
 
 class Service
 {
@@ -160,8 +161,6 @@ class Service
 	 *
 	 * @param Request $request
 	 * @param Response $response
-	 *
-	 * @throws \Exception
 	 * @author salvipascual
 	 */
 	public function _like(Request $request, Response $response)
@@ -192,8 +191,8 @@ class Service
 				if ($res[0]->action === 'unlike') {
 					// delete previous vote and add new vote
 					Database::query("
-                        UPDATE $actionsTable SET `action`='like' WHERE id_person='{$request->person->id}' AND $type='{$noteId}';
-                        UPDATE $rowsTable SET likes=likes+1, unlikes=unlikes-1,ownlike=$ownlike WHERE id='{$noteId}'");
+						UPDATE $actionsTable SET `action`='like' WHERE id_person='{$request->person->id}' AND $type='{$noteId}';
+						UPDATE $rowsTable SET likes=likes+1, unlikes=unlikes-1,ownlike=$ownlike WHERE id='{$noteId}'");
 
 					// create notification for the creator
 					if ($request->person->id != $note->id_person) {
@@ -206,8 +205,9 @@ class Service
 
 			if (!$liked) {
 				// add new vote
-				$id = Database::query("INSERT INTO $actionsTable (id_person,$type,action) VALUES ('{$request->person->id}','{$noteId}','like');    
-                       UPDATE $rowsTable SET likes=likes+1, ownlike = $ownlike WHERE id='{$noteId}'");
+				$id = Database::query("
+					INSERT INTO $actionsTable (id_person,$type,action) VALUES ('{$request->person->id}','{$noteId}','like');    
+					UPDATE $rowsTable SET likes=likes+1, ownlike = $ownlike WHERE id='{$noteId}'");
 
 				$note->text = substr($note->text, 0, 30) . '...';
 
@@ -216,6 +216,11 @@ class Service
 				// create notification for the creator
 				if ($request->person->id != $note->id_person) {
 					Notifications::alert($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
+				}
+
+				// submit to Google Analytics 
+				if($type === 'note') {
+					GoogleAnalytics::event('note_like', $noteId);
 				}
 
 				// complete the challenge
@@ -250,10 +255,7 @@ class Service
 	 *
 	 * @param Request $request
 	 * @param Response $response
-	 *
-	 * @throws Alert
 	 * @author salvipascual
-	 *
 	 */
 	public function _unlike(Request $request, Response $response): void
 	{
@@ -292,6 +294,11 @@ class Service
 
 		$note = $note[0];
 		$this->addReputation($note->id_person, $request->person->id, $noteId, -0.3);
+
+		// submit to Google Analytics 
+		if($type === 'note') {
+			GoogleAnalytics::event('note_dislike', $noteId);
+		}
 
 		// decrease the author's reputation
 		Database::query("UPDATE _pizarra_users SET reputation=reputation-1 WHERE id_person='{$note->id_person}'");
@@ -463,8 +470,8 @@ class Service
 		$link_text = Database::escape($request->input->data->link->text ?? '', 600);
 
 		$sql = "INSERT INTO _pizarra_notes (id_person, `text`, image, topic1, topic2, topic3, link_command, link_icon, link_text) 
-                VALUES ('{$request->person->id}', '$cleanText', '$fileName', '$topic1', '$topic2', '$topic3', 
-                NULLIF('$link_command', ''), NULLIF('$link_icon', ''), NULLIF('$link_text', ''))";
+			VALUES ('{$request->person->id}', '$cleanText', '$fileName', '$topic1', '$topic2', '$topic3', 
+			NULLIF('$link_command', ''), NULLIF('$link_icon', ''), NULLIF('$link_text', ''))";
 
 		$this->insertedNoteId = Database::query($sql);
 
@@ -489,6 +496,9 @@ class Service
 
 		// add the experience
 		Level::setExperience('PIZARRA_POST_FIRST_DAILY', $request->person->id);
+
+		// submit to Google Analytics 
+		GoogleAnalytics::event('note_new', $this->insertedNoteId);
 
 		// save the topics to the topics table
 		foreach ($topics as $topic) {
@@ -531,10 +541,7 @@ class Service
 	 *
 	 * @param Request $request
 	 * @param Response $response
-	 *
-	 * @throws Alert
 	 * @author salvipascual
-	 *
 	 */
 	public function _comentar(Request $request, Response $response)
 	{
@@ -574,10 +581,12 @@ class Service
 		// complete the challenge
 		Challenges::complete('comment-pizarra-note', $request->person->id);
 
+		// submit to Google Analytics 
+		GoogleAnalytics::event('note_comment', $note->id);
+
+		// track the challenge
 		Challenges::track($request->person->id, 'pizarra-comments-random', [], static function ($track) use ($noteId) {
-
 			// quizas el reto esta completado, pero aun esta en challenge_current con un 10, no un array
-
 			if (is_array($track)) {
 				$track[$noteId] = $noteId;
 
@@ -744,14 +753,13 @@ class Service
 		$response->setTemplate('notifications.ejs', $content);
 	}
 
-
 	/**
+	 * Delete a note
+	 * 
 	 * @param Request $request
 	 * @param Response $response
-	 * @throws Alert
 	 * @author ricardo@apretaste.org
 	 */
-
 	public function _eliminar(Request $request, Response $response): void
 	{
 		$noteId = $request->input->data->note;
@@ -762,6 +770,11 @@ class Service
 		);
 	}
 
+	/**
+	 * Add reputation
+	 * 
+	 * @author ricardo@apretaste.org
+	 */
 	private function addReputation($toId, $fromId, $noteId, $amount): void
 	{
 		$amount = str_replace(',', '.', $amount);
@@ -770,19 +783,34 @@ class Service
 		}
 	}
 
+	/**
+	 * Flag a note to be check by our team
+	 * 
+	 * @param Request $request
+	 * @param Response $response
+	 * @author ricardo@apretaste.org
+	 */
 	public function _reportar(Request $request, Response &$response)
 	{
+		// get the text and note id
 		$message = $request->input->data->message ?? false;
 		$noteId = $request->input->data->id ?? false;
 
-		if ($message && $noteId) {
-			$message = Database::escape($message, 250);
-
-			Database::query(
-				"INSERT INTO flags(service, person_id, reported_id, explanation) 
-					VALUES('pizarra', {$request->person->id}, '$noteId', '$message')"
-			);
+		// do not allow empty values
+		if (empty($message) || empty($noteId) {
+			return false;
 		}
+
+		// escape the text
+		$message = Database::escape($message, 250);
+
+		// insert the query
+		Database::query("
+			INSERT INTO flags(service, person_id, reported_id, explanation) 
+			VALUES('pizarra', {$request->person->id}, '$noteId', '$message')");
+
+		// submit to Google Analytics 
+		GoogleAnalytics::event('note_flag', $noteId);
 	}
 
 	/**
