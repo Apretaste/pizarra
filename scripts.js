@@ -382,6 +382,21 @@ function commentLengthValidate() {
 	}
 }
 
+function remainder(size = 250) {
+	// get message and remainder amount
+	var comment = $('#comment').val().trim();
+	var remainder = (comment.length <= size) ? (size - comment.length) : 0;
+
+	// restrict comment size
+	if (remainder <= 0) {
+		comment = comment.substring(0, size);
+		$('#comment').val(comment);
+	}
+
+	// update remainder amount
+	$('#remainder').html(comment.length);
+}
+
 function reportLengthValidate() {
 	var message = $('#reportMessage').val().trim();
 

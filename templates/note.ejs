@@ -127,6 +127,11 @@
 
     <div id="newCommentModal" class="modal bottom-sheet">
         <div class="modal-content">
+            <div class="input-field">
+                <textarea id="comment" class="materialize-textarea" oninput="remainder()"></textarea>
+                <label for="comment">Escriba su comentario (<span id="remainder">0</span>/250)</label>
+            </div>
+
             <div class="tags" style="margin-bottom: 10px">
                 <% var uniqueUsernames = [myUser.username]; %>
                 <% note.comments.forEach(function(comment) { %>
@@ -137,12 +142,6 @@
                     </span>
                     <% } %>
                 <% }) %>
-            </div>
-
-            <div class="input-field">
-                <textarea id="comment" class="materialize-textarea" oninput="commentLengthValidate()"></textarea>
-                <label for="comment">Escriba su comentario</label>
-                <span class="helper-text">0/250</span>
             </div>
         </div>
         <div class="modal-footer">
@@ -162,7 +161,7 @@
     <div class="modal-content">
         <div class="input-field">
             <textarea id="reportMessage" class="materialize-textarea" oninput="reportLengthValidate()"></textarea>
-            <label for="reportMessage">¿Crees que deberíamos revisar esta nota? Díganos por qué.</label>
+            <label for="reportMessage">¿Qué hay de malo con esta nota?</label>
             <span class="helper-text">0/250</span>
         </div>
     </div>
