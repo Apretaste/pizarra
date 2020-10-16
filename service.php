@@ -797,7 +797,7 @@ class Service
 		$noteId = $request->input->data->id ?? false;
 
 		// do not allow empty values
-		if (empty($message) || empty($noteId) {
+		if (empty($message) || empty($noteId)) {
 			return false;
 		}
 
