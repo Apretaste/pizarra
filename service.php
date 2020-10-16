@@ -1240,20 +1240,23 @@ class Service
 	public function _publicar(Request $request, Response $response)
 	{
 		$this->_escribir($request, $response);
-
-		$shareCommand = $request->input->data->link->command ?? '';
-
-		switch ($shareCommand) {
-			case 'CHISTE VER':
-				Challenges::complete('share-joke', $request->person->id);
-				break;
-			case 'NOTICIAS HISTORIA':
-				Challenges::complete('share-news', $request->person->id);
-				break;
-			case 'DONEHAY VER':
-				Challenges::complete('share-dondehay', $request->person->id);
-				break;
+		if (isset($request->input->data->link->command) && !empty($request->input->data->link->command)) {
+			$shareCommand = base64_decode($request->input->data->link->command);
+			switch ($shareCommand) {
+				case 'CHISTE VER':
+					Challenges::complete('share-joke', $request->person->id);
+					break;
+				case 'NOTICIAS HISTORIA':
+					Challenges::complete('share-news', $request->person->id);
+					break;
+				case 'DONDEHAY VER':
+					Challenges::complete('share-dondehay', $request->person->id);
+					break;
+			}
 		}
+
+
+
 	}
 
 
