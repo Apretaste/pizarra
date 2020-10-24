@@ -15,7 +15,6 @@ $(document).ready(function () {
 	$('.tabs').tabs();
 	$('.materialboxed').materialbox();
 
-	$('select').formSelect();
 	M.FloatingActionButton.init($('.click-to-toggle'), {
 		direction: 'left',
 		hoverEnabled: false
