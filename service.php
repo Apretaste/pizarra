@@ -226,26 +226,6 @@ class Service
 				// complete the challenge
 				Challenges::complete('like-pizarra-note', $request->person->id);
 
-				// track challenges
-				Challenges::track(
-					$note->id_person,
-					'pizarra-likes-100',
-					['publish' => false, 'likes' => 0],
-					static function ($track) use ($note) {
-						// si no ha publicado una nota nueva, publish sera false
-						// se pone en true en el comando escribir
-
-						if ($track['publish'] === true) {
-							$track['likes'] = $note->likes;
-							$track['likes'] = max($note->likes + 1, $track['likes']);
-							if ($track['likes'] > 100) {
-								$track['likes'] = 100;
-							}
-						}
-
-						return $track;
-					}
-				);
 			}
 		}
 	}
@@ -483,17 +463,6 @@ class Service
 		// complete the challenge
 		Challenges::complete('write-pizarra-note', $request->person->id);
 
-		// track challenges
-		Challenges::track($request->person->id, 'pizarra-likes-100', ['publish' => false, 'likes' => 0], static function ($track) {
-			$track['publish'] = true;
-			return $track;
-		});
-
-		Challenges::track($request->person->id, 'pizarra-comments-20', ['publish' => false, 'comments' => []], static function ($track) {
-			$track['publish'] = true;
-			return $track;
-		});
-
 		// add the experience
 		Level::setExperience('PIZARRA_POST_FIRST_DAILY', $request->person->id);
 
@@ -583,48 +552,6 @@ class Service
 
 		// submit to Google Analytics 
 		GoogleAnalytics::event('note_comment', $note->id);
-
-		// track the challenge
-		Challenges::track($request->person->id, 'pizarra-comments-random', [], static function ($track) use ($noteId) {
-			// quizas el reto esta completado, pero aun esta en challenge_current con un 10, no un array
-			if (is_array($track)) {
-				$track[$noteId] = $noteId;
-
-				if (count($track) >= 10) {
-					$track = 10;
-				}
-			}
-
-			return $track;
-		});
-
-		Challenges::track($note->id_person, 'pizarra-comments-20', ["publish" => false, "comments" => []], static function ($track) use ($note, $request) {
-
-			// si no ha publicado una nota nueva, publish sera false, segun el valor por defecto
-			// se pone en true en el comando ESCRIBIR
-			if ($track['publish'] === true) {
-				if ($note->id_person !== $request->person->id) {
-					if (!is_array($track['comments'])) {
-						if ($track['comments'] === 20) {
-							return $track;
-						}
-						$track['comments'] = [];
-					}
-
-					$track['comments'][$note->id][$request->person->id] = true;
-				}
-
-				// si una de sus notas alcanza los 20 comentarios... coloco int=20 para dar por completado el reto
-				foreach ($track['comments'] as $comments) {
-					if (count($comments) >= 20) {
-						$track['comments'] = 20;
-						break;
-					}
-				}
-			}
-
-			return $track;
-		});
 
 		// notify users mentioned
 		$mentions = $this->findUsersMentionedOnText($comment);
