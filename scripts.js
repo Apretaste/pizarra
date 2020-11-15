@@ -15,7 +15,6 @@ $(document).ready(function () {
 	$('.tabs').tabs();
 	$('.materialboxed').materialbox();
 
-	$('select').formSelect();
 	M.FloatingActionButton.init($('.click-to-toggle'), {
 		direction: 'left',
 		hoverEnabled: false
@@ -407,7 +406,11 @@ function reportLengthValidate() {
 	}
 }
 
-function like(id, type, pubType = 'note') {
+function like(id, type, pubType) {
+	if (pubType === undefined || typeof pubType == 'undefined') {
+		pubType = 'note';
+	}
+
 	var element = pubType == 'note' ? $('#' + id) : $('#comments #' + id);
 	if (type == "like" && element.attr('liked') == 'true' || type == "unlike" && element.attr('unliked') == 'true') return;
 	var data = pubType == 'note' ? {
@@ -711,201 +714,6 @@ function showStateOrProvince() {
 			province.hide();
 			break;
 	}
-} ///////// CHAT SCRIPTS /////////
-
-
-var optionsModalActive = false;
-var moved = false;
-var activeChat;
-var activeMessage;
-var activeUsername;
-var timer;
-$(function () {
-	if (typeof messages != "undefined") {
-		resizeChat();
-		$(window).resize(function () {
-			return resizeChat();
-		});
-		if (messages.length > 0) $('.chat').scrollTop($('.bubble:last-of-type').offset().top);
-		$('#message').focus();
-		activeChat = id;
-		activeUsername = username;
-		setMessagesEventListener();
-		$('.footer').addClass('hide');
-	}
-
-	$('.modal').modal();
-	$('.openchat').on("touchstart", function (event) {
-		runTimer();
-		activeChat = event.currentTarget.id;
-		var activeName = event.currentTarget.getAttribute('name');
-	}).on("touchmove", function (event) {
-		clearTimeout(timer);
-		moved = true;
-	}).on("touchend", function (event) {
-		openChat();
-	});
-	$('.openchat').on("mousedown", function (event) {
-		runTimer();
-		activeChat = event.currentTarget.id;
-		var activeName = event.currentTarget.getAttribute('name');
-	}).on("mouseup", function (event) {
-		openChat();
-	});
-});
-
-function openChat() {
-	if (!optionsModalActive && !moved) {
-		var firstName = $('#' + activeChat + ' .name').html();
-		apretaste.send({
-			'command': 'PIZARRA CONVERSACION',
-			'data': {
-				'userId': activeChat,
-				'firstName': firstName
-			}
-		});
-	}
-
-	optionsModalActive = false;
-	moved = false;
-	clearTimeout(timer);
-}
-
-function viewProfile() {
-	apretaste.send({
-		'command': 'PERFIL',
-		'data': {
-			'id': activeChat
-		}
-	});
-}
-
-function writeModalOpen() {
-	optionsModalActive = false;
-	M.Modal.getInstance($('#optionsModal')).close();
-	M.Modal.getInstance($('#writeMessageModal')).open();
-}
-
-function deleteModalOpen() {
-	optionsModalActive = false;
-	M.Modal.getInstance($('#optionsModal')).close();
-	if (typeof messages == "undefined") $('#deleteModal p').html('¿Esta seguro de eliminar su chat con ' + activeName.trim() + '?');
-	M.Modal.getInstance($('#deleteModal')).open();
-}
-
-function deleteChat() {
-	apretaste.send({
-		'command': 'CHAT BORRAR',
-		'data': {
-			'id': activeChat,
-			'type': 'chat'
-		},
-		'redirect': false,
-		'callback': {
-			'name': 'deleteChatCallback',
-			'data': activeChat
-		}
-	});
-}
-
-function deleteMessage() {
-	apretaste.send({
-		'command': 'CHAT BORRAR',
-		'data': {
-			'id': activeMessage,
-			'type': 'message'
-		},
-		'redirect': false,
-		'callback': {
-			'name': 'deleteMessageCallback',
-			'data': activeMessage
-		}
-	});
-}
-
-function deleteChatCallback(chatId) {
-	$('#' + chatId).remove();
-	showToast('Chat eliminado');
-}
-
-function deleteMessageCallback(messageId) {
-	$('#' + messageId).remove();
-	showToast('Mensaje eliminado');
-}
-
-function runTimer() {
-	timer = setTimeout(function () {
-		optionsModalActive = true;
-		M.Modal.getInstance($('#optionsModal')).open();
-	}, 800);
-}
-
-function sendMessage() {
-	var message = $('#message').val().trim();
-
-	if (message.length > 0) {
-		apretaste.send({
-			'command': "PIZARRA MENSAJE",
-			'data': {
-				'id': activeChat,
-				'message': message
-			},
-			'redirect': false,
-			'callback': {
-				'name': 'sendMessageCallback',
-				'data': message
-			}
-		});
-	}
-}
-
-function deleteMatchModalOpen(id, name) {
-	$('#deleteModal .name').html(name);
-	activeId = id;
-	M.Modal.getInstance($('#deleteModal')).open();
-}
-
-function sendMessageCallback(message) {
-	if (typeof messages != "undefined") {
-		if (messages.length == 0) {
-			// Jquery Bug, fixed in 1.9, insertBefore or After deletes the element and inserts nothing
-			// $('#messageField').insertBefore("<div class=\"chat\"></div>");
-			$('#nochats').remove();
-			$('#chat-row').append("<div class=\"chat\"></div>");
-		}
-
-		$('.chat').append("<div class=\"bubble me\" id=\"last\">" + message + "<br>" + "<small>" + new Date().toLocaleString('es-ES') + "</small>" + "</div>");
-	} else {
-		if (message.length > 70) message = message.substr(0, 70) + '...';
-		$('#' + activeChat + ' msg').html(message);
-	}
-
-	$('#message').val('');
-	setMessagesEventListener();
-}
-
-function resizeChat() {
-	if ($('.row').length == 3) {
-		$('.chat').height($(window).height() - $($('.row')[0]).outerHeight(true) - $('#messageField').outerHeight(true) - 20);
-	} else $('.chat').height($(window).height() - $('#messageField').outerHeight(true) - 20);
-}
-
-function setMessagesEventListener() {
-	$('.bubble').on("touchstart", function (event) {
-		runTimer();
-		activeMessage = event.currentTarget.id;
-	}).on("touchmove", function (event) {
-		clearTimeout(timer);
-		moved = true;
-	}).on("touchend", function (event) {
-		clearTimeout(timer);
-	});
-	$('.bubble').on("mousedown", function (event) {
-		runTimer();
-		activeMessage = event.currentTarget.id;
-	}).on("mouseup", function (event) {
-		clearTimeout(timer);
-	});
 }
 
 String.prototype.escapeHTML = function () {

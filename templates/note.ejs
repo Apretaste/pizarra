@@ -82,7 +82,7 @@
                            class="<%= comment.gender %>">@<%= comment.username %></a>
                         <span class="date"><%= moment(comment.inserted).format('MMM D, YYYY h:mm A') %></span>
                     </div>
-                    <span class="text" style="word-break: break-all;"><%- comment.text %></span>
+                    <span class="text" style="word-break: break-word;"><%- comment.text %></span>
                     <br>
 
                     <div class="actions">
