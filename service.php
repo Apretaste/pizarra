@@ -286,7 +286,7 @@ class Service
 		// run powers for amulet VIDENTE
 		if (Amulets::isActive(Amulets::VIDENTE, $note->id_person) && $type === 'note') {
 			$msg = "Los poderes del amuleto del Druida te avisan: A @{$request->person->username} le disgustó tu nota en Pizarra";
-			Notifications::alert($note->id_person, $msg, 'remove_red_eye', "{command:'PIZARRA NOTA', data:{note:'{$request->input->data->note}'}}");
+			Notifications::alert($note->id_person, $msg, 'remove_red_eye', "{'command':'PIZARRA NOTA', 'data':{'note':'{$request->input->data->note}'}}");
 		}
 	}
 
