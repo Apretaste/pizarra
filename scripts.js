@@ -629,12 +629,11 @@ function onImageLoaded(path) {
 }
 
 function showLoadedImage(source) {
-	var picture = $('#notePicture');
-	if (picture.length === 0) {
+	if ($('#notePicture').length === 0) {
 		$('#writeModal > .row > .col').append('<img id="notePicture" class="responsive-img"/>');
 	}
 
-	picture.attr('src', source);
+	$('#notePicture').attr('src', source);
 }
 
 function sendFile(base64File) {
