@@ -40,7 +40,11 @@ $(document).ready(function () {
 	}
 
 	$('#uploadPhoto').click(function (e) {
-		return loadFileToBase64();
+		if (typeof apretaste.loadImage != 'undefined') {
+			apretaste.loadImage('onImageLoaded')
+		} else {
+			loadFileToBase64();
+		}
 	});
 	var resizeInterval = setInterval(function () {
 		// check until the img has the correct size
@@ -172,12 +176,17 @@ function sendNote() {
 	var note = $('#note').val().trim();
 
 	if (note.length >= 20) {
+		var files = notePicturePath != null ? [notePicturePath] : [];
+		var basename = notePicturePath != null ? notePicturePath.split(/[\\/]/).pop() : null;
+
 		apretaste.send({
 			'command': 'PIZARRA ESCRIBIR',
 			'data': {
 				'text': note,
-				'image': notePicture
+				'image': notePicture,
+				'imageName': basename,
 			},
+			'files': files,
 			'redirect': false,
 			'callback': {
 				'name': 'sendNoteCallback',
@@ -508,7 +517,12 @@ function sendNoteCallback(note) {
 	var topics = note.match(/(^|\B)#(?![0-9_]+\b)([a-zA-Z0-9_]{1,30})(\b|\r)/g);
 	var htmlTopics = "";
 	topics = topics != null ? topics.splice(0, 3) : [myUser.topic];
-	var hasImage = typeof notePicture != "undefined" ? "<img class=\"responsive-img\" style=\"width: 100%\" src=\"" + serviceImgPath + "/img-prev.png\" onclick=\"apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'last'}});\">" : "";
+
+	var hasImage = "";
+	if (typeof notePicture != "undefined" || (typeof notePicturePath != "undefined" && notePicturePath != null)) {
+		hasImage = "<img class=\"responsive-img\" style=\"width: 100%\" src=\"" + serviceImgPath + "/img-prev.png\" onclick=\"apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'last'}});\">";
+	}
+
 	topics.forEach(function (topic) {
 		topic = topic.replace('#', '');
 		htmlTopics +=
@@ -607,16 +621,27 @@ function togglePopularsMenu() {
 }
 
 var notePicture;
+var notePicturePath = null;
+
+function onImageLoaded(path) {
+	showLoadedImage(path);
+	notePicturePath = path;
+}
+
+function showLoadedImage(source) {
+	var picture = $('#notePicture');
+	if (picture.length === 0) {
+		$('#writeModal > .row > .col').append('<img id="notePicture" class="responsive-img"/>');
+	}
+
+	picture.attr('src', source);
+}
 
 function sendFile(base64File) {
 	notePicture = base64File;
 	var notePictureSrc = "data:image/jpg;base64," + base64File;
 
-	if ($('#notePicture').length == 0) {
-		$('#writeModal > .row > .col').append('<img id="notePicture" class="responsive-img"/>');
-	}
-
-	$('#notePicture').attr('src', notePictureSrc);
+	showLoadedImage(notePictureSrc)
 }
 
 function showToast(text) {

@@ -219,7 +219,7 @@ class Service
 				}
 
 				// submit to Google Analytics 
-				if($type === 'note') {
+				if ($type === 'note') {
 					GoogleAnalytics::event('note_like', $noteId);
 				}
 
@@ -296,7 +296,7 @@ class Service
 		$this->addReputation($note->id_person, $request->person->id, $noteId, -0.3);
 
 		// submit to Google Analytics 
-		if($type === 'note') {
+		if ($type === 'note') {
 			GoogleAnalytics::event('note_dislike', $noteId);
 		}
 
@@ -430,15 +430,21 @@ class Service
 	{
 		$text = strip_tags($request->input->data->text); // strip_tags
 		$image = $request->input->data->image ?? false;
+		$imageName = $request->input->data->imageName ?? false;
 		$fileName = '';
 
 		// get the image name and path
-		if ($image) {
+		if ($image || $imageName) {
 			$pizarraImgDir = SHARED_PUBLIC_PATH . '/content/pizarra';
 			$fileName = Utils::randomHash();
 			$filePath = "$pizarraImgDir/$fileName.jpg";
 
-			Images::saveBase64Image($image, $filePath);
+			if ($image) {
+				Images::saveBase64Image($image, $filePath);
+			} else {
+				$tempImagePath = $request->input->files[$imageName];
+				rename($tempImagePath, $filePath);
+			}
 		}
 
 		// only post notes with real content
@@ -755,7 +761,7 @@ class Service
 
 	/**
 	 * Delete a note
-	 * 
+	 *
 	 * @param Request $request
 	 * @param Response $response
 	 * @author ricardo@apretaste.org
@@ -772,7 +778,7 @@ class Service
 
 	/**
 	 * Add reputation
-	 * 
+	 *
 	 * @author ricardo@apretaste.org
 	 */
 	private function addReputation($toId, $fromId, $noteId, $amount): void
@@ -785,7 +791,7 @@ class Service
 
 	/**
 	 * Flag a note to be check by our team
-	 * 
+	 *
 	 * @param Request $request
 	 * @param Response $response
 	 * @author ricardo@apretaste.org
@@ -1282,7 +1288,6 @@ class Service
 					break;
 			}
 		}
-
 
 
 	}
