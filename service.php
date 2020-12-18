@@ -496,22 +496,6 @@ class Service
 	}
 
 	/**
-	 * Avatar
-	 *
-	 * @param Request $request
-	 * @param Response $response
-	 * @throws Alert
-	 */
-	public function _avatar(Request $request, Response $response): void
-	{
-		$response->setLayout('pizarra.ejs');
-		$response->setTemplate('avatar_select.ejs', [
-			'myUser' => $this->preparePizarraUser($request->person),
-			'activeIcon' => 1
-		]);
-	}
-
-	/**
 	 * Post a new note to the public feed
 	 *
 	 * @param Request $request

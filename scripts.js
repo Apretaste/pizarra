@@ -80,32 +80,6 @@ function getAvatar(avatar, serviceImgPath) {
 	return "background-image: url(" + serviceImgPath + "/" + avatar + ".png);";
 }
 
-function setAvatar(avatar) {
-	if (typeof selectedColor == "undefined") selectedColor = myUser.avatarColor;
-	apretaste.send({
-		'command': 'PERFIL UPDATE',
-		'data': {
-			'avatar': avatar,
-			'avatarColor': selectedColor
-		},
-		'redirect': false,
-		'callback': {
-			'name': 'setAvatarCallback'
-		}
-	});
-}
-
-function setAvatarCallback() {
-	apretaste.send({
-		'command': 'PERFIL'
-	});
-}
-
-function changeColor(color) {
-	selectedColor = color;
-	$('.mini-card .person-avatar').css('background-color', colors[color]);
-}
-
 function getYears() {
 	var year = new Date().getFullYear();
 	var years = [];
@@ -482,16 +456,22 @@ function openProfile(username) {
 // Callback functions
 
 function sendCommentCallback(comment) {
+	var avatar = 'face="' + myUser.avatar + '"';
+	if (myUser.isContentCreator) {
+		var serviceImgPath = $('serviceImgPath').attr('data');
+		avatar = 'creator_image="' + serviceImgPath + myUser.username + '.png" state="gold"'
+	}
+
 	var element =
 		"<li class=\"right\" id=\"last\">\n" +
-		"    <div class=\"person-avatar circle\" face=\"" + myUser.avatar + "\" color=\"" + myUser.avatarColor + "\"\n" +
+		"    <div class=\"person-avatar circle\" " + avatar + " color=\"" + myUser.avatarColor + "\"\n" +
 		"         size=\"30\" onclick=\"openProfile('" + myUser.username + "')\"></div>\n" +
 		"    <div class=\"head\">\n" +
 		"        <a onclick=\"openProfile('" + myUser.username + "')\"\n" +
 		"           class=\"" + myUser.gender + "\">@" + myUser.username + "</a>\n" +
 		"        <span class=\"date\">" + moment().format('MMM D, YYYY h:mm A') + "</span>\n" +
 		"    </div>\n" +
-		"    <span class=\"text\">" + comment + "</span>\n" +
+		"    <span class=\"text\" style=\"word-break: break-word;\">" + comment + "</span>\n" +
 		"</li>"
 
 	$('#no-comments').remove();
@@ -523,6 +503,11 @@ function sendNoteCallback(note) {
 		hasImage = "<img class=\"responsive-img\" style=\"width: 100%\" src=\"" + serviceImgPath + "/img-prev.png\" onclick=\"apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'last'}});\">";
 	}
 
+	var avatar = 'face="' + myUser.avatar + '"';
+	if (myUser.isContentCreator) {
+		avatar = 'creator_image="' + serviceImgPath + myUser.username + '.png" state="gold"'
+	}
+
 	topics.forEach(function (topic) {
 		topic = topic.replace('#', '');
 		htmlTopics +=
@@ -536,8 +521,8 @@ function sendNoteCallback(note) {
 		'<div class="card note" id="last" liked="false"\n' +
 		'                 unliked="false">\n' +
 		'                <div class="card-person grey lighten-5">\n' +
-		'                        <div class="person-avatar circle left"\n' +
-		'                             face="' + myUser.avatar + '" color="' + myUser.avatarColor + '"\n' +
+		'                        <div class="person-avatar circle left"\n' + avatar +
+		'                             color="' + myUser.avatarColor + '"\n' +
 		'                             size="30" online="1">\n' +
 		'                        </div>\n' +
 		'                        <a href="#!" class="' + myUser.gender + '"\n' +
