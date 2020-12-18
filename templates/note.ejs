@@ -5,7 +5,13 @@
             <div class="card-person grey lighten-5">
 
                 <div class="person-avatar circle left"
-                     face="<%= note.avatar %>" color="<%= note.avatarColor %>"
+                <% if(note.isContentCreator){ %>
+                     creator_image="{{APP_SERVICE_PATH}}/images/<%= note.username %>.png"
+                     state="gold"
+                <% } else { %>
+                     face="<%= note.avatar %>"
+                        <% } %>
+                     color="<%= note.avatarColor %>"
                      size="30" online="<%= note.online %>">
                 </div>
 
@@ -75,7 +81,14 @@
         <ul class="chat" id="comments">
             <% note.comments.forEach(function(comment) { %>
                 <li class="<%= comment.username == myUser.username ? "right" : "left" %>" id="<%= comment.id %>">
-                    <div class="person-avatar circle" face="<%= comment.avatar %>" color="<%= comment.avatarColor %>"
+                    <div class="person-avatar circle"
+                    <% if(comment.isContentCreator){ %>
+                         creator_image="{{APP_SERVICE_PATH}}/images/<%= comment.username %>.png"
+                         state="gold"
+                    <% } else { %>
+                         face="<%= comment.avatar %>"
+                            <% } %>
+                         color="<%= comment.avatarColor %>"
                          size="30" onclick="openProfile('<%= comment.username %>')"></div>
                     <div class="head">
                         <a onclick="openProfile('<%= comment.username %>')"

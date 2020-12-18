@@ -5,7 +5,13 @@
                  onclick="apretaste.send({'command':'PERFIL', 'data': {'username':'@<%= popular.username %>'}});">
                 <div class="card user-card center-align">
                     <div class="content">
-                        <div class="person-avatar circle" face="<%= popular.avatar %>"
+                        <div class="person-avatar circle"
+                        <% if(popular.is_content_creator == true){ %>
+                             creator_image="{{APP_SERVICE_PATH}}/images/<%= popular.username %>.png"
+                             state="gold"
+                        <% } else { %>
+                             face="<%= popular.avatar %>"
+                                <% } %>
                              color="<%= popular.avatarColor %>"
                              size="40" online="<%= popular.online %>">
                         </div>
