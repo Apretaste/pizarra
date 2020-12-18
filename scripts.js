@@ -453,6 +453,28 @@ function openProfile(username) {
 	});
 }
 
+var currentUser = null;
+var currentUsername = null;
+
+function addFriendModalOpen(id, username) {
+	currentUser = id;
+	currentUsername = username;
+	$('.username').html('@' + username);
+	M.Modal.getInstance($('#addFriendModal')).open();
+}
+
+function addFriend() {
+	apretaste.send({
+		command: 'amigos agregar',
+		data: {id: currentUser},
+		redirect: false,
+		callback: {
+			name: 'showToast',
+			data: 'Solicitud enviada'
+		}
+	});
+}
+
 // Callback functions
 
 function sendCommentCallback(comment) {

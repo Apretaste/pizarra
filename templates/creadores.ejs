@@ -1,0 +1,68 @@
+<div class="row" style="margin-top: 10px">
+    <div class="col s12">
+        <div class="tags">
+            <div class="chip tiny">
+                <i class="fa fa-user-alt"></i>
+                <span id="friendsCounter">
+					<%= creators.length %> <%= creators.length > 1 ? 'creadores' : 'creador' %>
+				</span>
+            </div>
+
+            <!--span class="chip tiny" onclick="openSearch()">
+                <i class="fas fa-search"></i>
+                <span class="hide filter">
+                    <input id="buscar" onkeyup="buscar()" type="" style="border: none;" onfocusout="closeSearch()">
+                </span>
+            </span-->
+        </div>
+    </div>
+
+    <div class="col s12" id="popular-users">
+        <% creators.forEach(function (creator) { %>
+            <div class="col s4 m3">
+                <div class="card user-card center-align">
+                    <div class="content"
+                         onclick="apretaste.send({'command':'PERFIL', 'data': {'username':'@<%= creator.username %>'}});"
+                    >
+                        <div class="person-avatar circle"
+                             creator_image="{{APP_SERVICE_PATH}}/images/<%= creator.username %>.png"
+                             state="gold"
+                             color="<%= creator.avatarColor %>"
+                             size="40" online="<%= creator.online %>">
+                        </div>
+                        <span class="<%= creator.gender %>">@<%= creator.username %></span>
+                    </div>
+
+                    <% if(creator.username != myUser.username){ %>
+                        <div class="action grey lighten-2 green-text">
+                            <a href="#!">
+                                <i class="material-icons green-text"
+                                   onclick="addFriendModalOpen('<%= creator.id %>', '<%= creator.username %>')">
+                                    person_add
+                                </i>
+                            </a>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+
+    <% if(creators.length == 0){ %>
+        <p class="middle-center center grey-text">Aún no hay creadores.</p>
+    <% } %>
+</div>
+
+<div class="bottom-space"></div>
+
+<div id="addFriendModal" class="modal">
+    <div class="modal-content">
+        <p>¿Agregar a <b class="username">@username</b> a sus amigos?</p>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
+        <a onclick="addFriend()" class="waves-effect waves-green btn-flat green-text modal-close">Agregar</a>
+    </div>
+</div>
+
+<%- '<serviceImgPath data="{{APP_SERVICE_PATH}}/images"></serviceImgPath>' %>

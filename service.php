@@ -618,6 +618,31 @@ class Service
 	}
 
 	/**
+	 * Show the content creatorsd
+	 *
+	 * @param Request $request
+	 * @param Response $response
+	 *
+	 * @throws Exception
+	 * @author ricardo
+	 *
+	 */
+
+	public function _creadores(Request $request, Response $response)
+	{
+		$creators = Database::query("SELECT id, username, avatar, avatarColor, online FROM person WHERE is_content_creator=1");
+
+		$content = [
+			'creators' => $creators,
+			'myUser' => $this->preparePizarraUser($request->person),
+			'title' => 'Creadores'
+		];
+
+		$response->setLayout('pizarra.ejs');
+		$response->setTemplate('creadores.ejs', $content);
+	}
+
+	/**
 	 * Show a list of notifications
 	 *
 	 * @param Request $request
