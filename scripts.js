@@ -412,6 +412,7 @@ function like(id, type, pubType) {
 				'pubType': pubType
 			})
 		},
+		'showLoading': false,
 		'redirect': false
 	});
 }
