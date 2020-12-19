@@ -469,10 +469,14 @@ function addFriend() {
 		data: {id: currentUser},
 		redirect: false,
 		callback: {
-			name: 'showToast',
-			data: 'Solicitud enviada'
+			name: 'addFriendCallback'
 		}
 	});
+}
+
+function addFriendCallback() {
+	showToast('Solicitud enviada');
+	$('#' + currentUser + ' .action').remove();
 }
 
 // Callback functions

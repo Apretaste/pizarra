@@ -632,6 +632,10 @@ class Service
 	{
 		$creators = Database::query("SELECT id, username, avatar, avatarColor, online FROM person WHERE is_content_creator=1");
 
+		foreach ($creators as $creator) {
+			$creator->isFriend = $request->person->isFriendOf($creator->id);
+		}
+
 		$content = [
 			'creators' => $creators,
 			'myUser' => $this->preparePizarraUser($request->person),

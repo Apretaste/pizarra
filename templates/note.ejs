@@ -24,11 +24,15 @@
                         <%= moment(note.inserted).format('MMM D, h:mm A') %>
                     </span>
             </div>
-            <div class="card-content">
-                <% if(note.image){ %>
+
+            <% if(note.image){ %>
+                <div class="card-image">
                     <img class="responsive-img materialboxed" style="width: 100%; object-fit: cover;"
                          src="{{APP_IMAGE_PATH}}/<%= note.image %>">
-                <% } %>
+                </div>
+            <% } %>
+
+            <div class="card-content">
                 <p><%- linkify(note.text) %></p>
 
                 <% if(note.linkText){ %>

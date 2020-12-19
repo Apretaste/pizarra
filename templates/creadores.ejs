@@ -19,7 +19,7 @@
 
     <div class="col s12" id="popular-users">
         <% creators.forEach(function (creator) { %>
-            <div class="col s4 m3">
+            <div class="col s4 m3" id="<%= creator.id %>">
                 <div class="card user-card center-align">
                     <div class="content"
                          onclick="apretaste.send({'command':'PERFIL', 'data': {'username':'@<%= creator.username %>'}});"
@@ -33,7 +33,7 @@
                         <span class="<%= creator.gender %>">@<%= creator.username %></span>
                     </div>
 
-                    <% if(creator.username != myUser.username){ %>
+                    <% if(creator.username != myUser.username && !creator.isFriend){ %>
                         <div class="action grey lighten-2 green-text">
                             <a href="#!">
                                 <i class="material-icons green-text"
