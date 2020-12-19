@@ -86,7 +86,7 @@
                 <% } %>
                 <div class="card-content">
 
-                    <p><%- note.text %></p>
+                    <p><%- linkify(note.text) %></p>
 
                     <% if(note.linkText){ %>
                         <ul class="collection one-line preview" onclick="apretaste.send(<%= atob(note.linkCommand) %>)">

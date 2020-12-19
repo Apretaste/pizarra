@@ -29,7 +29,7 @@
                     <img class="responsive-img materialboxed" style="width: 100%; object-fit: cover;"
                          src="{{APP_IMAGE_PATH}}/<%= note.image %>">
                 <% } %>
-                <p><%- note.text %></p>
+                <p><%- linkify(note.text) %></p>
 
                 <% if(note.linkText){ %>
                     <ul class="collection one-line preview" onclick="apretaste.send(<%= atob(note.linkCommand) %>)">
@@ -95,7 +95,7 @@
                            class="<%= comment.gender %>">@<%= comment.username %></a>
                         <span class="date"><%= moment(comment.inserted).format('MMM D, YYYY h:mm A') %></span>
                     </div>
-                    <span class="text" style="word-break: break-word;"><%- comment.text %></span>
+                    <span class="text" style="word-break: break-word;"><%- linkify(comment.text) %></span>
                     <br>
 
                     <div class="actions">
