@@ -322,7 +322,7 @@ class Service
 			SELECT
 				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3, 
 				A.accept_comments, A.link_text, A.link_icon, A.link_command, B.reputation, C.avatar, C.avatarColor, 
-				C.username, C.first_name, C.last_name, C.province, C.picture, C.gender, C.country, C.online, C.is_content_creator,
+				C.username, C.first_name, C.last_name, C.province, C.picture, C.gender, C.country, C.online, C.is_influencer,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_notes A LEFT JOIN _pizarra_users B ON A.id_person = B.id_person LEFT JOIN person C ON C.id = B.id_person
@@ -357,7 +357,7 @@ class Service
 
 		// get note comments
 		$cmts = Database::query("
-			SELECT A.*, B.username, B.province, B.picture, B.gender, B.country, B.online, B.avatar, B.avatarColor, B.is_content_creator, 
+			SELECT A.*, B.username, B.province, B.picture, B.gender, B.country, B.online, B.avatar, B.avatarColor, B.is_influencer, 
 			(SELECT COUNT(comment) FROM _pizarra_comments_actions WHERE comment=A.id AND A.id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
 			(SELECT COUNT(comment) FROM _pizarra_comments_actions WHERE comment=A.id AND A.id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_comments A
@@ -628,9 +628,9 @@ class Service
 	 *
 	 */
 
-	public function _creadores(Request $request, Response $response)
+	public function _influencers(Request $request, Response $response)
 	{
-		$creators = Database::query("SELECT id, username, avatar, avatarColor, online FROM person WHERE is_content_creator=1");
+		$creators = Database::query("SELECT id, username, avatar, avatarColor, online FROM person WHERE is_influencer=1");
 
 		foreach ($creators as $creator) {
 			$creator->isFriend = $request->person->isFriendOf($creator->id);
@@ -639,11 +639,11 @@ class Service
 		$content = [
 			'creators' => $creators,
 			'myUser' => $this->preparePizarraUser($request->person),
-			'title' => 'Creadores'
+			'title' => 'Influencers'
 		];
 
 		$response->setLayout('pizarra.ejs');
-		$response->setTemplate('creadores.ejs', $content);
+		$response->setTemplate('influencers.ejs', $content);
 	}
 
 	/**
@@ -838,7 +838,7 @@ class Service
 			SELECT A.*,
 			(select count(distinct id_person) from _pizarra_comments WHERE _pizarra_comments.note = A.id) as commentsUnique, 
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, 
-			    B.country, B.online, B.avatar, B.avatarColor, B.is_content_creator, C.reputation,
+			    B.country, B.online, B.avatar, B.avatarColor, B.is_influencer, C.reputation,
 			    TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
 				TIMESTAMPDIFF(DAY,A.inserted,CURRENT_DATE) as days,
 				(SELECT COUNT(_pizarra_actions.note) FROM _pizarra_actions 
@@ -857,7 +857,7 @@ class Service
 			LEFT JOIN (
 			    SELECT P.id, P.username, P.first_name, P.last_name, P.province, P.picture, 
 			           P.gender, P.country, P.online, 
-			           P.avatar, P.avatarColor, P.is_content_creator
+			           P.avatar, P.avatarColor, P.is_influencer
 			    FROM person P LEFT JOIN $temporaryTableName ON $temporaryTableName.user1 = P.id OR $temporaryTableName.user2 = P.id
 			    WHERE $temporaryTableName.user1 IS NULL AND $temporaryTableName.user2 IS NULL  			    
 			) B ON A.id_person = B.id 
@@ -867,7 +867,7 @@ class Service
 			SELECT A.*,
 			(select count(distinct id_person) from _pizarra_comments WHERE _pizarra_comments.note = A.id AND _pizarra_comments.id_person <> A.id_person) as commentsUnique, 
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, 
-			    B.country, B.online, B.avatar, B.avatarColor, B.is_content_creator, C.reputation,
+			    B.country, B.online, B.avatar, B.avatarColor, B.is_influencer, C.reputation,
 				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
 			    TIMESTAMPDIFF(DAY,A.inserted,CURRENT_DATE) as days,
 				1 AS isliked,
@@ -882,7 +882,7 @@ class Service
 			LEFT JOIN (
 			    SELECT P.id, P.username, P.first_name, P.last_name, P.province, P.picture, 
 			           P.gender, P.country, P.online, 
-			           P.avatar, P.avatarColor, P.is_content_creator
+			           P.avatar, P.avatarColor, P.is_influencer
 			    FROM person P 		    
 			) B ON A.id_person = B.id 
 			JOIN _pizarra_users C ON A.id_person = C.id_person ORDER BY RAND() LIMIT 1") : [];
@@ -978,14 +978,14 @@ class Service
 
 		// get the last 50 records from the db
 		$listOfNotes = Database::query("
-			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.online, B.avatar, B.avatarColor, B.is_content_creator,
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.online, B.avatar, B.avatarColor, B.is_influencer,
 			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person= '{$profile->id}' AND `action` = 'like') > 0 AS isliked,
 			(SELECT count(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments
 			FROM _pizarra_notes A
 			LEFT JOIN (
 			    SELECT P.id, P.username, P.first_name, P.last_name, P.province, P.picture, 
 			           P.gender, P.country, P.online, 
-			           P.avatar, P.avatarColor, P.is_content_creator
+			           P.avatar, P.avatarColor, P.is_influencer
 			    FROM person P LEFT JOIN $temporaryTableName ON $temporaryTableName.user1 = P.id OR $temporaryTableName.user2 = P.id
 			    WHERE $temporaryTableName.user1 IS NULL AND $temporaryTableName.user2 IS NULL  			    
 			) B
@@ -1020,7 +1020,7 @@ class Service
 	{
 		// get the last 50 records from the db
 		$listOfNotes = Database::query("
-			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, B.is_content_creator,
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, B.is_influencer,
 				EXISTS(SELECT id FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$person->id}' AND `action` = 'like') AS isliked
 			FROM _pizarra_notes A 
 			    INNER JOIN person B ON A.id_person = B.id
@@ -1071,7 +1071,7 @@ class Service
 		$myUser->location = $profile->location;
 		$myUser->avatar = $profile->avatar;
 		$myUser->avatarColor = $profile->avatarColor;
-		$myUser->isContentCreator = $profile->isContentCreator;
+		$myUser->isInfluencer = $profile->isInfluencer;
 
 		return $myUser;
 	}
@@ -1139,7 +1139,7 @@ class Service
 			'username' => $note->username,
 			'location' => $location,
 			'gender' => $note->gender,
-			'isContentCreator' => (bool)$note->is_content_creator,
+			'isInfluencer' => (bool)$note->is_influencer,
 			'text' => $note->text,
 			'image' => $note->image,
 			'inserted' => $note->inserted,
@@ -1246,7 +1246,7 @@ class Service
 	{
 		$seed = $this->getLastSeed();
 		$concept = 'POPULARITY';
-		$sql = "select id_person, person.username, person.avatar, person.avatarColor, person.online, person.is_content_creator, ranking.experience, from_date, to_date, position, person.gender 
+		$sql = "select id_person, person.username, person.avatar, person.avatarColor, person.online, person.is_influencer, ranking.experience, from_date, to_date, position, person.gender 
                 from ranking inner join person on person.id =ranking.id_person 
                 where seed = '$seed' and concept = '$concept'
                 order by position LIMIT 9;";

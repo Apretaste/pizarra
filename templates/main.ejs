@@ -21,11 +21,10 @@
                     <div class="person-avatar circle left"
                          color="<%= note.avatarColor %>"
                          size="30" online="<%= note.online %>"
-                    <% if(note.isContentCreator){ %>
+                         face="<%= note.avatar %>"
+                    <% if(note.isInfluencer){ %>
                          creator_image="{{APP_SERVICE_PATH}}/images/<%= note.username %>.png"
                          state="gold"
-                    <% } else { %>
-                         face="<%= note.avatar %>"
                             <% } %>
                     >
                     </div>

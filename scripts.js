@@ -464,6 +464,15 @@ function addFriendModalOpen(id, username) {
 	M.Modal.getInstance($('#addFriendModal')).open();
 }
 
+function openChat(id) {
+	apretaste.send({
+		command: 'chat',
+		data: {
+			id: id
+		}
+	});
+}
+
 function addFriend() {
 	apretaste.send({
 		command: 'amigos agregar',
@@ -484,9 +493,9 @@ function addFriendCallback() {
 
 function sendCommentCallback(comment) {
 	var avatar = 'face="' + myUser.avatar + '"';
-	if (myUser.isContentCreator) {
+	if (myUser.isInfluencer) {
 		var serviceImgPath = $('serviceImgPath').attr('data');
-		avatar = 'creator_image="' + serviceImgPath + myUser.username + '.png" state="gold"'
+		avatar += ' creator_image="' + serviceImgPath + myUser.username + '.png" state="gold"'
 	}
 
 	var element =
@@ -531,8 +540,8 @@ function sendNoteCallback(note) {
 	}
 
 	var avatar = 'face="' + myUser.avatar + '"';
-	if (myUser.isContentCreator) {
-		avatar = 'creator_image="' + serviceImgPath + myUser.username + '.png" state="gold"'
+	if (myUser.isInfluencer) {
+		avatar += ' creator_image="' + serviceImgPath + myUser.username + '.png" state="gold"'
 	}
 
 	topics.forEach(function (topic) {
