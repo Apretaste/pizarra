@@ -1217,7 +1217,7 @@ class Service
 	{
 		$this->_escribir($request, $response);
 		if (isset($request->input->data->link->command) && !empty($request->input->data->link->command)) {
-			$shareCommand = base64_decode($request->input->data->link->command);
+			$shareCommand = json_decode(base64_decode($request->input->data->link->command));
 			switch ($shareCommand->command ?? '') {
 				case 'CHISTE VER':
 					Challenges::complete('share-joke', $request->person->id);
