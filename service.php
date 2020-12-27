@@ -1071,7 +1071,7 @@ class Service
 		$myUser->location = $profile->location;
 		$myUser->avatar = $profile->avatar;
 		$myUser->avatarColor = $profile->avatarColor;
-		$myUser->isInfluencer = $profile->isInfluencer;
+		$myUser->isInfluencer = $profile->isInfluencer ?? false;
 
 		return $myUser;
 	}
@@ -1139,7 +1139,7 @@ class Service
 			'username' => $note->username,
 			'location' => $location,
 			'gender' => $note->gender,
-			'isInfluencer' => (bool)$note->is_influencer,
+			'isInfluencer' => (bool)$note->is_influencer ?? false,
 			'text' => $note->text,
 			'image' => $note->image,
 			'inserted' => $note->inserted,
