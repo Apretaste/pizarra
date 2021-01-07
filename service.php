@@ -13,6 +13,7 @@ use Framework\Alert;
 use Framework\Images;
 use Framework\Database;
 use Framework\GoogleAnalytics;
+use Apretaste\Influencers;
 
 class Service
 {
@@ -194,6 +195,10 @@ class Service
 						UPDATE $actionsTable SET `action`='like' WHERE id_person='{$request->person->id}' AND $type='{$noteId}';
 						UPDATE $rowsTable SET likes=likes+1, unlikes=unlikes-1,ownlike=$ownlike WHERE id='{$noteId}'");
 
+					// update influencers stats
+					Influencers::incStat($note->id_person, 'likes');
+					Influencers::decStat($note->id_person, 'unlikes');
+
 					// create notification for the creator
 					if ($request->person->id != $note->id_person) {
 						Notifications::alert($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
@@ -210,6 +215,9 @@ class Service
 					UPDATE $rowsTable SET likes=likes+1, ownlike = $ownlike WHERE id='{$noteId}'");
 
 				$note->text = substr($note->text, 0, 30) . '...';
+
+				// update influencers stats
+				Influencers::incStat($note->id_person, 'likes');
 
 				$this->addReputation($note->id_person, $request->person->id, $noteId, 0.3);
 
@@ -257,12 +265,18 @@ class Service
 			return;
 		}
 
+		$note = $note[0];
+
 		// delete previos upvote and add new vote
 		if (!empty($res)) {
 			if ($res[0]->action === 'like') {
 				Database::query("
 				UPDATE $actionsTable SET `action`='unlike' WHERE id_person='{$request->person->id}' AND $type='{$noteId}';
 				UPDATE $rowsTable SET likes=likes-1, unlikes=unlikes+1 WHERE id='{$noteId}'");
+
+				// update influencers stats
+				Influencers::incStat($note->id_person, 'unlikes');
+				Influencers::decStat($note->id_person, 'likes');
 			}
 			return;
 		}
@@ -272,8 +286,10 @@ class Service
 			INSERT INTO $actionsTable (id_person,$type,action) VALUES ('{$request->person->id}','{$noteId}','unlike');
 			UPDATE $rowsTable SET unlikes=unlikes+1 WHERE id='{$noteId}'");
 
-		$note = $note[0];
 		$this->addReputation($note->id_person, $request->person->id, $noteId, -0.3);
+
+		// update influencers stats
+		Influencers::incStat($note->id_person, 'unlikes');
 
 		// submit to Google Analytics 
 		if ($type === 'note') {
@@ -393,6 +409,9 @@ class Service
 			'myUser' => $myUser,
 			'activeIcon' => 1
 		];
+
+		// update influencers stats
+		Influencers::incStat($note['id_person'], 'views');
 
 		$response->setCache(60);
 		$response->SetTemplate('note.ejs', $content, $images);
@@ -533,6 +552,9 @@ class Service
 		$comment = Database::escape($comment, 250);
 		Database::query(" INSERT INTO _pizarra_comments (id_person, note, text) VALUES ('{$request->person->id}', '$noteId', '$comment');
 			UPDATE _pizarra_notes SET comments = comments+1 WHERE id='$noteId';", true);
+
+		// update influencers stats
+		Influencers::incStat($note->id_person, 'comments');
 
 		// add the experience
 		Level::setExperience('PIZARRA_COMMENT_FIRST_DAILY', $request->person->id);
