@@ -461,6 +461,14 @@ input:not([type]):focus:not([readonly]) + label, input[type=text]:not(.browser-d
     border-bottom: 1px solid #788ba1;
 }
 
+.note[liked=true] .like{
+    color: green;
+}
+
+.note[unliked=true] .unlike{
+    color: red;
+}
+
 /* Barebones */
 
 /* GLOBAL */

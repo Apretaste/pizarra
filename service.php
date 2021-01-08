@@ -31,7 +31,8 @@ class Service
 	 */
 	public function _main(Request $request, Response $response): void
 	{
-		$notes = $this->getNotesByFriends($request->person);
+		$page = $request->input->data->page ?? 1;
+		$notes = $this->getNotesByFriends($request->person, $page);
 
 		$myUser = $this->preparePizarraUser($request->person);
 
@@ -70,6 +71,7 @@ class Service
 			'showImages' => $request->person->showImages,
 			'popularTopics' => $popularTopics,
 			'myPopularTopics' => $myPopularTopics,
+			'page' => $page
 		];
 
 		// create the response
@@ -91,6 +93,8 @@ class Service
 	 */
 	public function _global(Request $request, Response $response): void
 	{
+		$page = $request->input->data->page ?? 1;
+
 		// get the type of search
 		$keyword = $request->input->data->search ?? null;
 		$search = $this->getSearchType($keyword);
@@ -101,17 +105,17 @@ class Service
 
 		// get notes if searched by topic
 		if ($searchType === 'topic') {
-			$notes = $this->getNotesByTopic($profile, $searchValue, $keyword != null);
+			$notes = $this->getNotesByTopic($profile, $searchValue, $keyword != null, $page);
 		}
 
 		// get notes if searched by username
 		if ($searchType === 'username') {
-			$notes = $this->getNotesByUsername($profile, $searchValue);
+			$notes = $this->getNotesByUsername($profile, $searchValue, $page);
 		}
 
 		// get notes if searched by keyword
 		if ($searchType === 'keyword') {
-			$notes = $this->getNotesByKeyword($profile, $searchValue);
+			$notes = $this->getNotesByKeyword($profile, $searchValue, $page);
 		}
 
 		$myUser = $this->preparePizarraUser($request->person);
@@ -144,6 +148,7 @@ class Service
 			'showImages' => $request->person->showImages,
 			'popularTopics' => $popularTopics,
 			'myPopularTopics' => $myPopularTopics,
+			'page' => $page
 		];
 
 		// create the response
@@ -812,12 +817,14 @@ class Service
 	 * @param String $topic
 	 *
 	 * @param bool $search
+	 * @param int $page
 	 * @return array of notes
 	 * @throws Alert
 	 * @author salvipascual
 	 */
-	private function getNotesByTopic($profile, $topic, $search = false): array
+	private function getNotesByTopic($profile, $topic, $search = false, $page = 1): array
 	{
+		$offset = ($page - 1) * 20;
 		$silencedQuery = 'SELECT topic FROM _pizarra_topics_silenced';
 
 		$where = $topic !== 'general'
@@ -861,7 +868,7 @@ class Service
 			    FROM person P LEFT JOIN $temporaryTableName ON $temporaryTableName.user1 = P.id OR $temporaryTableName.user2 = P.id
 			    WHERE $temporaryTableName.user1 IS NULL AND $temporaryTableName.user2 IS NULL  			    
 			) B ON A.id_person = B.id 
-			JOIN _pizarra_users C ON A.id_person = C.id_person LIMIT 40");
+			JOIN _pizarra_users C ON A.id_person = C.id_person LIMIT 20 OFFSET $offset");
 
 		$adNotes = !$search ? Database::query("
 			SELECT A.*,
@@ -914,14 +921,14 @@ class Service
 	 *
 	 * @param Person $profile
 	 * @param String $username
-	 *
+	 * @param int $page
 	 * @return array of notes
 	 * @throws Alert
 	 * @author salvipascual
-	 *
 	 */
-	private function getNotesByUsername($profile, $username): array
+	private function getNotesByUsername($profile, string $username, $page = 1): array
 	{
+		$offset = ($page - 1) * 20;
 		$user = Person::find($username);
 		if (!$user) {
 			return [];
@@ -945,7 +952,7 @@ class Service
 			ON C.id_person = B.id
 			WHERE A.active=1 AND B.id = '$user->id'
 			ORDER BY inserted DESC
-			LIMIT 20");
+			LIMIT 20 OFFSET $offset");
 
 		// format the array of notes
 		$notes = [];
@@ -968,8 +975,10 @@ class Service
 	 * @author salvipascual
 	 *
 	 */
-	private function getNotesByKeyword($profile, $keyword): array
+	private function getNotesByKeyword($profile, $keyword, $page = 1): array
 	{
+		$offset = ($page - 1) * 20;
+
 		$temporaryTableName = 'temprelation_' . uniqid('', false);
 		Database::query("CREATE TEMPORARY TABLE $temporaryTableName 
     			SELECT relations.user1, relations.user2 
@@ -994,7 +1003,7 @@ class Service
 			ON C.id_person = B.id
 			WHERE A.active=1 AND A.text like '%$keyword%' 
 			ORDER BY inserted DESC
-			LIMIT 30");
+			LIMIT 20 OFFSET $offset");
 
 		// format the array of notes
 		$notes = [];
@@ -1011,13 +1020,14 @@ class Service
 	 *
 	 * @param Person $person
 	 *
-	 * @param int $offset
+	 * @param int $page
 	 * @return array|null
 	 * @throws Alert
 	 * @author salvipascual
 	 */
-	private function getNotesByFriends(Person $person, $offset = 0)
+	private function getNotesByFriends(Person $person, $page = 1)
 	{
+		$offset = ($page - 1) * 20;
 		// get the last 50 records from the db
 		$listOfNotes = Database::query("
 			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, B.is_influencer,

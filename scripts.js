@@ -272,6 +272,28 @@ function hideKeyboard() {
 	}
 }
 
+function nextPage() {
+	var command = title === 'Global' ? 'pizarra global' : 'pizarra';
+	apretaste.send({
+		command: command,
+		data: {
+			search: typeof search != 'undefined' ? search : null,
+			page: page + 1
+		}
+	});
+}
+
+function previousPage() {
+	var command = title === 'Global' ? 'pizarra global' : 'pizarra';
+	apretaste.send({
+		command: command,
+		data: {
+			search: typeof search != 'undefined' ? search : null,
+			page: page - 1
+		}
+	});
+}
+
 function deleteCallback(id) {
 	$('#' + id).remove();
 	showToast('Nota eliminada');
@@ -404,21 +426,18 @@ function like(id, type, pubType) {
 	apretaste.send({
 		'command': 'PIZARRA ' + type,
 		'data': data,
-		'callback': {
-			'name': 'likeCallback',
-			'data': JSON.stringify({
-				'id': id,
-				'type': type,
-				'pubType': pubType
-			})
-		},
 		'showLoading': false,
 		'redirect': false
+	});
+
+	likeCallback({
+		'id': id,
+		'type': type,
+		'pubType': pubType
 	});
 }
 
 function likeCallback(data) {
-	var data = JSON.parse(data);
 	var id = data.id;
 	var type = data.type;
 	var pubType = data.pubType;
@@ -464,15 +483,6 @@ function addFriendModalOpen(id, username) {
 	M.Modal.getInstance($('#addFriendModal')).open();
 }
 
-function openChat(id) {
-	apretaste.send({
-		command: 'chat',
-		data: {
-			id: id
-		}
-	});
-}
-
 function addFriend() {
 	apretaste.send({
 		command: 'amigos agregar',
@@ -486,8 +496,61 @@ function addFriend() {
 
 function addFriendCallback() {
 	showToast('Solicitud enviada');
-	$('#' + currentUser + ' .action').remove();
+
+	$('#' + currentUser + ' .action').html(
+		'<a href="#!">' +
+		'    <i class="material-icons green-text"' +
+		'       onclick="openChat(\'' + currentUser + '\')">' +
+		'        message' +
+		'    </i>' +
+		'</a>' +
+		'<a href="#!">' +
+		'    <i class="material-icons red-text"' +
+		'       onclick="deleteModalOpen(\'' + currentUser + '\', \'' + currentUsername + '\')">' +
+		'        delete' +
+		'    </i>' +
+		'</a>');
 }
+
+function deleteModalOpen(id, username) {
+	currentUser = id;
+	currentUsername = username;
+	$('.username').html('@' + username);
+	M.Modal.getInstance($('#deleteModal')).open();
+}
+
+function deleteFriend() {
+	apretaste.send({
+		command: 'amigos eliminar',
+		data: {id: currentUser},
+		redirect: false,
+		callback: {
+			name: 'deleteFriendCallback',
+		}
+	});
+}
+
+function deleteFriendCallback() {
+	showToast('Amigo eliminado');
+
+	$('#' + currentUser + ' .action').html(
+		'<a href="#!">' +
+		'    <i class="material-icons green-text"' +
+		'       onclick="addFriendModalOpen(\'' + currentUser + '\', \'' + currentUsername + '\')">' +
+		'        person_add' +
+		'    </i>' +
+		'</a>');
+}
+
+function openChat(id) {
+	apretaste.send({
+		command: 'chat',
+		data: {
+			id: id
+		}
+	});
+}
+
 
 // Callback functions
 

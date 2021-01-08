@@ -25,10 +25,14 @@
             </div>
 
             <% if(note.image){ %>
-                <div class="card-image">
+                <% var src = '{{APP_IMAGE_PATH}}/' + note.image %>
+                <% if(typeof apretaste.showImage != 'undefined'){ %>
+                    <img class="responsive-img" style="width: 100%; object-fit: cover;"
+                         src="<%= src %>" onclick="apretaste.showImage('<%= src %>')">
+                <% } else { %>
                     <img class="responsive-img materialboxed" style="width: 100%; object-fit: cover;"
-                         src="{{APP_IMAGE_PATH}}/<%= note.image %>">
-                </div>
+                         src="<%= src %>">
+                <% } %>
             <% } %>
 
             <div class="card-content">

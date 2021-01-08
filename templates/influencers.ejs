@@ -34,29 +34,36 @@
                     </div>
 
                     <div class="action grey lighten-2 green-text">
-                        <a href="#!">
-                            <i class="material-icons green-text"
-                               onclick="openProfile('<%= creator.username %>')">
-                                person
-                            </i>
-                        </a>
-
                         <% if(creator.username != myUser.username){ %>
-                            <% if(!creator.isFriend){ %>
-                                <a href="#!">
-                                    <i class="material-icons green-text"
-                                       onclick="addFriendModalOpen('<%= creator.id %>', '<%= creator.username %>')">
-                                        person_add
-                                    </i>
-                                </a>
-                            <% } else { %>
+                            <% if(creator.isFriend){ %>
                                 <a href="#!">
                                     <i class="material-icons green-text"
                                        onclick="openChat('<%= creator.id %>')">
                                         message
                                     </i>
                                 </a>
+
+                                <a href="#!">
+                                    <i class="material-icons red-text"
+                                       onclick="deleteModalOpen('<%= creator.id %>', '<%= creator.username %>')">
+                                        delete
+                                    </i>
+                                </a>
+                            <% } else { %>
+                                <a href="#!">
+                                    <i class="material-icons green-text"
+                                       onclick="addFriendModalOpen('<%= creator.id %>', '<%= creator.username %>')">
+                                        person_add
+                                    </i>
+                                </a>
                             <% } %>
+                        <% } else { %>
+                            <a href="#!">
+                                <i class="material-icons green-text"
+                                   onclick="openProfile('<%= creator.username %>')">
+                                    person
+                                </i>
+                            </a>
                         <% } %>
                     </div>
                 </div>
@@ -78,6 +85,17 @@
     <div class="modal-footer">
         <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
         <a onclick="addFriend()" class="waves-effect waves-green btn-flat green-text modal-close">Agregar</a>
+    </div>
+</div>
+
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <p>¿Esta seguro de eliminar a <b class="username">@amigo</b> de sus amigos?</p>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancelar</a>
+        <a onclick="deleteFriend()" class="modal-close waves-effect waves-red btn-flat red-text"
+           style="font-weight: 500">Eliminar</a>
     </div>
 </div>
 
