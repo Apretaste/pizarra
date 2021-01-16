@@ -471,6 +471,16 @@ class Service
 			throw new RuntimeException("PIZARRA: NoteID is null after INSERT. QUERY = $sql");
 		}
 
+		// fill muro
+		Database::query("INSERT INTO _pizarra_muro (id, person_id, note, author, created, inserted) 
+				VALUES (uuid(), {$request->person->id}, {$this->insertedNoteId}, {$request->person->id}, current_timestamp, current_timestamp);");
+
+		$friends = $request->person->getFriends();
+		foreach($friends as $friend) {
+			Database::query("INSERT INTO _pizarra_muro (id, person_id, note, author, created, inserted) 
+				VALUES (uuid(), {$friend}, {$this->insertedNoteId}, {$request->person->id}, current_timestamp, current_timestamp);");
+		}
+
 		// complete the challenge
 		Challenges::complete('write-pizarra-note', $request->person->id);
 
@@ -1029,18 +1039,29 @@ class Service
 	{
 		$offset = ($page - 1) * 20;
 		// get the last 50 records from the db
+
+		/*$listOfNotes = Database::query("
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, B.is_influencer,
+				EXISTS(SELECT id FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$person->id}' AND `action` = 'like') AS isliked
+			FROM _pizarra_notes A
+			    INNER JOIN person B ON A.id_person = B.id
+				INNER JOIN _pizarra_users C	ON C.id_person = B.id
+			WHERE A.active = 1
+				AND (B.id IN(SELECT IF(user1 = {$person->id}, user2, user1) AS id
+								FROM person_relation_friend
+								WHERE user1 = {$person->id} OR user2 = {$person->id})
+				OR B.id = {$person->id})
+			ORDER BY A.ad DESC, inserted DESC
+			LIMIT 20 OFFSET $offset");
+		*/
+
 		$listOfNotes = Database::query("
 			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, B.is_influencer,
 				EXISTS(SELECT id FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$person->id}' AND `action` = 'like') AS isliked
-			FROM _pizarra_notes A 
+			FROM _pizarra_muro muro INNER JOIN _pizarra_notes A ON muro.note = A.id  
 			    INNER JOIN person B ON A.id_person = B.id
-				INNER JOIN _pizarra_users C	ON C.id_person = B.id
-			WHERE A.active = 1 
-				AND (B.id IN(SELECT IF(user1 = {$person->id}, user2, user1) AS id 
-								FROM person_relation_friend 
-								WHERE user1 = {$person->id} OR user2 = {$person->id}) 
-				OR B.id = {$person->id})
-			ORDER BY A.ad DESC, inserted DESC
+			WHERE muro.person_id = {$person->id}
+			ORDER BY muro.created DESC
 			LIMIT 20 OFFSET $offset");
 
 		// format the array of notes
