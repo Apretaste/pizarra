@@ -87,7 +87,11 @@
 
         <ul class="chat" id="comments">
             <% note.comments.forEach(function(comment) { %>
-                <li class="<%= comment.username == myUser.username ? "right" : "left" %>" id="<%= comment.id %>">
+                <li class="<%= comment.username == myUser.username ? "right" : "left" %> comment"
+                    id="<%= comment.id %>"
+                    liked="<%= comment.liked %>"
+                    unliked="<%= comment.unliked %>"
+                >
                     <div class="person-avatar circle"
                     <% if(comment.isInfluencer){ %>
                          creator_image="{{APP_SERVICE_PATH}}/images/<%= comment.username %>.png"

@@ -149,7 +149,7 @@ function sendNote() {
 	hideKeyboard();
 	var note = $('#note').val().trim();
 
-	if (note.length >= 20) {
+	if (note.length > 2) {
 		var files = notePicturePath != null ? [notePicturePath] : [];
 		var basename = notePicturePath != null ? notePicturePath.split(/[\\/]/).pop() : null;
 
@@ -168,7 +168,7 @@ function sendNote() {
 			}
 		});
 	} else {
-		showToast('Minimo 20 caracteres');
+		showToast('Minimo 3 caracteres');
 	}
 }
 
@@ -495,7 +495,7 @@ function addFriend() {
 }
 
 function addFriendCallback() {
-	showToast('Solicitud enviada');
+	showToast('Amistad aceptada');
 
 	$('#' + currentUser + ' .action').html(
 		'<a href="#!">' +
@@ -507,7 +507,7 @@ function addFriendCallback() {
 		'<a href="#!">' +
 		'    <i class="material-icons red-text"' +
 		'       onclick="deleteModalOpen(\'' + currentUser + '\', \'' + currentUsername + '\')">' +
-		'        delete' +
+		'        do_not_disturb_alt' +
 		'    </i>' +
 		'</a>');
 }
@@ -599,7 +599,9 @@ function sendNoteCallback(note) {
 
 	var hasImage = "";
 	if (typeof notePicture != "undefined" || (typeof notePicturePath != "undefined" && notePicturePath != null)) {
-		hasImage = "<img class=\"responsive-img\" style=\"width: 100%\" src=\"" + serviceImgPath + "/img-prev.png\" onclick=\"apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'last'}});\">";
+		var src = "data:image/jpg;base64," + notePicture;
+		if (notePicturePath != null) src = "file://" + notePicturePath;
+		hasImage = "<img class=\"responsive-img\" style=\"width: 100%\" src=\"" + src + "\" onclick=\"apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'last'}});\">";
 	}
 
 	var avatar = 'face="' + myUser.avatar + '"';

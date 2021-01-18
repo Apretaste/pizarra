@@ -444,15 +444,19 @@ class Service
 			$filePath = "$pizarraImgDir/$fileName.jpg";
 
 			if ($image) {
-				Images::saveBase64Image($image, $filePath);
+				$filePath = Images::saveBase64Image($image, $filePath);
 			} else {
+				$extension = explode('/', mime_content_type($imageName))[1];
+				$filePath = str_replace('.jpg', ".$extension", $filePath);
 				$tempImagePath = $request->input->files[$imageName];
 				rename($tempImagePath, $filePath);
 			}
+
+			$fileName = basename($filePath);
 		}
 
 		// only post notes with real content
-		$minLength = isset($request->input->data->link->command) ? 0 : 20;
+		$minLength = isset($request->input->data->link->command) ? 0 : 3;
 
 		if (strlen($text) < $minLength) {
 			return;
@@ -495,7 +499,7 @@ class Service
 				VALUES (uuid(), {$request->person->id}, {$this->insertedNoteId}, {$request->person->id}, current_timestamp, current_timestamp);");
 
 		$friends = $request->person->getFriends();
-		foreach($friends as $friend) {
+		foreach ($friends as $friend) {
 			Database::query("INSERT INTO _pizarra_muro (id, person_id, note, author, created, inserted) 
 				VALUES (uuid(), {$friend}, {$this->insertedNoteId}, {$request->person->id}, current_timestamp, current_timestamp);");
 		}
@@ -1161,10 +1165,11 @@ class Service
 			$topics[] = $note->topic3;
 		}
 
-		if (isset($note->image) && $note->image) {
+		$note->image ??= false;
+
+		// If the img doesn't have extension
+		if ($note->image && !str_contains($note->image, '.')) {
 			$note->image .= '.jpg';
-		} else {
-			$note->image = false;
 		}
 
 		$avatar = empty($note->avatar) ? ($note->gender === 'M' ? 'hombre' : ($note->gender === 'F' ? 'sennorita' : 'hombre')) : $note->avatar;

@@ -144,27 +144,29 @@
 </div>
 
 <!-- PAGINATION -->
-<div class="row">
-    <div class="col s12 center-align">
-        <ul class="pagination">
-            <% if(page > 1){ %>
-                <li class="waves-effect">
-                    <a href="#!" onclick="previousPage()">
-                        <i class="material-icons">chevron_left</i>
-                    </a>
-                </li>
-            <% } %>
-            <li class="waves-effect"><%= page %></li>
-            <% if(notes.length >= 20){ %>
-                <li class="waves-effect">
-                    <a href="#!" onclick="nextPage()">
-                        <i class="material-icons">chevron_right</i>
-                    </a>
-                </li>
-            <% } %>
-        </ul>
+<% if(page > 1 || notes.length >= 20){ %>
+    <div class="row">
+        <div class="col s12 center-align">
+            <ul class="pagination">
+                <% if(page > 1){ %>
+                    <li class="waves-effect">
+                        <a href="#!" onclick="previousPage()">
+                            <i class="material-icons">chevron_left</i>
+                        </a>
+                    </li>
+                <% } %>
+                <li class="waves-effect"><%= page %></li>
+                <% if(notes.length >= 20){ %>
+                    <li class="waves-effect">
+                        <a href="#!" onclick="nextPage()">
+                            <i class="material-icons">chevron_right</i>
+                        </a>
+                    </li>
+                <% } %>
+            </ul>
+        </div>
     </div>
-</div>
+<% } %>
 
 <div id="writeModal" class="container" status="closed" style="display: none;">
     <div class="row">
