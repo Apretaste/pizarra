@@ -6,6 +6,7 @@ use Apretaste\Person;
 use Apretaste\Amulets;
 use Apretaste\Request;
 use Apretaste\Response;
+use Apretaste\Tutorial;
 use Apretaste\Challenges;
 use Apretaste\Notifications;
 use Framework\Utils;
@@ -495,12 +496,14 @@ class Service
 		}
 
 		// fill muro
-		Database::query("INSERT INTO _pizarra_muro (id, person_id, note, author, created, inserted) 
-				VALUES (uuid(), {$request->person->id}, {$this->insertedNoteId}, {$request->person->id}, current_timestamp, current_timestamp);");
+		Database::query("
+			INSERT INTO _pizarra_muro (id, person_id, note, author, created, inserted) 
+			VALUES (uuid(), {$request->person->id}, {$this->insertedNoteId}, {$request->person->id}, current_timestamp, current_timestamp);");
 
 		$friends = $request->person->getFriends();
 		foreach ($friends as $friend) {
-			Database::query("INSERT INTO _pizarra_muro (id, person_id, note, author, created, inserted) 
+			Database::query("
+				INSERT INTO _pizarra_muro (id, person_id, note, author, created, inserted) 
 				VALUES (uuid(), {$friend}, {$this->insertedNoteId}, {$request->person->id}, current_timestamp, current_timestamp);");
 		}
 
@@ -509,6 +512,9 @@ class Service
 
 		// add the experience
 		Level::setExperience('PIZARRA_POST_FIRST_DAILY', $request->person->id);
+
+		// complete tutorial
+		Tutorial::complete($request->person->id, 'post_pizarra');
 
 		// submit to Google Analytics 
 		GoogleAnalytics::event('note_new', $this->insertedNoteId);
