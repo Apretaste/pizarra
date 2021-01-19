@@ -447,9 +447,9 @@ class Service
 			if ($image) {
 				$filePath = Images::saveBase64Image($image, $filePath);
 			} else {
-				$extension = explode('/', mime_content_type($imageName))[1];
-				$filePath = str_replace('.jpg', ".$extension", $filePath);
 				$tempImagePath = $request->input->files[$imageName];
+				$extension = explode('/', mime_content_type($tempImagePath))[1];
+				$filePath = str_replace('.jpg', ".$extension", $filePath);
 				rename($tempImagePath, $filePath);
 			}
 
@@ -810,8 +810,8 @@ class Service
 	 * Search what type of search the user is doing
 	 *
 	 * @param $keyword
-	 * @return array ["type", "value"]
-	 * @throws Alert
+	 * @return array|null ["type", "value"]
+	 * @throws \Apretaste\Alert
 	 * @author salvipascual
 	 */
 	private function getSearchType($keyword): ?array
