@@ -497,13 +497,13 @@ class Service
 
 		// fill muro
 		Database::query("
-			INSERT INTO _pizarra_muro (id, person_id, note, author, created, inserted) 
+			INSERT IGNORE INTO _pizarra_muro (id, person_id, note, author, created, inserted) 
 			VALUES (uuid(), {$request->person->id}, {$this->insertedNoteId}, {$request->person->id}, current_timestamp, current_timestamp);");
 
 		$friends = $request->person->getFriends();
 		foreach ($friends as $friend) {
 			Database::query("
-				INSERT INTO _pizarra_muro (id, person_id, note, author, created, inserted) 
+				INSERT IGNORE INTO _pizarra_muro (id, person_id, note, author, created, inserted) 
 				VALUES (uuid(), {$friend}, {$this->insertedNoteId}, {$request->person->id}, current_timestamp, current_timestamp);");
 		}
 
