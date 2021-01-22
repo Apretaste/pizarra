@@ -14,8 +14,7 @@ use Framework\Alert;
 use Framework\Images;
 use Framework\Database;
 use Framework\GoogleAnalytics;
-
-// use Apretaste\Influencers;
+use Apretaste\Influencers;
 
 class Service
 {
@@ -209,8 +208,8 @@ class Service
 						UPDATE $rowsTable SET likes=likes+1, unlikes=unlikes-1,ownlike=$ownlike WHERE id='{$noteId}'");
 
 					// update influencers stats
-					// Influencers::incStat($note->id_person, 'likes');
-					// Influencers::decStat($note->id_person, 'unlikes');
+					Influencers::incStat($note->id_person, 'likes');
+					Influencers::decStat($note->id_person, 'unlikes');
 
 					// create notification for the creator
 					if ($request->person->id != $note->id_person) {
@@ -230,7 +229,7 @@ class Service
 				$note->text = substr($note->text, 0, 30) . '...';
 
 				// update influencers stats
-				// Influencers::incStat($note->id_person, 'likes');
+				Influencers::incStat($note->id_person, 'likes');
 
 				$this->addReputation($note->id_person, $request->person->id, $noteId, 0.3);
 
@@ -288,8 +287,8 @@ class Service
 				UPDATE $rowsTable SET likes=likes-1, unlikes=unlikes+1 WHERE id='{$noteId}'");
 
 				// update influencers stats
-				// Influencers::incStat($note->id_person, 'unlikes');
-				// Influencers::decStat($note->id_person, 'likes');
+				Influencers::incStat($note->id_person, 'unlikes');
+				Influencers::decStat($note->id_person, 'likes');
 			}
 			return;
 		}
@@ -302,7 +301,7 @@ class Service
 		$this->addReputation($note->id_person, $request->person->id, $noteId, -0.3);
 
 		// update influencers stats
-		// Influencers::incStat($note->id_person, 'unlikes');
+		Influencers::incStat($note->id_person, 'unlikes');
 
 		// submit to Google Analytics 
 		if ($type === 'note') {
@@ -424,7 +423,7 @@ class Service
 		];
 
 		// update influencers stats
-		// Influencers::incStat($note['id_person'], 'views');
+		Influencers::incStat($note['id_person'], 'views');
 
 		$response->setCache(60);
 		$response->SetTemplate('note.ejs', $content, $images);
@@ -586,7 +585,7 @@ class Service
 			UPDATE _pizarra_notes SET comments = comments+1 WHERE id='$noteId';", true);
 
 		// update influencers stats
-		// Influencers::incStat($note->id_person, 'comments');
+		Influencers::incStat($note->id_person, 'comments');
 
 		// add the experience
 		Level::setExperience('PIZARRA_COMMENT_FIRST_DAILY', $request->person->id);
