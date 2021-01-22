@@ -14,6 +14,7 @@ use Framework\Alert;
 use Framework\Images;
 use Framework\Database;
 use Framework\GoogleAnalytics;
+
 // use Apretaste\Influencers;
 
 class Service
@@ -35,6 +36,7 @@ class Service
 	{
 		$page = $request->input->data->page ?? 1;
 		$notes = $this->getNotesByFriends($request->person, $page);
+		$pages = count($notes) >= 20 || $page > 1 ? $this->getPagesByFriends($request->person) : 1;
 
 		$myUser = $this->preparePizarraUser($request->person);
 
@@ -73,7 +75,8 @@ class Service
 			'showImages' => $request->person->showImages,
 			'popularTopics' => $popularTopics,
 			'myPopularTopics' => $myPopularTopics,
-			'page' => $page
+			'page' => $page,
+			'pages' => $pages ?? 1,
 		];
 
 		// create the response
@@ -108,16 +111,19 @@ class Service
 		// get notes if searched by topic
 		if ($searchType === 'topic') {
 			$notes = $this->getNotesByTopic($profile, $searchValue, $keyword != null, $page);
+			$pages = count($notes) >= 20 || $page > 1 ? $this->getPagesByTopic($profile, $searchValue) : 1;
 		}
 
 		// get notes if searched by username
 		if ($searchType === 'username') {
 			$notes = $this->getNotesByUsername($profile, $searchValue, $page);
+			$pages = count($notes) >= 20 || $page > 1 ? $this->getPagesByUsername($searchValue) : 1;
 		}
 
 		// get notes if searched by keyword
 		if ($searchType === 'keyword') {
 			$notes = $this->getNotesByKeyword($profile, $searchValue, $page);
+			$pages = count($notes) >= 20 || $page > 1 ? $this->getPagesByKeyword($profile, $searchValue) : 1;
 		}
 
 		$myUser = $this->preparePizarraUser($request->person);
@@ -150,7 +156,8 @@ class Service
 			'showImages' => $request->person->showImages,
 			'popularTopics' => $popularTopics,
 			'myPopularTopics' => $myPopularTopics,
-			'page' => $page
+			'page' => $page,
+			'pages' => $pages ?? 1,
 		];
 
 		// create the response
@@ -959,13 +966,60 @@ class Service
 	}
 
 	/**
+	 * Search and return pages count by topic
+	 *
+	 * @param Person $profile
+	 * @param String $topic
+	 * @return int
+	 * @throws Alert
+	 * @throws \Apretaste\Alert
+	 * @author ricardo
+	 */
+	private function getPagesByTopic($profile, $topic): int
+	{
+		$silencedQuery = 'SELECT topic FROM _pizarra_topics_silenced';
+
+		$where = $topic !== 'general'
+			? "WHERE (_pizarra_notes.topic1='$topic' OR _pizarra_notes.topic2='$topic' OR _pizarra_notes.topic3='$topic') AND active=1"
+			: "WHERE _pizarra_notes.active=1 AND (_pizarra_notes.topic1 NOT IN($silencedQuery) AND _pizarra_notes.topic2 NOT IN($silencedQuery) AND _pizarra_notes.topic3 NOT IN($silencedQuery))";
+		// set the topic as default for the user
+
+		Database::query("UPDATE _pizarra_users SET default_topic='$topic' WHERE id_person='{$profile->id}'");
+
+		$temporaryTableName = 'temprelation_' . uniqid('', false);
+		Database::query("CREATE TEMPORARY TABLE $temporaryTableName 
+    			SELECT relations.user1, relations.user2 
+				FROM relations 
+				WHERE (user1 = {$profile->id} OR user2 = {$profile->id}) AND type = 'blocked' AND confirmed = 1;");
+
+		// get the records from the db
+		$count = Database::queryFirst("
+			SELECT COUNT(A.id) as total
+			FROM (SELECT subq3.* 
+					FROM (SELECT DISTINCT id, id_person 
+						  FROM _pizarra_notes $where AND ad = 0 AND silenced = 0
+						  ORDER BY id DESC LIMIT 500) subq2 
+					INNER JOIN _pizarra_notes subq3 
+					ON subq2.id = subq3.id
+			      ) A
+			LEFT JOIN (
+			    SELECT P.id
+			    FROM person P LEFT JOIN $temporaryTableName ON $temporaryTableName.user1 = P.id OR $temporaryTableName.user2 = P.id
+			    WHERE $temporaryTableName.user1 IS NULL AND $temporaryTableName.user2 IS NULL  			    
+			) B ON A.id_person = B.id 
+			JOIN _pizarra_users C ON A.id_person = C.id_person");
+
+		return (int)ceil($count->total / 20);
+	}
+
+	/**
 	 * Search and return all notes made by a person
 	 *
 	 * @param Person $profile
 	 * @param String $username
 	 * @param int $page
 	 * @return array of notes
-	 * @throws Alert
+	 * @throws Alert|\Apretaste\Alert
 	 * @author salvipascual
 	 */
 	private function getNotesByUsername($profile, string $username, $page = 1): array
@@ -1004,6 +1058,30 @@ class Service
 
 		// return array of notes
 		return $notes;
+	}
+
+
+	/**
+	 * Search and return pages count by username
+	 *
+	 * @param String $username
+	 * @return int
+	 * @throws Alert
+	 * @author ricardo
+	 */
+	private function getPagesByUsername(string $username): int
+	{
+		// get the last 50 records from the db
+		$count = Database::queryCache("
+			SELECT COUNT(A.id) as total FROM _pizarra_notes A
+			LEFT JOIN person B
+			ON A.id_person = B.id
+			LEFT JOIN _pizarra_users C
+			ON C.id_person = B.id
+			WHERE A.active=1 AND B.username = '$username'");
+
+		// return total pages for this search
+		return (int)ceil($count[0]->total / 20);
 	}
 
 	/**
@@ -1058,6 +1136,41 @@ class Service
 	}
 
 	/**
+	 * Search and return pages count by keyword
+	 *
+	 * @param Person $profile
+	 * @param String $keyword
+	 *
+	 * @return int of notes
+	 * @throws \Apretaste\Alert
+	 * @author salvipascual
+	 */
+	private function getPagesByKeyword($profile, $keyword): int
+	{
+		$temporaryTableName = 'temprelation_' . uniqid('', false);
+		Database::query("CREATE TEMPORARY TABLE $temporaryTableName 
+    			SELECT relations.user1, relations.user2 
+				FROM relations 
+				WHERE (user1 = {$profile->id} OR user2 = {$profile->id}) AND type = 'blocked' AND confirmed = 1;");
+
+		// get the last 50 records from the db
+		$count = Database::queryFirst("
+			SELECT COUNT(A.id) AS total FROM _pizarra_notes A
+			LEFT JOIN (
+			    SELECT P.id
+			    FROM person P LEFT JOIN $temporaryTableName ON $temporaryTableName.user1 = P.id OR $temporaryTableName.user2 = P.id
+			    WHERE $temporaryTableName.user1 IS NULL AND $temporaryTableName.user2 IS NULL  			    
+			) B
+			ON A.id_person= B.id
+			LEFT JOIN _pizarra_users C
+			ON C.id_person = B.id
+			WHERE A.active=1 AND A.text like '%$keyword%'");
+
+		// return total pages
+		return (int)ceil($count->total / 20);
+	}
+
+	/**
 	 * Get notes by user friends
 	 *
 	 * @param Person $person
@@ -1070,22 +1183,6 @@ class Service
 	private function getNotesByFriends(Person $person, $page = 1)
 	{
 		$offset = ($page - 1) * 20;
-		// get the last 50 records from the db
-
-		/*$listOfNotes = Database::query("
-			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, B.is_influencer,
-				EXISTS(SELECT id FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$person->id}' AND `action` = 'like') AS isliked
-			FROM _pizarra_notes A
-			    INNER JOIN person B ON A.id_person = B.id
-				INNER JOIN _pizarra_users C	ON C.id_person = B.id
-			WHERE A.active = 1
-				AND (B.id IN(SELECT IF(user1 = {$person->id}, user2, user1) AS id
-								FROM person_relation_friend
-								WHERE user1 = {$person->id} OR user2 = {$person->id})
-				OR B.id = {$person->id})
-			ORDER BY A.ad DESC, inserted DESC
-			LIMIT 20 OFFSET $offset");
-		*/
 
 		$listOfNotes = Database::query("
 			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, B.is_influencer,
@@ -1104,6 +1201,26 @@ class Service
 
 		// return array of notes
 		return $notes;
+	}
+
+	/**
+	 * Get notes pages count by user friends
+	 *
+	 * @param Person $person
+	 *
+	 * @return int
+	 * @throws \Apretaste\Alert
+	 * @author salvipascual
+	 */
+	private function getPagesByFriends(Person $person): int
+	{
+		$count = Database::queryCache("
+			SELECT COUNT(A.id) as total FROM _pizarra_muro muro INNER JOIN _pizarra_notes A ON muro.note = A.id  
+			    INNER JOIN person B ON A.id_person = B.id
+			WHERE muro.person_id = {$person->id}");
+
+		// return total pages
+		return (int)ceil($count[0]->total / 20);
 	}
 
 	/**

@@ -144,7 +144,7 @@
 </div>
 
 <!-- PAGINATION -->
-<% if(page > 1 || notes.length >= 20){ %>
+<% if(pages > 1){ %>
     <div class="row">
         <div class="col s12 center-align">
             <ul class="pagination">
@@ -155,8 +155,8 @@
                         </a>
                     </li>
                 <% } %>
-                <li class="waves-effect"><%= page %></li>
-                <% if(notes.length >= 20){ %>
+                <li class="waves-effect"><%= page %> / <%= pages %></li>
+                <% if(page < pages){ %>
                     <li class="waves-effect">
                         <a href="#!" onclick="nextPage()">
                             <i class="material-icons">chevron_right</i>
