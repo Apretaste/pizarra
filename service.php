@@ -345,8 +345,8 @@ class Service
 				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3, 
 				A.accept_comments, A.link_text, A.link_icon, A.link_command, B.reputation, C.avatar, C.avatarColor, 
 				C.username, C.first_name, C.last_name, C.province, C.picture, C.gender, C.country, C.online, C.is_influencer,
-				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
-				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND A.id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
+				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
+				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_notes A LEFT JOIN _pizarra_users B ON A.id_person = B.id_person LEFT JOIN person C ON C.id = B.id_person
 			WHERE A.id = '$noteId' AND A.active=1");
 
@@ -380,8 +380,8 @@ class Service
 		// get note comments
 		$cmts = Database::query("
 			SELECT A.*, B.username, B.province, B.picture, B.gender, B.country, B.online, B.avatar, B.avatarColor, B.is_influencer, 
-			(SELECT COUNT(comment) FROM _pizarra_comments_actions WHERE comment=A.id AND A.id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
-			(SELECT COUNT(comment) FROM _pizarra_comments_actions WHERE comment=A.id AND A.id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
+			(SELECT COUNT(comment) FROM _pizarra_comments_actions WHERE comment=A.id AND id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
+			(SELECT COUNT(comment) FROM _pizarra_comments_actions WHERE comment=A.id AND id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
 			FROM _pizarra_comments A
 			LEFT JOIN person B
 			ON A.id_person = B.id
@@ -891,10 +891,10 @@ class Service
 			    TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
 				TIMESTAMPDIFF(DAY,A.inserted,CURRENT_DATE) as days,
 				(SELECT COUNT(_pizarra_actions.note) FROM _pizarra_actions 
-					WHERE _pizarra_actions.note = A.id AND A.id_person = {$profile->id} 
+					WHERE _pizarra_actions.note = A.id AND id_person = {$profile->id} 
 					  AND _pizarra_actions.action = 'like') > 0 AS isliked,
 				(SELECT COUNT(_pizarra_actions.note) FROM _pizarra_actions 
-					WHERE _pizarra_actions.note = A.id AND A.id_person = {$profile->id} 
+					WHERE _pizarra_actions.note = A.id AND id_person = {$profile->id} 
 					  AND _pizarra_actions.action = 'unlike') > 0 AS isunliked
 			FROM (SELECT subq3.* 
 					FROM (SELECT DISTINCT id, id_person 
