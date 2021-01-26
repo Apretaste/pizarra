@@ -231,7 +231,7 @@ function searchText() {
 		apretaste.send({
 			'command': 'PIZARRA GLOBAL',
 			'data': {
-				'search': search
+				search: search
 			}
 		});
 	} else {
@@ -243,7 +243,7 @@ function searchTopic(topic) {
 	apretaste.send({
 		'command': 'PIZARRA GLOBAL',
 		'data': {
-			'search': '#' + topic
+			search: '#' + topic
 		}
 	});
 }
@@ -322,26 +322,7 @@ function deleteNotification(id) {
 	});
 }
 
-function themifyNote() {
-	var theme = $('#theme').val().trim();
-
-	if (theme.length >= 2) {
-		apretaste.send({
-			'command': 'PIZARRA TEMIFICAR',
-			'data': {
-				'note': activeNote,
-				'theme': theme
-			},
-			'redirect': false,
-			'callback': {
-				'name': 'themifyCallback',
-				'data': theme
-			}
-		});
-	} else {
-		showToast('Ingrese algo');
-	}
-} // submit the profile informacion
+// submit the profile informacion
 
 
 function submitProfileData() {
@@ -669,14 +650,6 @@ function sendNoteCallback(note) {
 	$('html, body').animate({
 		scrollTop: $("#last").offset().top
 	}, 1000);
-}
-
-function themifyCallback(theme) {
-	$('#' + activeNote + ' .topics').append("\n    <a class=\"grey-text text-darken-2\" onclick=\"apretaste.send({'command': 'PIZARRA','data':{'search':'" + theme + "'}})\">\n        #" + theme + "\n    </a>&nbsp;");
-
-	if ($('#' + activeNote + ' .topics').children().length == 3) {
-		$('#' + activeNote + ' .themifyButton').remove();
-	}
 }
 
 function togglePopularsMenu() {

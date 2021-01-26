@@ -101,6 +101,27 @@ class Service
 
 		// get the type of search
 		$keyword = $request->input->data->search ?? null;
+
+		// prepare my user
+		$myUser = $this->preparePizarraUser($request->person);
+
+		if ($keyword != null && gettype($keyword) != 'string') {
+			$alert = new Alert(500, '[PIZARRA] Busqueda invalida ' . json_encode($keyword));
+			$alert->post();
+
+			$content = [
+				'header' => 'Error en la búsqueda',
+				'icon' => 'sentiment_very_dissatisfied',
+				'text' => 'Hay un error haciendo esta busqueda, proximamente sera corregído.',
+				'title' => 'Global',
+				'myUser' => $myUser
+			];
+
+			$response->setLayout('pizarra.ejs');
+			$response->setTemplate('message.ejs', $content);
+			return;
+		}
+
 		$search = $this->getSearchType($keyword);
 		[$searchType, $searchValue] = $search;
 
@@ -125,7 +146,6 @@ class Service
 			$pages = count($notes) >= 20 || $page > 1 ? $this->getPagesByKeyword($profile, $searchValue) : 1;
 		}
 
-		$myUser = $this->preparePizarraUser($request->person);
 		$images = [];
 
 		if ($request->person->showImages) {
