@@ -108,20 +108,7 @@ class Service
 		$myUser = $this->preparePizarraUser($request->person);
 
 		if ($keyword != null && gettype($keyword) != 'string') {
-			$alert = new Alert(500, '[PIZARRA] Busqueda invalida ' . json_encode($keyword));
-			$alert->post();
-
-			$content = [
-				'header' => 'Error en la búsqueda',
-				'icon' => 'sentiment_very_dissatisfied',
-				'text' => 'Hay un error haciendo esta busqueda, proximamente sera corregído.',
-				'title' => 'Global',
-				'myUser' => $myUser
-			];
-
-			$response->setLayout('pizarra.ejs');
-			$response->setTemplate('message.ejs', $content);
-			return;
+			$keyword = null;
 		}
 
 		$search = $this->getSearchType($keyword);
