@@ -57,6 +57,8 @@ class Service
 			}
 		}
 
+		$this->updateImpressions($notes);
+
 		$popularTopics = $this->getPopularTopics();
 		$popularTopics = array_splice($popularTopics, 0, 4);
 
@@ -156,6 +158,8 @@ class Service
 				}
 			}
 		}
+
+		$this->updateImpressions($notes);
 
 		$popularTopics = $this->getPopularTopics();
 		array_splice($popularTopics, 0, 4);
@@ -1204,7 +1208,7 @@ class Service
 		$offset = ($page - 1) * 20;
 
 		$listOfNotes = Database::query("
-			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, B.is_influencer,
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, B.is_influencer, B.online,
 				EXISTS(SELECT id FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$person->id}' AND `action` = 'like') AS isliked
 			FROM _pizarra_muro muro INNER JOIN _pizarra_notes A ON muro.note = A.id  
 			    INNER JOIN person B ON A.id_person = B.id
@@ -1476,5 +1480,17 @@ class Service
 			WHERE created > DATE_ADD(NOW(), INTERVAL -30 DAY)
 			AND topic <> 'general'
 			GROUP BY topic ORDER BY cnt DESC LIMIT 50");
+	}
+
+	private function updateImpressions(array $notes)
+	{
+		for ($i = 0; $i < count($notes); $i++) {
+			$note = $notes[$i];
+			if ($notes[$i]['isInfluencer']) {
+				// update influencers stats
+				Influencers::incStat($note['id_person'], 'impressions');
+				Database::query("UPDATE _pizarra_notes SET impressions=impressions+1 WHERE id='{$note['id']}'");
+			}
+		}
 	}
 }

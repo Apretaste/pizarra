@@ -117,6 +117,7 @@ function openSearchModal() {
 }
 
 function replyUser(user) {
+	user = user + ' '
 	var comment = $('#comment');
 	var currentComment = comment.val();
 
@@ -127,6 +128,7 @@ function replyUser(user) {
 }
 
 function appendTag(tag) {
+	tag = tag + ' '
 	var content = $('#note');
 	var currentContent = content.val();
 
@@ -134,9 +136,6 @@ function appendTag(tag) {
 	else content.val(currentContent + ' #' + tag);
 
 	content.focus();
-}
-
-function searchChat() {
 }
 
 function openNote(id) {
@@ -593,8 +592,8 @@ function sendNoteCallback(note) {
 	topics.forEach(function (topic) {
 		topic = topic.replace('#', '');
 		htmlTopics +=
-			'<div class="chip small" onclick="apretaste.send({\'command\': \'PIZARRA GLOBAL\',\'data\':{\'search\':\'#' + +topic + '\'}})">\n' +
-			'    <i class="fa fa-hashtag"></i>' + topic +
+			'<div class="chip small" onclick="apretaste.send({\'command\': \'PIZARRA GLOBAL\',\'data\':{\'search\':\'#' + topic + '\'}})">' +
+			'    <i class="fa fa-hashtag"></i>#' + topic +
 			'</div>';
 	});
 	note = note.escapeHTML();
@@ -646,7 +645,11 @@ function sendNoteCallback(note) {
 	showToast('Nota publicada');
 	$('#note').val('');
 	toggleWriteModal();
-	setElementAsAvatar($('#last .person-avatar'))
+
+	var avatarElement = $('#last .person-avatar');
+	avatarElement.innerHTML = '';
+	setElementAsAvatar(avatarElement);
+
 	$('html, body').animate({
 		scrollTop: $("#last").offset().top
 	}, 1000);
