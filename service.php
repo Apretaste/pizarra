@@ -9,6 +9,7 @@ use Apretaste\Response;
 use Apretaste\Tutorial;
 use Apretaste\Challenges;
 use Apretaste\Notifications;
+use Framework\Core;
 use Framework\Utils;
 use Framework\Alert;
 use Framework\Images;
@@ -694,10 +695,23 @@ class Service
 
 	public function _influencers(Request $request, Response $response)
 	{
-		$creators = Database::query("SELECT id, username, avatar, avatarColor, online FROM person WHERE is_influencer=1");
+		$creators = Database::query(
+			"SELECT A.id, A.username, A.avatar, A.avatarColor, A.online, A.gender,
+       			 B.first_category, B.second_category 
+				 FROM person A LEFT JOIN influencers B 
+				 ON A.id = B.person_id WHERE A.is_influencer=1"
+		);
 
 		foreach ($creators as $creator) {
 			$creator->isFriend = $request->person->isFriendOf($creator->id);
+
+			$creator->firstCategoryCaption = Core::$influencerCategories[$creator->first_category];
+
+			if ($creator->second_category != null) {
+				$creator->secondCategoryCaption = Core::$influencerCategories[$creator->second_category];
+			} else {
+				$creator->secondCategoryCaption = null;
+			}
 		}
 
 		$content = [

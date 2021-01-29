@@ -640,13 +640,17 @@ input:not([type]):focus:not([readonly]) + label, input[type=text]:not(.browser-d
 }
 
 .collection.profile .second {
-    right: 60px !important;
+    right: 56px !important;
+}
+
+.collection.profile .third {
+    right: 96px !important;
 }
 
 /* PREVIEW COLLECTION */
 
 .collection.preview {
-    margin: 20px 0px 0px 0px;
+    margin: 20px 0 0 0;
 }
 
 /* ONE LINE COLLECTION */

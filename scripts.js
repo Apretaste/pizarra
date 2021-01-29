@@ -247,6 +247,15 @@ function searchTopic(topic) {
 	});
 }
 
+function searchUsername(username) {
+	apretaste.send({
+		command: 'pizarra global',
+		data: {
+			search: '@' + username
+		}
+	});
+}
+
 function deleteNote() {
 	apretaste.send({
 		'command': 'PIZARRA ELIMINAR',
@@ -478,13 +487,13 @@ function addFriendCallback() {
 	showToast('Amistad aceptada');
 
 	$('#' + currentUser + ' .action').html(
-		'<a href="#!">' +
+		'<a class="secondary-content second">' +
 		'    <i class="material-icons green-text"' +
 		'       onclick="openChat(\'' + currentUser + '\')">' +
 		'        message' +
 		'    </i>' +
 		'</a>' +
-		'<a href="#!">' +
+		'<a class="secondary-content third">' +
 		'    <i class="material-icons red-text"' +
 		'       onclick="deleteModalOpen(\'' + currentUser + '\', \'' + currentUsername + '\')">' +
 		'        do_not_disturb_alt' +
@@ -514,7 +523,7 @@ function deleteFriendCallback() {
 	showToast('Amigo eliminado');
 
 	$('#' + currentUser + ' .action').html(
-		'<a href="#!">' +
+		'<a class="secondary-content second">' +
 		'    <i class="material-icons green-text"' +
 		'       onclick="addFriendModalOpen(\'' + currentUser + '\', \'' + currentUsername + '\')">' +
 		'        person_add' +
