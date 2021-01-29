@@ -602,7 +602,7 @@ function sendNoteCallback(note) {
 		topic = topic.replace('#', '');
 		htmlTopics +=
 			'<div class="chip small" onclick="apretaste.send({\'command\': \'PIZARRA GLOBAL\',\'data\':{\'search\':\'#' + topic + '\'}})">' +
-			'    <i class="fa fa-hashtag"></i>#' + topic +
+			'    <i class="fa fa-hashtag"></i>' + topic +
 			'</div>';
 	});
 	note = note.escapeHTML();
