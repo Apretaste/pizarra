@@ -488,15 +488,13 @@ function addFriendCallback() {
 
 	$('#' + currentUser + ' .action').html(
 		'<a class="secondary-content second">' +
-		'    <i class="material-icons green-text"' +
+		'    <i class="fa fa-comment"' +
 		'       onclick="openChat(\'' + currentUser + '\')">' +
-		'        message' +
 		'    </i>' +
 		'</a>' +
 		'<a class="secondary-content third">' +
-		'    <i class="material-icons red-text"' +
+		'    <i class="fa fa-user-minus red-text"' +
 		'       onclick="deleteModalOpen(\'' + currentUser + '\', \'' + currentUsername + '\')">' +
-		'        do_not_disturb_alt' +
 		'    </i>' +
 		'</a>');
 }
@@ -524,9 +522,8 @@ function deleteFriendCallback() {
 
 	$('#' + currentUser + ' .action').html(
 		'<a class="secondary-content second">' +
-		'    <i class="material-icons green-text"' +
+		'    <i class="fa fa-user-plus green-text"' +
 		'       onclick="addFriendModalOpen(\'' + currentUser + '\', \'' + currentUsername + '\')">' +
-		'        person_add' +
 		'    </i>' +
 		'</a>');
 }
