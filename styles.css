@@ -636,16 +636,16 @@ input:not([type]):focus:not([readonly]) + label, input[type=text]:not(.browser-d
 }
 
 .collection.profile .secondary-content i {
-    font-size: 30px;
-    line-height: 1.1;
+    font-size: 1.8rem;
+    line-height: 1.2;
 }
 
 .collection.profile .second {
-    right: 56px !important;
+    right: 52px !important;
 }
 
 .collection.profile .third {
-    right: 96px !important;
+    right: 88px !important;
 }
 
 /* PREVIEW COLLECTION */
