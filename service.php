@@ -502,9 +502,9 @@ class Service
 		$link_icon = Database::escape($request->input->data->link->icon ?? '', 100);
 		$link_text = Database::escape($request->input->data->link->text ?? '', 600);
 
-		$sql = "INSERT INTO _pizarra_notes (id_person, `text`, image, topic1, topic2, topic3, link_command, link_icon, link_text) 
+		$sql = "INSERT INTO _pizarra_notes (id_person, `text`, image, topic1, topic2, topic3, link_command, link_icon, link_text, weight) 
 			VALUES ('{$request->person->id}', '$cleanText', '$fileName', '$topic1', '$topic2', '$topic3', 
-			NULLIF('$link_command', ''), NULLIF('$link_icon', ''), NULLIF('$link_text', ''))";
+			NULLIF('$link_command', ''), NULLIF('$link_icon', ''), NULLIF('$link_text', ''), 100)";
 
 		$this->insertedNoteId = Database::query($sql);
 
@@ -512,16 +512,6 @@ class Service
 		if (!is_numeric($this->insertedNoteId)) {
 			throw new RuntimeException("PIZARRA: NoteID is null after INSERT. QUERY = $sql");
 		}
-
-		// update weight
-		Database::query("UPDATE _pizarra_notes N inner join person P on P.id = N.id_person
-							SET weight = ((30 - datediff(current_date, inserted)) * 0.10
-								+ coalesce(IF(unlikes = 0, NULL, likes/unlikes), 0) * 0.25 + comments * 0.25
-								+ (link_text <> '' and link_text is not null) * 0.3
-								+ P.is_influencer * 0.2)
-								* IF(N.active = 0 OR silenced = 1 OR ad = 1 
-								    OR EXISTS(SELECT * FROM _pizarra_topics_silenced S WHERE S.topic IN (N.topic1, N.topic2, N.topic3)), 0, 1)
-							WHERE id = {$this->insertedNoteId};");
 
 		// fill muro
 		Database::query("
