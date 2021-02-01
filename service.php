@@ -514,13 +514,13 @@ class Service
 		}
 
 		// update weight
-		Database::query("UPDATE _pizarra_notes N
+		Database::query("UPDATE _pizarra_notes N inner join person P on P.id = N.id_person
 							SET weight = ((30 - datediff(current_date, inserted)) * 0.10
-                                       + coalesce(IF(unlikes = 0, NULL, likes/unlikes), 0) * 0.3 + comments * 0.4
-                                       - (link_text <> '' and link_text is not null) * 0.10)
-							                 * IF(active = 0 OR silenced = 1 OR ad = 1 OR
-							                      EXISTS(SELECT * FROM _pizarra_topics_silenced S WHERE S.topic IN (N.topic1, N.topic2, N.topic3))
-							                      , 0, 1)
+								+ coalesce(IF(unlikes = 0, NULL, likes/unlikes), 0) * 0.25 + comments * 0.25
+								+ (link_text <> '' and link_text is not null) * 0.3
+								+ P.is_influencer * 0.2)
+								* IF(N.active = 0 OR silenced = 1 OR ad = 1 
+								    OR EXISTS(SELECT * FROM _pizarra_topics_silenced S WHERE S.topic IN (N.topic1, N.topic2, N.topic3)), 0, 1)
 							WHERE id = {$this->insertedNoteId};");
 
 		// fill muro
