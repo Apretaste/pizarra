@@ -1081,7 +1081,7 @@ class Service
 			LEFT JOIN _pizarra_users C
 			ON C.id_person = B.id
 			WHERE A.active=1 AND B.id = '$user->id'
-			ORDER BY weight DESC
+			ORDER BY inserted DESC
 			LIMIT 20 OFFSET $offset");
 
 		// format the array of notes
