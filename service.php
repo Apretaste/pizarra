@@ -513,6 +513,16 @@ class Service
 			throw new RuntimeException("PIZARRA: NoteID is null after INSERT. QUERY = $sql");
 		}
 
+		// update weight
+		Database::query("UPDATE _pizarra_notes N
+							SET weight = ((30 - datediff(current_date, inserted)) * 0.10
+                                       + coalesce(IF(unlikes = 0, NULL, likes/unlikes), 0) * 0.3 + comments * 0.3
+                                       + (link_text <> '' and link_text is not null) * 0.3)
+							                 * IF(active = 0 OR silenced = 0 OR ad = 1 OR 
+							                      EXISTS(SELECT * FROM _pizarra_topics_silenced S WHERE S.topic IN (N.topic1, N.topic2, N.topic3))
+							                      , 0, 1)
+							WHERE id = {$this->insertedNoteId};");
+
 		// fill muro
 		Database::query("
 			INSERT IGNORE INTO _pizarra_muro (id, person_id, note, author, created, inserted) 
