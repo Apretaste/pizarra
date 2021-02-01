@@ -117,6 +117,7 @@ function openSearchModal() {
 }
 
 function replyUser(user) {
+	user = user + ' '
 	var comment = $('#comment');
 	var currentComment = comment.val();
 
@@ -127,6 +128,7 @@ function replyUser(user) {
 }
 
 function appendTag(tag) {
+	tag = tag + ' '
 	var content = $('#note');
 	var currentContent = content.val();
 
@@ -134,9 +136,6 @@ function appendTag(tag) {
 	else content.val(currentContent + ' #' + tag);
 
 	content.focus();
-}
-
-function searchChat() {
 }
 
 function openNote(id) {
@@ -244,6 +243,15 @@ function searchTopic(topic) {
 		'command': 'PIZARRA GLOBAL',
 		'data': {
 			search: '#' + topic
+		}
+	});
+}
+
+function searchUsername(username) {
+	apretaste.send({
+		command: 'pizarra global',
+		data: {
+			search: '@' + username
 		}
 	});
 }
@@ -479,16 +487,14 @@ function addFriendCallback() {
 	showToast('Amistad aceptada');
 
 	$('#' + currentUser + ' .action').html(
-		'<a href="#!">' +
-		'    <i class="material-icons green-text"' +
+		'<a class="secondary-content second">' +
+		'    <i class="fa fa-comment"' +
 		'       onclick="openChat(\'' + currentUser + '\')">' +
-		'        message' +
 		'    </i>' +
 		'</a>' +
-		'<a href="#!">' +
-		'    <i class="material-icons red-text"' +
+		'<a class="secondary-content third">' +
+		'    <i class="fa fa-user-minus red-text"' +
 		'       onclick="deleteModalOpen(\'' + currentUser + '\', \'' + currentUsername + '\')">' +
-		'        do_not_disturb_alt' +
 		'    </i>' +
 		'</a>');
 }
@@ -515,10 +521,9 @@ function deleteFriendCallback() {
 	showToast('Amigo eliminado');
 
 	$('#' + currentUser + ' .action').html(
-		'<a href="#!">' +
-		'    <i class="material-icons green-text"' +
+		'<a class="secondary-content second">' +
+		'    <i class="fa fa-user-plus green-text"' +
 		'       onclick="addFriendModalOpen(\'' + currentUser + '\', \'' + currentUsername + '\')">' +
-		'        person_add' +
 		'    </i>' +
 		'</a>');
 }
@@ -593,7 +598,7 @@ function sendNoteCallback(note) {
 	topics.forEach(function (topic) {
 		topic = topic.replace('#', '');
 		htmlTopics +=
-			'<div class="chip small" onclick="apretaste.send({\'command\': \'PIZARRA GLOBAL\',\'data\':{\'search\':\'#' + +topic + '\'}})">\n' +
+			'<div class="chip small" onclick="apretaste.send({\'command\': \'PIZARRA GLOBAL\',\'data\':{\'search\':\'#' + topic + '\'}})">' +
 			'    <i class="fa fa-hashtag"></i>' + topic +
 			'</div>';
 	});
@@ -646,7 +651,11 @@ function sendNoteCallback(note) {
 	showToast('Nota publicada');
 	$('#note').val('');
 	toggleWriteModal();
-	setElementAsAvatar($('#last .person-avatar'))
+
+	var avatarElement = $('#last .person-avatar');
+	avatarElement.innerHTML = '';
+	setElementAsAvatar(avatarElement);
+
 	$('html, body').animate({
 		scrollTop: $("#last").offset().top
 	}, 1000);

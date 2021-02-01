@@ -9,6 +9,7 @@ use Apretaste\Response;
 use Apretaste\Tutorial;
 use Apretaste\Challenges;
 use Apretaste\Notifications;
+use Framework\Core;
 use Framework\Utils;
 use Framework\Alert;
 use Framework\Images;
@@ -56,6 +57,8 @@ class Service
 				}
 			}
 		}
+
+		$this->updateImpressions($notes);
 
 		$popularTopics = $this->getPopularTopics();
 		$popularTopics = array_splice($popularTopics, 0, 4);
@@ -106,20 +109,7 @@ class Service
 		$myUser = $this->preparePizarraUser($request->person);
 
 		if ($keyword != null && gettype($keyword) != 'string') {
-			$alert = new Alert(500, '[PIZARRA] Busqueda invalida ' . json_encode($keyword));
-			$alert->post();
-
-			$content = [
-				'header' => 'Error en la búsqueda',
-				'icon' => 'sentiment_very_dissatisfied',
-				'text' => 'Hay un error haciendo esta busqueda, proximamente sera corregído.',
-				'title' => 'Global',
-				'myUser' => $myUser
-			];
-
-			$response->setLayout('pizarra.ejs');
-			$response->setTemplate('message.ejs', $content);
-			return;
+			$keyword = null;
 		}
 
 		$search = $this->getSearchType($keyword);
@@ -156,6 +146,8 @@ class Service
 				}
 			}
 		}
+
+		$this->updateImpressions($notes);
 
 		$popularTopics = $this->getPopularTopics();
 		array_splice($popularTopics, 0, 4);
@@ -703,10 +695,23 @@ class Service
 
 	public function _influencers(Request $request, Response $response)
 	{
-		$creators = Database::query("SELECT id, username, avatar, avatarColor, online FROM person WHERE is_influencer=1");
+		$creators = Database::query(
+			"SELECT A.id, A.username, A.avatar, A.avatarColor, A.online, A.gender,
+       			 B.first_category, B.second_category 
+				 FROM person A LEFT JOIN influencers B 
+				 ON A.id = B.person_id WHERE A.is_influencer=1"
+		);
 
 		foreach ($creators as $creator) {
 			$creator->isFriend = $request->person->isFriendOf($creator->id);
+
+			$creator->firstCategoryCaption = Core::$influencerCategories[$creator->first_category];
+
+			if ($creator->second_category != null) {
+				$creator->secondCategoryCaption = Core::$influencerCategories[$creator->second_category];
+			} else {
+				$creator->secondCategoryCaption = null;
+			}
 		}
 
 		$content = [
@@ -1204,7 +1209,7 @@ class Service
 		$offset = ($page - 1) * 20;
 
 		$listOfNotes = Database::query("
-			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, B.is_influencer,
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, B.is_influencer, B.online,
 				EXISTS(SELECT id FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$person->id}' AND `action` = 'like') AS isliked
 			FROM _pizarra_muro muro INNER JOIN _pizarra_notes A ON muro.note = A.id  
 			    INNER JOIN person B ON A.id_person = B.id
@@ -1476,5 +1481,17 @@ class Service
 			WHERE created > DATE_ADD(NOW(), INTERVAL -30 DAY)
 			AND topic <> 'general'
 			GROUP BY topic ORDER BY cnt DESC LIMIT 50");
+	}
+
+	private function updateImpressions(array $notes)
+	{
+		for ($i = 0; $i < count($notes); $i++) {
+			$note = $notes[$i];
+			if ($notes[$i]['isInfluencer']) {
+				// update influencers stats
+				Influencers::incStat($note['id_person'], 'impressions');
+				Database::query("UPDATE _pizarra_notes SET impressions=impressions+1 WHERE id='{$note['id']}'");
+			}
+		}
 	}
 }

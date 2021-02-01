@@ -446,6 +446,7 @@ p {
 
 .person-avatar {
     background-size: contain;
+    overflow: visible !important;
 }
 
 input:not([type]):focus:not([readonly]), input[type=text]:not(.browser-default):focus:not([readonly]), input[type=password]:not(.browser-default):focus:not([readonly]), input[type=email]:not(.browser-default):focus:not([readonly]), input[type=url]:not(.browser-default):focus:not([readonly]), input[type=time]:not(.browser-default):focus:not([readonly]), input[type=date]:not(.browser-default):focus:not([readonly]), input[type=datetime]:not(.browser-default):focus:not([readonly]), input[type=datetime-local]:not(.browser-default):focus:not([readonly]), input[type=tel]:not(.browser-default):focus:not([readonly]), input[type=number]:not(.browser-default):focus:not([readonly]), input[type=search]:not(.browser-default):focus:not([readonly]), textarea.materialize-textarea:focus:not([readonly]) {
@@ -461,12 +462,16 @@ input:not([type]):focus:not([readonly]) + label, input[type=text]:not(.browser-d
     border-bottom: 1px solid #788ba1;
 }
 
-.note[liked=true] .like, .comment[liked=true] .like{
+.note[liked=true] .like, .comment[liked=true] .like {
     color: green !important;
 }
 
-.note[unliked=true] .unlike, .comment[unliked=true] .unlike{
+.note[unliked=true] .unlike, .comment[unliked=true] .unlike {
     color: red !important;
+}
+
+.pagination li a {
+    margin-top: -4px;
 }
 
 /* Barebones */
@@ -631,18 +636,22 @@ input:not([type]):focus:not([readonly]) + label, input[type=text]:not(.browser-d
 }
 
 .collection.profile .secondary-content i {
-    font-size: 30px;
-    line-height: 1.1;
+    font-size: 1.8rem;
+    line-height: 1.2;
 }
 
 .collection.profile .second {
-    right: 60px !important;
+    right: 52px !important;
+}
+
+.collection.profile .third {
+    right: 88px !important;
 }
 
 /* PREVIEW COLLECTION */
 
 .collection.preview {
-    margin: 20px 0px 0px 0px;
+    margin: 20px 0 0 0;
 }
 
 /* ONE LINE COLLECTION */
@@ -772,7 +781,7 @@ ul.chat li {
     float: right;
 }
 
-.chat .right .person-avatar{
+.chat .right .person-avatar {
     position: relative;
     top: 25px;
     right: -35px;
