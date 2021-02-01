@@ -936,7 +936,7 @@ class Service
 			    FROM person P LEFT JOIN $temporaryTableName ON $temporaryTableName.user1 = P.id OR $temporaryTableName.user2 = P.id
 			    WHERE $temporaryTableName.user1 IS NULL AND $temporaryTableName.user2 IS NULL  			    
 			) B ON A.id_person = B.id 
-			JOIN _pizarra_users C ON A.id_person = C.id_person LIMIT 20 OFFSET $offset");
+			JOIN _pizarra_users C ON A.id_person = C.id_person ORDER BY weight DESC LIMIT 20 OFFSET $offset");
 
 		$adNotes = !$search ? Database::query("
 			SELECT A.*,
@@ -963,12 +963,12 @@ class Service
 			JOIN _pizarra_users C ON A.id_person = C.id_person ORDER BY RAND() LIMIT 1") : [];
 
 		// sort results by weight. Too complex and slow in MySQL
-		usort($listOfNotes, function ($a, $b) {
+/*		usort($listOfNotes, function ($a, $b) {
 			$a->score = (pow($a->hours, 0.5) * -1) * 0.4 + max($a->commentsUnique, 20) * 0.2 + ((($a->likes - intval($a->ownlike)) - $a->unlikes * 2) * 0.4) + $a->ad * 1000;
 			$b->score = (pow($b->hours, 0.5) * -1) * 0.4 + max($b->commentsUnique, 20) * 0.2 + ((($b->likes - intval($a->ownlike)) - $b->unlikes * 2) * 0.4) + $b->ad * 1000;
 			return ($b->score - $a->score) ? ($b->score - $a->score) / abs($b->score - $a->score) : 0;
 		});
-
+*/
 		// format the array of notes
 		$notes = [];
 		if (is_array($listOfNotes)) {
@@ -1066,7 +1066,7 @@ class Service
 			LEFT JOIN _pizarra_users C
 			ON C.id_person = B.id
 			WHERE A.active=1 AND B.id = '$user->id'
-			ORDER BY inserted DESC
+			ORDER BY weight DESC
 			LIMIT 20 OFFSET $offset");
 
 		// format the array of notes
@@ -1141,7 +1141,7 @@ class Service
 			LEFT JOIN _pizarra_users C
 			ON C.id_person = B.id
 			WHERE A.active=1 AND A.text like '%$keyword%' 
-			ORDER BY inserted DESC
+			ORDER BY weight DESC
 			LIMIT 20 OFFSET $offset");
 
 		// format the array of notes
