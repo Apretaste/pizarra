@@ -64,6 +64,7 @@
                         </div>
                     <% } %>
                 </div>
+
                 <% if(note.image){ %>
                     <div class="card-image">
                         <% if(showImages){ %>
@@ -83,27 +84,35 @@
                         <!-- <span class="card-title"></span> -->
                     </div>
                 <% } %>
-                <div class="card-content">
 
-                    <p><%- linkify(note.text) %></p>
+                <% if(note.text.length > 0 || note.linkText || note.topics.length > 0){ %>
+                    <div class="card-content">
+                        <% if(note.text.length > 0){ %>
+                            <p><%- linkify(note.text) %></p>
+                        <% } %>
 
-                    <% if(note.linkText){ %>
-                        <ul class="collection one-line preview" onclick="apretaste.send(<%= atob(note.linkCommand) %>)">
-                            <li class="collection-item avatar">
-                                <i class="fas fa-<%= note.linkIcon %> material-icons circle"></i>
-                                <span class="title"><%= note.linkText %></span>
-                            </li>
-                        </ul>
-                    <% } %>
+                        <% if(note.linkText){ %>
+                            <ul class="collection one-line preview"
+                                onclick="apretaste.send(<%= atob(note.linkCommand) %>)">
+                                <li class="collection-item avatar">
+                                    <i class="fas fa-<%= note.linkIcon %> material-icons circle"></i>
+                                    <span class="title"><%= note.linkText %></span>
+                                </li>
+                            </ul>
+                        <% } %>
 
-                    <div class="tags">
-                        <% note.topics.forEach(function(topic){ %>
-                            <div class="chip small" onclick="searchTopic('<%= topic %>')">
-                                <i class="fa fa-hashtag"></i> <%= topic %>
+                        <% if(note.topics.length > 0){ %>
+                            <div class="tags">
+                                <% note.topics.forEach(function(topic){ %>
+                                    <div class="chip small" onclick="searchTopic('<%= topic %>')">
+                                        <i class="fa fa-hashtag"></i> <%= topic %>
+                                    </div>
+                                <% }) %>
                             </div>
-                        <% }) %>
+                        <% } %>
                     </div>
-                </div>
+                <% } %>
+
                 <div class="card-action grey lighten-4">
                     <span class="chip like" style="background-color: transparent; padding-left: 0;"
                     <% if(!note.liked){ %> onclick="like('<%= note.id %>','like', 'note');"

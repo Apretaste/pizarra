@@ -36,7 +36,9 @@
             <% } %>
 
             <div class="card-content">
-                <p><%- linkify(note.text) %></p>
+                <% if(note.text.length > 0){ %>
+                    <p><%- linkify(note.text) %></p>
+                <% } %>
 
                 <% if(note.linkText){ %>
                     <ul class="collection one-line preview" onclick="apretaste.send(<%= atob(note.linkCommand) %>)">
@@ -47,13 +49,15 @@
                     </ul>
                 <% } %>
 
-                <div class="tags">
-                    <% note.topics.forEach(function(topic){ %>
-                        <div class="chip small" onclick="searchTopic('<%= topic %>')">
-                            <i class="fa fa-hashtag"></i> <%= topic %>
-                        </div>
-                    <% }) %>
-                </div>
+                <% if(note.topics.length > 0){ %>
+                    <div class="tags">
+                        <% note.topics.forEach(function(topic){ %>
+                            <div class="chip small" onclick="searchTopic('<%= topic %>')">
+                                <i class="fa fa-hashtag"></i> <%= topic %>
+                            </div>
+                        <% }) %>
+                    </div>
+                <% } %>
             </div>
             <div class="card-action grey lighten-4">
                 <span class="chip like" style="background-color: transparent; padding-left: 0;"

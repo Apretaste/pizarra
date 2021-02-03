@@ -493,7 +493,7 @@ function addFriendCallback() {
 		'    </i>' +
 		'</a>' +
 		'<a class="secondary-content third">' +
-		'    <i class="fa fa-user-minus red-text"' +
+		'    <i class="fa fa-ban red-text"' +
 		'       onclick="deleteModalOpen(\'' + currentUser + '\', \'' + currentUsername + '\')">' +
 		'    </i>' +
 		'</a>');
@@ -587,7 +587,12 @@ function sendNoteCallback(note) {
 	if (typeof notePicture != "undefined" || (typeof notePicturePath != "undefined" && notePicturePath != null)) {
 		var src = "data:image/jpg;base64," + notePicture;
 		if (notePicturePath != null) src = "file://" + notePicturePath;
-		hasImage = "<img class=\"responsive-img\" style=\"width: 100%\" src=\"" + src + "\" onclick=\"apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'last'}});\">";
+
+		if (typeof apretaste.showImage != 'undefined' && notePicturePath != null) {
+			hasImage = "<img class=\"responsive-img\" style=\"width: 100%\" src=\"" + src + "\" onclick=\"apretaste.showImage('" + src + "')\">";
+		} else {
+			hasImage = "<img class=\"responsive-img\" style=\"width: 100%\" src=\"" + src + "\" onclick=\"apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'last'}});\">";
+		}
 	}
 
 	var avatar = 'face="' + myUser.avatar + '"';
