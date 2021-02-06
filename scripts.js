@@ -143,7 +143,7 @@ function openNote(id) {
 		'command': 'PIZARRA ASYNC',
 		'data': {'note': id},
 		'async': true,
-		'callback': 'asyncCallback'
+		'callback': {name: 'asyncCallback'}
 	})
 	//apretaste.send({'command': 'PIZARRA NOTA', 'data': {'note': id}});
 }
