@@ -16,6 +16,8 @@ use Framework\Images;
 use Framework\Database;
 use Framework\GoogleAnalytics;
 use Apretaste\Influencers;
+use Kreait\Firebase\Exception\FirebaseException;
+use Kreait\Firebase\Exception\MessagingException;
 
 class Service
 {
@@ -502,6 +504,10 @@ class Service
 		$link_icon = Database::escape($request->input->data->link->icon ?? '', 100);
 		$link_text = Database::escape($request->input->data->link->text ?? '', 600);
 
+		if (empty($link_text)) {
+			return;
+		}
+
 		$sql = "INSERT INTO _pizarra_notes (id_person, `text`, image, topic1, topic2, topic3, link_command, link_icon, link_text, weight) 
 			VALUES ('{$request->person->id}', '$cleanText', '$fileName', '$topic1', '$topic2', '$topic3', 
 			NULLIF('$link_command', ''), NULLIF('$link_icon', ''), NULLIF('$link_text', ''), 100)";
@@ -562,6 +568,10 @@ class Service
 	 *
 	 * @param Request $request
 	 * @param Response $response
+	 * @throws Alert
+	 * @throws \Apretaste\Alert
+	 * @throws FirebaseException
+	 * @throws MessagingException
 	 * @author salvipascual
 	 */
 	public function _comentar(Request $request, Response $response)
@@ -782,6 +792,7 @@ class Service
 	 *
 	 * @param Request $request
 	 * @param Response $response
+	 * @throws \Apretaste\Alert
 	 * @author ricardo@apretaste.org
 	 */
 	public function _eliminar(Request $request, Response $response): void
@@ -968,12 +979,12 @@ class Service
 			JOIN _pizarra_users C ON A.id_person = C.id_person ORDER BY RAND() LIMIT 1") : [];
 
 		// sort results by weight. Too complex and slow in MySQL
-/*		usort($listOfNotes, function ($a, $b) {
-			$a->score = (pow($a->hours, 0.5) * -1) * 0.4 + max($a->commentsUnique, 20) * 0.2 + ((($a->likes - intval($a->ownlike)) - $a->unlikes * 2) * 0.4) + $a->ad * 1000;
-			$b->score = (pow($b->hours, 0.5) * -1) * 0.4 + max($b->commentsUnique, 20) * 0.2 + ((($b->likes - intval($a->ownlike)) - $b->unlikes * 2) * 0.4) + $b->ad * 1000;
-			return ($b->score - $a->score) ? ($b->score - $a->score) / abs($b->score - $a->score) : 0;
-		});
-*/
+		/*		usort($listOfNotes, function ($a, $b) {
+					$a->score = (pow($a->hours, 0.5) * -1) * 0.4 + max($a->commentsUnique, 20) * 0.2 + ((($a->likes - intval($a->ownlike)) - $a->unlikes * 2) * 0.4) + $a->ad * 1000;
+					$b->score = (pow($b->hours, 0.5) * -1) * 0.4 + max($b->commentsUnique, 20) * 0.2 + ((($b->likes - intval($a->ownlike)) - $b->unlikes * 2) * 0.4) + $b->ad * 1000;
+					return ($b->score - $a->score) ? ($b->score - $a->score) / abs($b->score - $a->score) : 0;
+				});
+		*/
 		// format the array of notes
 		$notes = [];
 		if (is_array($listOfNotes)) {
@@ -1435,8 +1446,6 @@ class Service
 					break;
 			}
 		}
-
-
 	}
 
 

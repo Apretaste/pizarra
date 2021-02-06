@@ -147,6 +147,7 @@ var activeNote;
 function sendNote() {
 	hideKeyboard();
 	var note = $('#note').val().trim();
+	note = '' + note.replace(/ +(?= )/g, '')
 
 	if (note.length > 2) {
 		var files = notePicturePath != null ? [notePicturePath] : [];
@@ -593,6 +594,10 @@ function sendNoteCallback(note) {
 		} else {
 			hasImage = "<img class=\"responsive-img\" style=\"width: 100%\" src=\"" + src + "\" onclick=\"apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'last'}});\">";
 		}
+
+		$('#notePicture').remove();
+		notePicture = null;
+		notePicturePath = null;
 	}
 
 	var avatar = 'face="' + myUser.avatar + '"';
