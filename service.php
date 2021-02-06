@@ -807,17 +807,20 @@ class Service
 
 	public function _async(Request $request, Response $response)
 	{
-		$note = $request->input->data->note ?? 1;
-		$notes = $this->getNotesByFriends($request->person);
+		$noteId = $request->input->data->note;
+
+		// get the records from the db
+		$note = Database::queryFirst("SELECT image FROM _pizarra_notes WHERE id = '$noteId'");
+		
 		$images = [];
-		foreach ($notes as $note) {
-			if ($note['image']) {
-				$pizarraImgDir = SHARED_PUBLIC_PATH . '/content/pizarra';
-				$images[] = "$pizarraImgDir/{$note['image']}";
-			}
+		if ($note->image) {
+			$pizarraImgDir = SHARED_PUBLIC_PATH . '/content/pizarra';
+			$images[] = "$pizarraImgDir/{$note->image}";
 		}
 
-		$response->setContent(['key' => 'value', 'other' => 'value', 'note' => $note], $images);
+		$content = ['image' => $note->image];
+
+		$response->setContent($content, $images);
 	}
 
 	/**

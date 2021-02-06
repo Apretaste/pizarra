@@ -149,8 +149,7 @@ function openNote(id) {
 }
 
 function asyncCallback(data, images) {
-	console.log(data);
-	apretaste.showImage(images[0]);
+	apretaste.showImage(images[data.image]);
 }
 
 var activeNote;
