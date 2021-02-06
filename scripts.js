@@ -149,8 +149,6 @@ function openNote(id) {
 }
 
 function asyncCallback(data, images) {
-	console.log(JSON.stringify(images))
-	console.log(JSON.stringify(data))
 	apretaste.showImage(images[data.image]);
 }
 
