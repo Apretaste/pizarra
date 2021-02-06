@@ -504,10 +504,6 @@ class Service
 		$link_icon = Database::escape($request->input->data->link->icon ?? '', 100);
 		$link_text = Database::escape($request->input->data->link->text ?? '', 600);
 
-		if (empty($link_text)) {
-			return;
-		}
-
 		$sql = "INSERT INTO _pizarra_notes (id_person, `text`, image, topic1, topic2, topic3, link_command, link_icon, link_text, weight) 
 			VALUES ('{$request->person->id}', '$cleanText', '$fileName', '$topic1', '$topic2', '$topic3', 
 			NULLIF('$link_command', ''), NULLIF('$link_icon', ''), NULLIF('$link_text', ''), 100)";
