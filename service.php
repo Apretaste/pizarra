@@ -805,6 +805,21 @@ class Service
 		);
 	}
 
+	public function _async(Request $request, Response $response)
+	{
+		$note = $request->input->data->note ?? 1;
+		$notes = $this->getNotesByFriends($request->person);
+		$images = [];
+		foreach ($notes as $note) {
+			if ($note['image']) {
+				$pizarraImgDir = SHARED_PUBLIC_PATH . '/content/pizarra';
+				$images[] = "$pizarraImgDir/{$note['image']}";
+			}
+		}
+
+		$response->setContent(['key' => 'value', 'other' => 'value', 'note' => $note], $images);
+	}
+
 	/**
 	 * Add reputation
 	 *

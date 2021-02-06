@@ -139,7 +139,18 @@ function appendTag(tag) {
 }
 
 function openNote(id) {
-	apretaste.send({'command': 'PIZARRA NOTA', 'data': {'note': id}});
+	apretaste.send({
+		'command': 'PIZARRA ASYNC',
+		'data': {'note': id},
+		'async': true,
+		'callback': 'asyncCallback'
+	})
+	//apretaste.send({'command': 'PIZARRA NOTA', 'data': {'note': id}});
+}
+
+function asyncCallback(data, images) {
+	console.log(data);
+	apretaste.showImage(images[0]);
 }
 
 var activeNote;
