@@ -679,7 +679,13 @@ function sendNoteCallback(note) {
 		'                </div>\n' +
 		'                <div class="card-content">\n' +
 		hasImage +
-		'                    <p>' + note + '</p>\n' +
+		'                    <p><b>' + note + '</b></p>\n' +
+		'                    <ul class="collection one-line preview">\n' +
+		'                        <li class="collection-item avatar">\n' +
+		'                            <i class="fas fa-file-word material-icons circle"></i>\n' +
+		'                            <span class="title">Esta nota viene con un texto adjunto</span>\n' +
+		'                        </li>\n' +
+		'                    </ul>\n' +
 		'                    <div class="tags">\n' +
 		htmlTopics +
 		'                    </div>\n' +
