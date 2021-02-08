@@ -209,7 +209,7 @@ function sendNote() {
 			}
 		});
 	} else {
-		showToast('Minimo 3 caracteres');
+		showToast('Mínimo tres caracteres');
 	}
 }
 
@@ -625,6 +625,10 @@ function sendNoteCallback(note) {
 	var htmlTopics = "";
 	topics = topics != null ? topics.splice(0, 3) : [myUser.topic];
 
+	// clean the article
+	$('#article').val('').trigger('change');
+	$('#articleTarget').html('');
+
 	var hasImage = "";
 	if (typeof notePicture != "undefined" || (typeof notePicturePath != "undefined" && notePicturePath != null)) {
 		var src = "data:image/jpg;base64," + notePicture;
@@ -636,6 +640,7 @@ function sendNoteCallback(note) {
 			hasImage = "<img class=\"responsive-img\" style=\"width: 100%\" src=\"" + src + "\" onclick=\"apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'last'}});\">";
 		}
 
+		// clean the image
 		$('#notePicture').remove();
 		notePicture = null;
 		notePicturePath = null;
