@@ -177,6 +177,7 @@
     </div>
 <% } %>
 
+<!-- WRITE MODAL -->
 <div id="writeModal" class="container" status="closed" style="display: none;">
     <div class="row">
         <i class="material-icons small green-text" onclick="toggleWriteModal()">close</i>
@@ -198,17 +199,21 @@
                     <% }) %>
                 </div>
             <% } %>
+
+            <!-- article location -->
+            <div id="articleTarget"></div>
         </div>
 
         <div class="actions">
             <input type="file" id="picture" accept="image/*" class="hide">
             <i class="material-icons small green-text left" id="uploadPhoto">photo</i>
+            <i class="material-icons small green-text left" onclick="openArticleModal()">insert_drive_file</i>
             <i class="material-icons small green-text right" onclick="sendNote()">send</i>
         </div>
     </div>
 </div>
 
-<!-- MODALS -->
+<!-- SEARCH MODAL -->
 <div id="searchModal" class="modal bottom-sheet">
     <div class="modal-content">
         <p>Inserte @username, #tema o un texto a buscar</p>
@@ -223,6 +228,19 @@
     </div>
 </div>
 
+<!-- ARTICLE MODAL -->
+<div id="articleModal" class="modal">
+    <div class="modal-content">
+        <div class="input-field">
+            <textarea id="article" class="articleField"></textarea>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
+        <a onclick="addArticleText()" class="waves-effect waves-green btn-flat green-text modal-close">Agregar</a>
+    </div>
+</div>
+
 <% if(title != 'Global'){ %>
     <div class="fixed-action-btn">
         <a onclick="toggleWriteModal()" class="btn-floating btn-large green">
@@ -232,10 +250,8 @@
 <% } else { %>
     <!-- SEARCH -->
     <div class="fixed-action-btn">
-        <a class="btn-floating btn-large waves-effect waves-light green" href="#!"
-           onclick="openSearchModal()">
+        <a class="btn-floating btn-large waves-effect waves-light green" href="#!" onclick="openSearchModal()">
             <i class="material-icons">search</i>
         </a>
     </div>
 <% } %>
-
