@@ -990,7 +990,7 @@ class Service
 		if (is_array($listOfNotes)) {
 			foreach (array_merge($adNotes, $listOfNotes) as $note) {
 				$n = $this->formatNote($note, $profile->id); // format the array of notes
-				$n->article = !empty($n->article);
+				$n['article'] = !empty($n['article']);
 				$notes[] = $n;
 				if (count($notes) > 50) {
 					break;
@@ -1091,7 +1091,7 @@ class Service
 		$notes = [];
 		foreach ($listOfNotes as $note) {
 			$n = $this->formatNote($note, $profile->id);
-			$n->article = !empty($n->article);
+			$n['article'] = !empty($n['article']);
 			$notes[] = $n;
 		}
 
@@ -1236,7 +1236,7 @@ class Service
 		$notes = [];
 		foreach ($listOfNotes as $note) {
 			$n = $this->formatNote($note, $person->id);
-			$n->article = !empty($n->article);
+			$n['article'] = !empty($n['article']);
 			$notes[] = $n;
 		}
 
