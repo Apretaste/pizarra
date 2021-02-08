@@ -81,22 +81,29 @@
                                  src="{{APP_SERVICE_PATH}}/images/img-prev.png"
                                  onclick="openNote('<%= note.id %>');">
                         <% } %>
-                        <!-- <span class="card-title"></span> -->
                     </div>
                 <% } %>
 
-                <% if(note.text.length > 0 || note.linkText || note.topics.length > 0){ %>
+                <% if(note.text.length > 0 || note.linkText || note.article || note.topics.length > 0){ %>
                     <div class="card-content">
                         <% if(note.text.length > 0){ %>
-                            <p><%- linkify(note.text) %></p>
+                            <p><b><%- linkify(note.text) %></b></p>
                         <% } %>
 
                         <% if(note.linkText){ %>
-                            <ul class="collection one-line preview"
-                                onclick="apretaste.send(<%= atob(note.linkCommand) %>)">
+                            <ul class="collection one-line preview" onclick="apretaste.send(<%= atob(note.linkCommand) %>)">
                                 <li class="collection-item avatar">
                                     <i class="fas fa-<%= note.linkIcon %> material-icons circle"></i>
                                     <span class="title"><%= note.linkText %></span>
+                                </li>
+                            </ul>
+                        <% } %>
+
+                        <% if(note.article){ %>
+                            <ul class="collection one-line preview" onclick="apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'<%= note.id %>'}})">
+                                <li class="collection-item avatar">
+                                    <i class="fas fa-file-word material-icons circle"></i>
+                                    <span class="title">Esta nota viene con un texto adjunto</span>
                                 </li>
                             </ul>
                         <% } %>
@@ -182,10 +189,15 @@
     <div class="row">
         <i class="material-icons small green-text" onclick="toggleWriteModal()">close</i>
         <div class="col s12">
+            <!-- textbox -->
             <textarea id="note" class="materialize-textarea" maxlength="600" placeholder="¿En qué piensas?"></textarea>
 
+            <!-- article location -->
+            <div id="articleTarget"></div>
+
+            <!-- popular topics -->
             <% if(myPopularTopics.length > 0 || popularTopics.length > 0){ %>
-                <div class="input-tags">
+                <div class="input-tags" style="margin-bottom: 10px;">
                     <p class="blue-grey-text">Escoja sus temas</p>
                     <% myPopularTopics.forEach(function(topic) { %>
                         <span class="chip tiny" onclick="appendTag('<%= topic.name %>')">
@@ -199,9 +211,6 @@
                     <% }) %>
                 </div>
             <% } %>
-
-            <!-- article location -->
-            <div id="articleTarget"></div>
         </div>
 
         <div class="actions">
@@ -237,7 +246,7 @@
     </div>
     <div class="modal-footer">
         <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
-        <a onclick="addArticleText()" class="waves-effect waves-green btn-flat green-text modal-close">Agregar</a>
+        <a onclick="addArticleText()" class="waves-effect waves-green btn-flat green-text modal-close">Guardar</a>
     </div>
 </div>
 
