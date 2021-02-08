@@ -503,7 +503,10 @@ class Service
 		$link_command = Database::escape($request->input->data->link->command ?? '', 4000);
 		$link_icon = Database::escape($request->input->data->link->icon ?? '', 100);
 		$link_text = Database::escape($request->input->data->link->text ?? '', 600);
-		$article = Database::escape($this->truncate(strip_tags($request->input->data->article ?? '','b strong u i h1 h2 h3 h4 p br hr ul ol li span'),5000,'',true, true), 5000);
+		$article = strip_tags($request->input->data->article ?? '','<b><strong><u><i><h1><h2><h3><h4><p><br><hr><ul><ol><li><span>');
+
+		if (trim(strip_tags($article)) == '') $article = '';
+		else $article = Database::escape($this->truncate($article,5000,'',true, true), 5000);
 
 		$sql = "INSERT INTO _pizarra_notes (id_person, `text`, image, topic1, topic2, topic3, link_command, link_icon, link_text, weight, article) 
 			VALUES ('{$request->person->id}', '$cleanText', '$fileName', '$topic1', '$topic2', '$topic3', 
@@ -986,7 +989,9 @@ class Service
 		$notes = [];
 		if (is_array($listOfNotes)) {
 			foreach (array_merge($adNotes, $listOfNotes) as $note) {
-				$notes[] = $this->formatNote($note, $profile->id); // format the array of notes
+				$n = $this->formatNote($note, $profile->id); // format the array of notes
+				$n['article'] = !empty($n['article']);
+				$notes[] = $n;
 				if (count($notes) > 50) {
 					break;
 				} // only parse the first 50 notes
@@ -1085,7 +1090,9 @@ class Service
 		// format the array of notes
 		$notes = [];
 		foreach ($listOfNotes as $note) {
-			$notes[] = $this->formatNote($note, $profile->id);
+			$n = $this->formatNote($note, $profile->id);
+			$n['article'] = !empty($n['article']);
+			$notes[] = $n;
 		}
 
 		// return array of notes
@@ -1217,7 +1224,7 @@ class Service
 		$offset = ($page - 1) * 20;
 
 		$listOfNotes = Database::query("
-			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, B.is_influencer, B.online,
+			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, B.is_influencer, B.online,   
 				EXISTS(SELECT id FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$person->id}' AND `action` = 'like') AS isliked
 			FROM _pizarra_muro muro INNER JOIN _pizarra_notes A ON muro.note = A.id  
 			    INNER JOIN person B ON A.id_person = B.id
@@ -1228,7 +1235,9 @@ class Service
 		// format the array of notes
 		$notes = [];
 		foreach ($listOfNotes as $note) {
-			$notes[] = $this->formatNote($note, $person->id);
+			$n = $this->formatNote($note, $person->id);
+			$n['article'] = !empty($n['article']);
+			$notes[] = $n;
 		}
 
 		// return array of notes
