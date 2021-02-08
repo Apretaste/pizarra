@@ -37,8 +37,14 @@
 
             <div class="card-content">
                 <% if(note.text.length > 0){ %>
-                    <p><%- linkify(note.text) %></p>
+                    <p><b><%- linkify(note.text) %></b></p>
                 <% } %>
+
+                <% if(note.article) { %>
+                    <%- note.article %>
+                <% } %>
+
+                <br/>
 
                 <% if(note.linkText){ %>
                     <ul class="collection one-line preview" onclick="apretaste.send(<%= atob(note.linkCommand) %>)">
@@ -88,6 +94,7 @@
                 <% } %>
             </div>
         </div>
+
 
         <ul class="chat" id="comments">
             <% note.comments.forEach(function(comment) { %>

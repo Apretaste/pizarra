@@ -362,7 +362,7 @@ class Service
 		// get the records from the db
 		$result = Database::query("
 			SELECT
-				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3, 
+				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3, A.article,  
 				A.accept_comments, A.link_text, A.link_icon, A.link_command, B.reputation, C.avatar, C.avatarColor, 
 				C.username, C.first_name, C.last_name, C.province, C.picture, C.gender, C.country, C.online, C.is_influencer,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
@@ -503,10 +503,11 @@ class Service
 		$link_command = Database::escape($request->input->data->link->command ?? '', 4000);
 		$link_icon = Database::escape($request->input->data->link->icon ?? '', 100);
 		$link_text = Database::escape($request->input->data->link->text ?? '', 600);
+		$article = Database::escape($this->truncate(strip_tags($request->input->data->article ?? '','b strong u i h1 h2 h3 h4 p br hr ul ol li span'),5000,'',true, true), 5000);
 
-		$sql = "INSERT INTO _pizarra_notes (id_person, `text`, image, topic1, topic2, topic3, link_command, link_icon, link_text, weight) 
+		$sql = "INSERT INTO _pizarra_notes (id_person, `text`, image, topic1, topic2, topic3, link_command, link_icon, link_text, weight, article) 
 			VALUES ('{$request->person->id}', '$cleanText', '$fileName', '$topic1', '$topic2', '$topic3', 
-			NULLIF('$link_command', ''), NULLIF('$link_icon', ''), NULLIF('$link_text', ''), 100)";
+			NULLIF('$link_command', ''), NULLIF('$link_icon', ''), NULLIF('$link_text', ''), 100, '$article')";
 
 		$this->insertedNoteId = Database::query($sql);
 
@@ -536,7 +537,7 @@ class Service
 		// complete tutorial
 		Tutorial::complete($request->person->id, 'post_pizarra');
 
-		// submit to Google Analytics 
+		// submit to Google Analytics
 		GoogleAnalytics::event('note_new', $this->insertedNoteId);
 
 		// save the topics to the topics table
@@ -611,7 +612,7 @@ class Service
 		// complete the challenge
 		Challenges::complete('comment-pizarra-note', $request->person->id);
 
-		// submit to Google Analytics 
+		// submit to Google Analytics
 		GoogleAnalytics::event('note_comment', $note->id);
 
 		// notify users mentioned
@@ -840,7 +841,7 @@ class Service
 			INSERT INTO flags(service, person_id, reported_id, explanation) 
 			VALUES('pizarra', {$request->person->id}, '$noteId', '$message')");
 
-		// submit to Google Analytics 
+		// submit to Google Analytics
 		GoogleAnalytics::event('note_flag', $noteId);
 	}
 
@@ -1343,6 +1344,8 @@ class Service
 		}
 
 		$note->text = html_entity_decode($note->text);
+		$article = $note->article ?? '';
+		if (empty($article)) $article = false;
 
 		// add the text to the array
 		return [
@@ -1374,6 +1377,7 @@ class Service
 			'linkCommand' => $note->link_command ?? false,
 			'linkIcon' => $note->link_icon ?? false,
 			'linkText' => $note->link_text ?? false,
+			'article' => $article
 		];
 	}
 
@@ -1498,5 +1502,118 @@ class Service
 				Database::query("UPDATE _pizarra_notes SET impressions=impressions+1 WHERE id='{$note['id']}'");
 			}
 		}
+	}
+
+	/**
+	 * Truncates text.
+	 *
+	 * Cuts a string to the length of $length and replaces the last characters
+	 * with the ending if the text is longer than length.
+	 *
+	 * @param string $text String to truncate.
+	 * @param integer $length Length of returned string, including ellipsis.
+	 * @param string $ending Ending to be appended to the trimmed string.
+	 * @param boolean $exact If false, $text will not be cut mid-word
+	 * @param boolean $considerHtml If true, HTML tags would be handled correctly
+	 * @return string Trimmed string.
+	 */
+	private function truncate($text, $length = 100, $ending = '...', $exact = true, $considerHtml = false) {
+		if ($considerHtml) {
+			// if the plain text is shorter than the maximum length, return the whole text
+			if (strlen(preg_replace('/<.*?>/', '', $text)) <= $length) {
+				return $text;
+			}
+
+			// splits all html-tags to scanable lines
+			preg_match_all('/(<.+?>)?([^<>]*)/s', $text, $lines, PREG_SET_ORDER);
+
+			$total_length = strlen($ending);
+			$open_tags = array();
+			$truncate = '';
+
+			foreach ($lines as $line_matchings) {
+				// if there is any html-tag in this line, handle it and add it (uncounted) to the output
+				if (!empty($line_matchings[1])) {
+					// if it’s an “empty element” with or without xhtml-conform closing slash (f.e.)
+					if (preg_match('/^<(\s*.+?\/\s*|\s*(img|br|input|hr|area|base|basefont|col|frame|isindex|link|meta|param)(\s.+?)?)>$/is', $line_matchings[1])) {
+						// do nothing
+						// if tag is a closing tag (f.e.)
+					} else if (preg_match('/^<\s*\/([^\s]+?)\s*>$/s', $line_matchings[1], $tag_matchings)) {
+						// delete tag from $open_tags list
+						$pos = array_search($tag_matchings[1], $open_tags);
+						if ($pos !== false) {
+							unset($open_tags[$pos]);
+						}
+						// if tag is an opening tag (f.e. )
+					} else if (preg_match('/^<\s*([^\s>!]+).*?>$/s', $line_matchings[1], $tag_matchings)) {
+						// add tag to the beginning of $open_tags list
+						array_unshift($open_tags, strtolower($tag_matchings[1]));
+					}
+					// add html-tag to $truncate’d text
+					$truncate .= $line_matchings[1];
+				}
+
+				// calculate the length of the plain text part of the line; handle entities as one character
+				$content_length = strlen(preg_replace('/&[0-9a-z]{2,8};|&#[0-9]{1,7};|&#x[0-9a-f]{1,6};/i', ' ', $line_matchings[2]));
+				if ($total_length+$content_length > $length) {
+					// the number of characters which are left
+					$left = $length - $total_length;
+					$entities_length = 0;
+					// search for html entities
+					if (preg_match_all('/&[0-9a-z]{2,8};|&#[0-9]{1,7};|&#x[0-9a-f]{1,6};/i', $line_matchings[2], $entities, PREG_OFFSET_CAPTURE)) {
+						// calculate the real length of all entities in the legal range
+						foreach ($entities[0] as $entity) {
+							if ($entity[1]+1-$entities_length <= $left) {
+								$left--;
+								$entities_length += strlen($entity[0]);
+							} else {
+								// no more characters left
+								break;
+							}
+						}
+					}
+					$truncate .= substr($line_matchings[2], 0, $left+$entities_length);
+					// maximum lenght is reached, so get off the loop
+					break;
+				} else {
+					$truncate .= $line_matchings[2];
+					$total_length += $content_length;
+				}
+
+				// if the maximum length is reached, get off the loop
+				if($total_length >= $length) {
+					break;
+				}
+			}
+		} else {
+			if (strlen($text) <= $length) {
+				return $text;
+			} else {
+				$truncate = substr($text, 0, $length - strlen($ending));
+			}
+		}
+
+		// if the words shouldn't be cut in the middle...
+		if (!$exact) {
+			// ...search the last occurance of a space...
+			$spacepos = strrpos($truncate, ' ');
+			if (isset($spacepos)) {
+				// ...and cut the text in this position
+				$truncate = substr($truncate, 0, $spacepos);
+			}
+		}
+
+		// add the defined ending to the text
+		$truncate .= $ending;
+
+		if($considerHtml) {
+			// close all unclosed html-tags
+			foreach ($open_tags as $tag) {
+				$truncate .= '';
+			}
+		}
+
+		return $truncate;
+
 	}
 }
