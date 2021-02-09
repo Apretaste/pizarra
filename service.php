@@ -79,7 +79,7 @@ class Service
 		];
 
 		// create the response
-		$response->setCache(60);
+		//$response->setCache(60);
 		$response->setLayout('pizarra.ejs');
 		$response->SetTemplate('main.ejs', $content, $images);
 	}
@@ -169,11 +169,11 @@ class Service
 		];
 
 		// create the response
-		if (!$search) {
+		/*if (!$search) {
 			$response->setCache(60);
 		} else {
 			$response->setCache(30);
-		}
+		}*/
 		$response->setLayout('pizarra.ejs');
 		$response->SetTemplate('main.ejs', $content, $images);
 	}
@@ -434,7 +434,7 @@ class Service
 		// update influencers stats
 		Influencers::incStat($note['id_person'], 'views');
 
-		$response->setCache(60);
+		//$response->setCache(60);
 		$response->SetTemplate('note.ejs', $content, $images);
 	}
 
