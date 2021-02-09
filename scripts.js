@@ -17,6 +17,7 @@ $(document).ready(function () {
 	$('.modal').modal();
 	$('.tabs').tabs();
 	$('.materialboxed').materialbox();
+	$('.sidenav').sidenav();
 
 	// text formatting
 	$('#article').richText({
