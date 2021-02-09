@@ -1457,6 +1457,14 @@ class Service
 		}
 	}
 
+	/**
+	 * @param Request $request
+	 * @param Response $response
+	 * @throws Alert
+	 */
+	public function _redactar(Request $request, Response $response) {
+		$response->setTemplate('write.ejs');
+	}
 
 	// Ranking
 	private function getLastSeed()
