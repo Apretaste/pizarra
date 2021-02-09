@@ -95,12 +95,11 @@
                     </span>
                 <% } else {%>
                     <span class="chip" onclick="openDeleteModal()" style="background-color: transparent;">
-                        <i class="material-icons icon">delete</i>&nbsp;
+                        <i class="material-icons icon red-text">delete</i>&nbsp;
                     </span>
                 <% } %>
             </div>
         </div>
-
 
         <ul class="chat" id="comments">
             <% note.comments.forEach(function(comment) { %>
