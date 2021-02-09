@@ -503,7 +503,7 @@ class Service
 		$link_command = Database::escape($request->input->data->link->command ?? '', 4000);
 		$link_icon = Database::escape($request->input->data->link->icon ?? '', 100);
 		$link_text = Database::escape($request->input->data->link->text ?? '', 600);
-		$article = strip_tags($request->input->data->article ?? '','<b><strong><u><i><h1><h2><h3><h4><p><br><hr><ul><ol><li><span>');
+		$article = strip_tags($request->input->data->article ?? '','<b><strong><u><i><h1><h2><h3><h4><h5><font><p><br><hr><ul><ol><li><span><div><a><table><tr><th><td><thead><tbody>');
 
 		if (trim(strip_tags($article)) == '') $article = '';
 		else $article = Database::escape($this->truncate($article,5000,'',true, true), 5000);
