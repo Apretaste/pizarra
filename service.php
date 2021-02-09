@@ -1223,7 +1223,7 @@ class Service
 				EXISTS(SELECT id FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$person->id}' AND `action` = 'like') AS isliked
 			FROM _pizarra_muro muro INNER JOIN _pizarra_notes A ON muro.note = A.id  
 			    INNER JOIN person B ON A.id_person = B.id
-			WHERE muro.person_id = {$person->id}
+			WHERE muro.person_id = {$person->id} AND A.active = 1 AND A.silenced = 0
 			ORDER BY muro.created DESC
 			LIMIT 20 OFFSET $offset");
 
@@ -1253,7 +1253,7 @@ class Service
 		$count = Database::queryCache("
 			SELECT COUNT(A.id) as total FROM _pizarra_muro muro INNER JOIN _pizarra_notes A ON muro.note = A.id  
 			    INNER JOIN person B ON A.id_person = B.id
-			WHERE muro.person_id = {$person->id}");
+			WHERE muro.person_id = {$person->id} AND A.active = 1 AND A.silenced = 0");
 
 		// return total pages
 		return (int)ceil($count[0]->total / 20);
