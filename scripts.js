@@ -26,7 +26,7 @@ $(document).ready(function () {
 		ol: true,
 		ul: true,
 		heading: true,
-		useParagraph: true,
+		useParagraph: false,
 		urls: false,
 		removeStyles: false,
 		videoEmbed: false,
@@ -153,7 +153,7 @@ function openArticleModal() {
 }
 
 function addArticleText() {
-	$('#articleTarget').html($('#article').val());
+	$('#articleTarget').html($('#article').val()).removeClass('hide');
 }
 
 function replyUser(user) {
@@ -199,7 +199,7 @@ function sendNote() {
 				'text': note,
 				'image': notePicture,
 				'imageName': basename,
-				'article': $('#article').val(),
+				'article': ($($('#article').val()).text()) ? encode_utf8($('#article').val()) : '',
 			},
 			'files': files,
 			'redirect': false,
@@ -625,10 +625,6 @@ function sendNoteCallback(note) {
 	var htmlTopics = "";
 	topics = topics != null ? topics.splice(0, 3) : [myUser.topic];
 
-	// clean the article
-	$('#article').val('').trigger('change');
-	$('#articleTarget').html('');
-
 	var hasImage = "";
 	if (typeof notePicture != "undefined" || (typeof notePicturePath != "undefined" && notePicturePath != null)) {
 		var src = "data:image/jpg;base64," + notePicture;
@@ -660,6 +656,18 @@ function sendNoteCallback(note) {
 	});
 	note = note.escapeHTML();
 
+	var article = ($($('#article').val()).text()) ? 
+	 '<ul class="collection one-line preview">\n' +
+		'                    <li class="collection-item avatar">\n' +
+		'                        <i class="fas fa-file-word material-icons circle"></i>\n' +
+		'                        <span class="title">Esta nota viene con un texto adjunto</span>\n' +
+		'                    </li>\n' +
+		'                </ul>\n' : '';
+
+	// clean the article
+	$('#article').val('').trigger('change');
+	$('#articleTarget').html('').addClass('hide');
+
 	var element =
 		'<div class="card note" id="last" liked="false"\n' +
 		'                 unliked="false">\n' +
@@ -680,12 +688,7 @@ function sendNoteCallback(note) {
 		'                <div class="card-content">\n' +
 		hasImage +
 		'                    <p><b>' + note + '</b></p>\n' +
-		'                    <ul class="collection one-line preview">\n' +
-		'                        <li class="collection-item avatar">\n' +
-		'                            <i class="fas fa-file-word material-icons circle"></i>\n' +
-		'                            <span class="title">Esta nota viene con un texto adjunto</span>\n' +
-		'                        </li>\n' +
-		'                    </ul>\n' +
+		article + 
 		'                    <div class="tags">\n' +
 		htmlTopics +
 		'                    </div>\n' +
@@ -1031,3 +1034,7 @@ window.linkify = (function () {
 	};
 
 })();
+
+function encode_utf8(s) {
+  return unescape(encodeURIComponent(s));
+}

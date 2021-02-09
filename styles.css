@@ -916,11 +916,28 @@ ul.chat li {
 	object-fit: contain !important;
 }
 
+/* ARTICLE WYSIWUG COMPONENT */
+
 #articleModal {
-	top: 5% !important;
+	top: 1% !important;
 	width: 95vw;	
 	height: auto;
 	max-height: none;
+}
+
+#articleTarget {
+	max-height: 300px;
+	overflow: scroll; 
+	border: 1px solid #c1c1c1;
+	padding: 5px;
+}
+
+#articleModal .richText-editor {
+	padding: 5px;
+}
+
+#articleModal .modal-content {
+	padding: 5px;
 }
 
 .richText-length .black {
