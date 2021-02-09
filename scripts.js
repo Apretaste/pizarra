@@ -19,7 +19,7 @@ $(document).ready(function () {
 	$('.materialboxed').materialbox();
 
 	// text formatting
-	$('.articleField').richText({
+	$('#article').richText({
 		bold: true,
 		italic: true,
 		underline: true,
@@ -43,7 +43,9 @@ $(document).ready(function () {
 		code: false,
 		fileHTML: '',
 		imageHTML: '',
-		maxlength: 5000
+		maxlength: 5000,
+		id: 'article',
+		class: 'hide'
 	});
 
 	M.FloatingActionButton.init($('.click-to-toggle'), {
@@ -146,10 +148,6 @@ function toggleWriteModal() {
 
 function openSearchModal() {
 	M.Modal.getInstance($('#searchModal')).open();
-}
-
-function openArticleModal() {
-	M.Modal.getInstance($('#articleModal')).open();
 }
 
 function addArticleText() {

@@ -918,31 +918,16 @@ ul.chat li {
 
 /* ARTICLE WYSIWUG COMPONENT */
 
-#articleModal {
-	top: 1% !important;
-	width: 95vw;	
-	height: auto;
-	max-height: none;
+#article .richText-toolbar:last-of-type {
+	display: none;
 }
 
-#articleTarget {
-	max-height: 300px;
-	overflow: scroll; 
-	border: 1px solid #c1c1c1;
+#article .richText-editor {
 	padding: 5px;
 }
 
-#articleModal .richText-editor {
-	padding: 5px;
-}
-
-#articleModal .modal-content {
-	padding: 5px;
-}
-
-.richText-length .black {
-	background-color: white !important;
-	color: #039be5 !important;
+#article ul, #article ul>li {
+	list-style-type: circle !important;
 }
 
 /*.ad {
