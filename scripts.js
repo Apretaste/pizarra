@@ -150,6 +150,9 @@ function openSearchModal() {
 	M.Modal.getInstance($('#searchModal')).open();
 }
 
+function openDeleteModal() {
+	M.Modal.getInstance($('#deleteModal')).open();
+}
 function addArticleText() {
 	$('#articleTarget').html($('#article').val()).removeClass('hide');
 }
