@@ -65,8 +65,6 @@ class Service
 		$popularTopics = $this->getPopularTopics();
 		$popularTopics = array_splice($popularTopics, 0, 4);
 
-
-
 		// create variables for the template
 		$content = [
 			'notes' => $notes,
@@ -1461,7 +1459,7 @@ class Service
 	public function _redactar(Request $request, Response $response) {
 		$popularTopics = $this->getPopularTopics();
 		$popularTopics = array_splice($popularTopics, 0, 4);
-
+		$response->setCache('year');
 		$response->setTemplate('write.ejs', [
 			'popularTopics' => $popularTopics,
 			'myPopularTopics' =>  Database::query("

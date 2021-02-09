@@ -918,11 +918,11 @@ ul.chat li {
 
 /* ARTICLE WYSIWUG COMPONENT */
 
-#article .richText-toolbar:last-of-type {
+#articleRich .richText-toolbar:last-of-type {
 	display: none;
 }
 
-#article .richText-editor {
+#articleRich .richText-editor {
 	padding: 5px;
 }
 
