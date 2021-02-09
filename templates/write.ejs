@@ -28,12 +28,16 @@
 
     </div>
 </div>
+
+<ul id="home-menu" class="sidenav">
+    <li><a href="#!" onclick="uploadPhoto();"><i class="material-icons icon">photo</i> Imagen</a></li>
+    <li><a href="#!" onclick="$('#articleRich').slideDown().removeClass('hide').find('textarea').focus()"><i class="material-icons"><i class="material-icons icon">insert_drive_file</i> Art&iacute;culo</a></li>
+</ul>
+
 <div class="bottom-space"></div>
-<div class="col s12">
-    <div class="bottom-space"></div>
-    <div class="fixed-action-btn actions">
-        <a class="btn-floating waves-effect waves-light grey third" href="#!" onclick="uploadPhoto();"><i class="material-icons">photo</i></a>
-        <a class="btn-floating waves-effect waves-light grey second" href="#!" onclick="$('#articleRich').slideDown().removeClass('hide').find('textarea').focus()"><i class="material-icons">insert_drive_file</i></a>
-        <a class="btn-floating btn-large waves-effect waves-light" href="#!" onclick="sendNote()"><i class="material-icons">send</i></a>
-    </div>
+
+<div class="fixed-action-btn">
+    <a class="btn-floating waves-effect waves-light grey sidenav-trigger third" href="#!" data-target="home-menu"><i class="material-icons">menu</i></a>
+    <a class="btn-floating waves-effect waves-light grey second" href="#!" onclick="apretaste.back();"><i class="material-icons">arrow_back</i></a>
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!" onclick="sendNote()"><i class="material-icons">send</i></a>
 </div>
