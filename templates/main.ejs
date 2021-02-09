@@ -193,7 +193,7 @@
             <textarea id="note" class="materialize-textarea" maxlength="600" placeholder="¿En qué piensas?"></textarea>
 
             <!-- article location -->
-            <div id="articleTarget" class="hide"></div>
+            <textarea id="article"></textarea>
 
             <!-- popular topics -->
             <% if(myPopularTopics.length > 0 || popularTopics.length > 0){ %>
@@ -216,7 +216,7 @@
         <div class="actions">
             <input type="file" id="picture" accept="image/*" class="hide">
             <i class="material-icons small green-text left" id="uploadPhoto">photo</i>
-            <i class="material-icons small green-text left" onclick="openArticleModal()">insert_drive_file</i>
+            <i class="material-icons small green-text left" onclick="$('#article').slideDown().removeClass('hide').find('textarea').focus()">insert_drive_file</i>
             <i class="material-icons small green-text right" onclick="sendNote()">send</i>
         </div>
     </div>
@@ -234,20 +234,6 @@
     <div class="modal-footer">
         <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
         <a onclick="searchText()" class="waves-effect waves-green btn-flat green-text modal-close">Enviar</a>
-    </div>
-</div>
-
-<!-- ARTICLE MODAL -->
-<div id="articleModal" class="modal">
-    <div class="modal-content">
-        <div class="input-field">
-            <textarea id="article" class="articleField"></textarea>
-        </div>
-    </div>
-    <div class="modal-footer">
-        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
-        <a href="#!" class="waves-effect waves-light btn-flat red-text" onclick="$('#article').val('').trigger('change')">Limpiar</a>
-        <a onclick="addArticleText()" class="waves-effect waves-green btn-flat green-text modal-close">Guardar</a>
     </div>
 </div>
 
