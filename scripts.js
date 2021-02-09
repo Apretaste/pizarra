@@ -44,7 +44,7 @@ $(document).ready(function () {
 		fileHTML: '',
 		imageHTML: '',
 		maxlength: 5000,
-		id: 'article',
+		id: 'articleRich',
 		class: 'hide'
 	});
 
@@ -72,14 +72,6 @@ $(document).ready(function () {
 		$('#writeModal .actions').css('bottom', h - 8 + 'px');
 	}
 
-	$('#uploadPhoto').click(function (e) {
-		if (typeof apretaste.loadImage != 'undefined') {
-			apretaste.loadImage('onImageLoaded')
-		} else {
-			loadFileToBase64();
-		}
-	});
-
 	var resizeInterval = setInterval(function () {
 		// check until the img has the correct size
 		resizeImg();
@@ -94,6 +86,14 @@ $(document).ready(function () {
 
 	$('#chat-row').parent().css('margin-bottom', '0');
 });
+
+function uploadPhoto() {
+	if (typeof apretaste.loadImage != 'undefined') {
+		apretaste.loadImage('onImageLoaded')
+	} else {
+		loadFileToBase64();
+	}
+};
 
 function resizeImg() {
 	if (typeof profile == "undefined") return;
@@ -296,16 +296,16 @@ function searchUsername(username) {
 	});
 }
 
-function deleteNote() {
+function deleteNote(id) {
 	apretaste.send({
 		'command': 'PIZARRA ELIMINAR',
 		'data': {
-			'note': activeNote
+			'note': id
 		},
 		'redirect': false,
 		callback: {
 			'name': 'deleteCallback',
-			'data': activeNote
+			'data': id
 		}
 	});
 }
@@ -343,8 +343,7 @@ function previousPage() {
 }
 
 function deleteCallback(id) {
-	$('#' + id).remove();
-	showToast('Nota eliminada');
+	apretaste.send({command:'PIZARRA'});
 }
 
 function deleteNotification(id) {
@@ -618,6 +617,14 @@ function sendCommentCallback(comment) {
 }
 
 function sendNoteCallback(note) {
+
+	apretaste.send({
+		command:'PIZARRA NOTA',
+		data:{
+			note: 'last'
+		}
+	});
+	return;
 	var serviceImgPath = $('serviceImgPath').attr('data');
 	var topics = note.match(/(^|\B)#(?![0-9_]+\b)([a-zA-Z0-9_]{1,30})(\b|\r)/g);
 	var htmlTopics = "";

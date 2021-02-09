@@ -926,7 +926,10 @@ ul.chat li {
 	padding: 5px;
 }
 
-#article ul, #article ul>li {
+#articleRich ul, #articleRich ul>li {
+	list-style-type: circle !important;
+}
+.articleAera ul, .articleAera ul>li {
 	list-style-type: circle !important;
 }
 
@@ -937,3 +940,12 @@ ul.chat li {
 .ad li{
 	background-color: #e6ee9c !important;
 }*/
+
+.richText .richText-toolbar .richText-length .black {
+	background-color: transparent !important;
+	color: #039be5 !important;;
+}
+
+#articleRich ul:not(.browser-default) > li, .articleRich ul:not(.browser-default) > li {
+	list-style-type: circle !important;
+}

@@ -41,7 +41,9 @@
                 <% } %>
 
                 <% if(note.article) { %>
-                    <%- note.article %>
+                    <div class = "articleAera">
+                        <%- note.article %>
+                    </div>
                 <% } %>
 
                 <br/>
@@ -90,6 +92,10 @@
                 <% if(note.id_person != myUser.id){ %>
                     <span class="chip" onclick="openReportModal()" style="background-color: transparent;">
                         <i class="material-icons icon">cancel</i>&nbsp;
+                    </span>
+                <% } else {%>
+                    <span class="chip" onclick="openDeleteModal()" style="background-color: transparent;">
+                        <i class="material-icons icon">delete</i>&nbsp;
                     </span>
                 <% } %>
             </div>
@@ -202,6 +208,16 @@
     <div class="modal-footer">
         <a onclick="hideKeyboard()" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
         <a onclick="reportNote()" class="modal-close waves-effect waves-green btn-flat green-text">Enviar</a>
+    </div>
+</div>
+
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        ¿Est&aacute;s seguro de eliminar esta nota?
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
+        <a onclick="deleteNote(<%= note.id %>);" class="modal-close waves-effect waves-green btn-flat green-text">Eliminar</a>
     </div>
 </div>
 

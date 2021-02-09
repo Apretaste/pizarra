@@ -1,5 +1,39 @@
 <div class="row">
-    <div class="col-12">
+    <div class="col s12">
+        <!-- textbox -->
+        <textarea id="note" class="materialize-textarea" maxlength="600" placeholder="¿En qué piensas?"></textarea>
 
+        <!-- popular topics -->
+        <% if(myPopularTopics.length > 0 || popularTopics.length > 0){ %>
+            <div class="input-tags" style="margin-bottom: 10px;">
+                <p class="blue-grey-text">Escoja sus temas</p>
+                <% myPopularTopics.forEach(function(topic) { %>
+                    <span class="chip tiny" onclick="appendTag('<%= topic.name %>')">
+                        <i class="fas fa-hashtag"></i> <%= topic.name %>
+                    </span>
+                <% }) %>
+                <% popularTopics.forEach(function(topic) { %>
+                    <span class="chip tiny" onclick="appendTag('<%= topic.name %>')">
+                        <i class="fas fa-hashtag"></i> <%= topic.name %>
+                    </span>
+                <% }) %>
+            </div>
+        <% } %>
+
+        <input type="file" id="picture" accept="image/*" class="hide">
+        <img id="notePicture" class="responsive-img"/>
+
+        <!-- article location -->
+        <textarea id="article"></textarea>
+
+    </div>
+</div>
+<div class="bottom-space"></div>
+<div class="col s12">
+    <div class="bottom-space"></div>
+    <div class="fixed-action-btn actions">
+        <a class="btn-floating waves-effect waves-light grey third" href="#!" onclick="uploadPhoto();"><i class="material-icons">photo</i></a>
+        <a class="btn-floating waves-effect waves-light grey second" href="#!" onclick="$('#articleRich').slideDown().removeClass('hide').find('textarea').focus()"><i class="material-icons">insert_drive_file</i></a>
+        <a class="btn-floating btn-large waves-effect waves-light" href="#!" onclick="sendNote()"><i class="material-icons">send</i></a>
     </div>
 </div>

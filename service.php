@@ -65,11 +65,7 @@ class Service
 		$popularTopics = $this->getPopularTopics();
 		$popularTopics = array_splice($popularTopics, 0, 4);
 
-		$myPopularTopics = Database::query("
-			SELECT topic AS name, COUNT(id) AS cnt FROM _pizarra_topics
-			WHERE created > DATE_ADD(NOW(), INTERVAL -30 DAY)
-			AND topic <> 'general' AND id_person='{$request->person->id}'
-			GROUP BY topic ORDER BY cnt DESC LIMIT 4");
+
 
 		// create variables for the template
 		$content = [
@@ -78,7 +74,6 @@ class Service
 			'title' => 'Muro',
 			'showImages' => $request->person->showImages,
 			'popularTopics' => $popularTopics,
-			'myPopularTopics' => $myPopularTopics,
 			'page' => $page,
 			'pages' => $pages ?? 1,
 		];
@@ -1458,12 +1453,23 @@ class Service
 	}
 
 	/**
+	 * REDACTAR
 	 * @param Request $request
 	 * @param Response $response
 	 * @throws Alert
 	 */
 	public function _redactar(Request $request, Response $response) {
-		$response->setTemplate('write.ejs');
+		$popularTopics = $this->getPopularTopics();
+		$popularTopics = array_splice($popularTopics, 0, 4);
+
+		$response->setTemplate('write.ejs', [
+			'popularTopics' => $popularTopics,
+			'myPopularTopics' =>  Database::query("
+					SELECT topic AS name, COUNT(id) AS cnt FROM _pizarra_topics
+					WHERE created > DATE_ADD(NOW(), INTERVAL -30 DAY)
+					AND topic <> 'general' AND id_person='{$request->person->id}'
+					GROUP BY topic ORDER BY cnt DESC LIMIT 4")
+		]);
 	}
 
 	// Ranking
