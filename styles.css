@@ -940,9 +940,8 @@ ul.chat li {
 	padding: 5px;
 }
 
-.richText-length .black {
-	background-color: white !important;
-	color: #039be5 !important;
+#articleModal .richText-toolbar:last-of-type {
+	display: none;
 }
 
 /*.ad {
