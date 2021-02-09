@@ -26,7 +26,7 @@ $(document).ready(function () {
 		ol: true,
 		ul: true,
 		heading: true,
-		useParagraph: true,
+		useParagraph: false,
 		urls: false,
 		removeStyles: false,
 		videoEmbed: false,
@@ -153,7 +153,7 @@ function openArticleModal() {
 }
 
 function addArticleText() {
-	$('#articleTarget').html($('#article').val());
+	$('#articleTarget').html($('#article').val()).removeClass('hide');
 }
 
 function replyUser(user) {
@@ -199,7 +199,7 @@ function sendNote() {
 				'text': note,
 				'image': notePicture,
 				'imageName': basename,
-				'article': ($($('#article').val()).text()) ? $('#article').val() : '',
+				'article': ($($('#article').val()).text()) ? encode_utf8($('#article').val()) : '',
 			},
 			'files': files,
 			'redirect': false,
@@ -666,7 +666,7 @@ function sendNoteCallback(note) {
 
 	// clean the article
 	$('#article').val('').trigger('change');
-	$('#articleTarget').html('');
+	$('#articleTarget').html('').addClass('hide');
 
 	var element =
 		'<div class="card note" id="last" liked="false"\n' +
@@ -1034,3 +1034,7 @@ window.linkify = (function () {
 	};
 
 })();
+
+function encode_utf8(s) {
+  return unescape(encodeURIComponent(s));
+}
