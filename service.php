@@ -472,7 +472,7 @@ class Service
 		// only post notes with real content
 		$minLength = isset($request->input->data->link->command) ? 0 : 3;
 
-		if (strlen($text) < $minLength) {
+		if (strlen($text) < $minLength && empty($fileName)) {
 			return;
 		}
 
@@ -496,10 +496,10 @@ class Service
 		$link_command = Database::escape($request->input->data->link->command ?? '', 4000);
 		$link_icon = Database::escape($request->input->data->link->icon ?? '', 100);
 		$link_text = Database::escape($request->input->data->link->text ?? '', 600);
-		$article = strip_tags($request->input->data->article ?? '','<b><strong><u><i><h1><h2><h3><h4><h5><font><p><br><hr><ul><ol><li><span><div><a><table><tr><th><td><thead><tbody>');
+		$article = strip_tags($request->input->data->article ?? '', '<b><strong><u><i><h1><h2><h3><h4><h5><font><p><br><hr><ul><ol><li><span><div><a><table><tr><th><td><thead><tbody>');
 
 		if (trim(strip_tags($article)) == '') $article = '';
-		else $article = utf8_decode(Database::escape($this->truncate($article,5000,'',true, true), 5000));
+		else $article = utf8_decode(Database::escape($this->truncate($article, 5000, '', true, true), 5000));
 
 		$sql = "INSERT INTO _pizarra_notes (id_person, `text`, image, topic1, topic2, topic3, link_command, link_icon, link_text, weight, article) 
 			VALUES ('{$request->person->id}', '$cleanText', '$fileName', '$topic1', '$topic2', '$topic3', 
@@ -1456,13 +1456,14 @@ class Service
 	 * @param Response $response
 	 * @throws Alert
 	 */
-	public function _redactar(Request $request, Response $response) {
+	public function _redactar(Request $request, Response $response)
+	{
 		$popularTopics = $this->getPopularTopics();
 		$popularTopics = array_splice($popularTopics, 0, 4);
 		$response->setCache('year');
 		$response->setTemplate('write.ejs', [
 			'popularTopics' => $popularTopics,
-			'myPopularTopics' =>  Database::query("
+			'myPopularTopics' => Database::query("
 					SELECT topic AS name, COUNT(id) AS cnt FROM _pizarra_topics
 					WHERE created > DATE_ADD(NOW(), INTERVAL -30 DAY)
 					AND topic <> 'general' AND id_person='{$request->person->id}'
@@ -1538,7 +1539,8 @@ class Service
 	 * @param boolean $considerHtml If true, HTML tags would be handled correctly
 	 * @return string Trimmed string.
 	 */
-	private function truncate($text, $length = 100, $ending = '...', $exact = true, $considerHtml = false) {
+	private function truncate($text, $length = 100, $ending = '...', $exact = true, $considerHtml = false)
+	{
 		if ($considerHtml) {
 			// if the plain text is shorter than the maximum length, return the whole text
 			if (strlen(preg_replace('/<.*?>/', '', $text)) <= $length) {
@@ -1576,7 +1578,7 @@ class Service
 
 				// calculate the length of the plain text part of the line; handle entities as one character
 				$content_length = strlen(preg_replace('/&[0-9a-z]{2,8};|&#[0-9]{1,7};|&#x[0-9a-f]{1,6};/i', ' ', $line_matchings[2]));
-				if ($total_length+$content_length > $length) {
+				if ($total_length + $content_length > $length) {
 					// the number of characters which are left
 					$left = $length - $total_length;
 					$entities_length = 0;
@@ -1584,7 +1586,7 @@ class Service
 					if (preg_match_all('/&[0-9a-z]{2,8};|&#[0-9]{1,7};|&#x[0-9a-f]{1,6};/i', $line_matchings[2], $entities, PREG_OFFSET_CAPTURE)) {
 						// calculate the real length of all entities in the legal range
 						foreach ($entities[0] as $entity) {
-							if ($entity[1]+1-$entities_length <= $left) {
+							if ($entity[1] + 1 - $entities_length <= $left) {
 								$left--;
 								$entities_length += strlen($entity[0]);
 							} else {
@@ -1593,7 +1595,7 @@ class Service
 							}
 						}
 					}
-					$truncate .= substr($line_matchings[2], 0, $left+$entities_length);
+					$truncate .= substr($line_matchings[2], 0, $left + $entities_length);
 					// maximum lenght is reached, so get off the loop
 					break;
 				} else {
@@ -1602,7 +1604,7 @@ class Service
 				}
 
 				// if the maximum length is reached, get off the loop
-				if($total_length >= $length) {
+				if ($total_length >= $length) {
 					break;
 				}
 			}
@@ -1627,7 +1629,7 @@ class Service
 		// add the defined ending to the text
 		$truncate .= $ending;
 
-		if($considerHtml) {
+		if ($considerHtml) {
 			// close all unclosed html-tags
 			foreach ($open_tags as $tag) {
 				$truncate .= '';
