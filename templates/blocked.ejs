@@ -1,25 +1,25 @@
 <div class="row">
-    <div class="col s12">
-        <%if (origin=='profile'){%>
-            <%if(blocks.blocked){%>
-            <p>Lo sentimos, el perfil que usted nos solicita no puede ser mostrado debido a que usted ha sido bloqueado por esa persona.</p>
-            <%}else{%>
-            <p>Usted bloqueo a este usuario, no puede ver su perfil.</p>
-            <%}%>
-        <%}else if (origin=='note'){%>
-            <%if(blocks.blocked){%>
-            <p>Lo sentimos, usted no tiene acceso a la nota solicitada.</p>
-            <%}else{%>
-            <p>Usted bloqueo a este usuario, no puede ser sus publicaciones.</p>
-            <%}%>
-        <%}%>
+	<div class="col s12">
+		<%if (origin=='profile'){%>
+			<%if(blocks.blocked){%>
+			<p>Lo sentimos, el perfil que usted nos solicita no puede ser mostrado debido a que usted ha sido bloqueado por esa persona.</p>
+			<%}else{%>
+			<p>Usted bloqueo a este usuario, no puede ver su perfil.</p>
+			<%}%>
+		<%}else if (origin=='note'){%>
+			<%if(blocks.blocked){%>
+			<p>Lo sentimos, usted no tiene acceso a la nota solicitada.</p>
+			<%}else{%>
+			<p>Usted bloqueo a este usuario, no puede ser sus publicaciones.</p>
+			<%}%>
+		<%}%>
 
-        <%var action = blocks.blockedByMe?'desbloquear':'bloquear'; var icon = blocks.blockedByMe?'unlock':'block';%>
+		<%var action = blocks.blockedByMe?'desbloquear':'bloquear'; var icon = blocks.blockedByMe?'unlock':'block';%>
 
-        <div class="center-align">
-            <button class="btn waves-effect waves-light red" onclick="apretaste.send({'command':'PERFIL <%=action.toUpperCase()%>','data':{'username':'<%=username%>'}});"><%=action.charAt(0).toUpperCase() + action.slice(1)%>
-                <i class="material-icons right"><%=icon%></i>
-            </button>
-        </div>
-    </div>
+		<div class="center-align">
+			<button class="btn waves-effect waves-light red" onclick="apretaste.send({'command':'PERFIL <%=action.toUpperCase()%>','data':{'username':'<%=username%>'}});"><%=action.charAt(0).toUpperCase() + action.slice(1)%>
+				<i class="material-icons right"><%=icon%></i>
+			</button>
+		</div>
+	</div>
 </div>

@@ -1,215 +1,215 @@
 <div class="row notes">
-    <div class="col s12">
-        <% if(typeof search != 'undefined' && search != null) { %>
-            <div class="tags" style="margin-bottom: 10px">
-                <span class="chip tiny"><%= search %></span>
-            </div>
-        <% } %>
-        <% if(notes.length === 0){ %>
-            <% if(typeof search != 'undefined'){ %>
-                <p class="middle-center center grey-text">No encontramos ninguna nota para su búsqueda.</p>
-            <% } else if(title === 'Muro'){ %>
-                <p class="middle-center center grey-text">Acá se mostrarán las notas que publiquen sus amigos.</p>
-            <% } %>
-        <% } %>
+	<div class="col s12">
+		<% if(typeof search != 'undefined' && search != null) { %>
+			<div class="tags" style="margin-bottom: 10px">
+				<span class="chip tiny"><%= search %></span>
+			</div>
+		<% } %>
+		<% if(notes.length === 0){ %>
+			<% if(typeof search != 'undefined'){ %>
+				<p class="middle-center center grey-text">No encontramos ninguna nota para su búsqueda.</p>
+			<% } else if(title === 'Muro'){ %>
+				<p class="middle-center center grey-text">Acá se mostrarán las notas que publiquen sus amigos.</p>
+			<% } %>
+		<% } %>
 
-        <% notes.forEach(function(note){ %>
-            <div class="card note" id="<%= note.id %>" liked="<%= note.liked %>"
-                 unliked="<%= note.unliked %>">
-                <div class="card-person grey lighten-5">
+		<% notes.forEach(function(note){ %>
+			<div class="card note" id="<%= note.id %>" liked="<%= note.liked %>"
+				 unliked="<%= note.unliked %>">
+				<div class="card-person grey lighten-5">
 
-                    <div class="person-avatar circle left"
-                         color="<%= note.avatarColor %>"
-                         size="30" online="<%= note.online %>"
-                         face="<%= note.avatar %>"
-                    <% if(note.isInfluencer){ %>
-                         creator_image="{{APP_SERVICE_PATH}}/images/<%= note.username %>.png"
-                         state="gold"
-                            <% } %>
-                    >
-                    </div>
+					<div class="person-avatar circle left"
+						 color="<%= note.avatarColor %>"
+						 size="30" online="<%= note.online %>"
+						 face="<%= note.avatar %>"
+					<% if(note.isInfluencer){ %>
+						 creator_image="{{APP_SERVICE_PATH}}/images/<%= note.username %>.png"
+						 state="gold"
+							<% } %>
+					>
+					</div>
 
-                    <a href="#!" class="<%= note.gender %>"
-                       onclick="apretaste.send({'command': 'PERFIL', 'data': {'username':'@<%= note.username %>'}})">
-                        @<%= note.username %>
-                    </a>
+					<a href="#!" class="<%= note.gender %>"
+					   onclick="apretaste.send({'command': 'PERFIL', 'data': {'username':'@<%= note.username %>'}})">
+						@<%= note.username %>
+					</a>
 
-                    <span class="chip tiny clear right">
-                        <i class="material-icons icon">perm_contact_calendar</i>
-                        <%= moment(note.inserted).format('MMM D, h:mm A') %>
-                    </span>
+					<span class="chip tiny clear right">
+						<i class="material-icons icon">perm_contact_calendar</i>
+						<%= moment(note.inserted).format('MMM D, h:mm A') %>
+					</span>
 
-                    <span class="chip tiny clear right" style="margin-right: 4px;">
-                        <% if (note.country === 'cu' && note.province != null){ %>
+					<span class="chip tiny clear right" style="margin-right: 4px;">
+						<% if (note.country === 'cu' && note.province != null){ %>
 
-                            <i class="fas fa-map-marker-alt icon"></i>
-                            <%= note.province %>
+							<i class="fas fa-map-marker-alt icon"></i>
+							<%= note.province %>
 
-                        <% } else { %>
-                            <img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= note.country %>.png"/>
-                        <% } %>
-                    </span>
+						<% } else { %>
+							<img class="flag" src="{{APP_RESOURCES}}/images/flags/<%= note.country %>.png"/>
+						<% } %>
+					</span>
 
-                    <% if(note.ad === '1'){ %>
-                        <div class="chip small right"
-                             style="margin-top: 2px; background: #e6e89a; border: 0.5px solid lightgrey;">
-                            <i class="fa fa-ad"></i>
-                        </div>
-                    <% } %>
+					<% if(note.ad === '1'){ %>
+						<div class="chip small right"
+							 style="margin-top: 2px; background: #e6e89a; border: 0.5px solid lightgrey;">
+							<i class="fa fa-ad"></i>
+						</div>
+					<% } %>
 
-                    <% if(note.silenced === '1'){ %>
-                        <div class="chip small right"
-                             style="margin-top: 2px;">
-                            <i class="fas fa-volume-mute"></i>
-                        </div>
-                    <% } %>
-                </div>
+					<% if(note.silenced === '1'){ %>
+						<div class="chip small right"
+							 style="margin-top: 2px;">
+							<i class="fas fa-volume-mute"></i>
+						</div>
+					<% } %>
+				</div>
 
-                <% if(note.image){ %>
-                    <div class="card-image">
-                        <% if(showImages){ %>
-                            <% var src = '{{APP_IMAGE_PATH}}/' + note.image %>
-                            <% if(typeof apretaste.showImage != 'undefined'){ %>
-                                <img class="responsive-img" style="width: 100%; object-fit: cover;"
-                                     src="<%= src %>" onclick="apretaste.showImage('<%= src %>')">
-                            <% } else { %>
-                                <img class="responsive-img materialboxed" style="width: 100%; object-fit: cover;"
-                                     src="<%= src %>">
-                            <% } %>
-                        <% } else { %>
-                            <img class="responsive-img" style="width: 100%"
-                                 src="{{APP_SERVICE_PATH}}/images/img-prev.png"
-                                 onclick="openNote('<%= note.id %>');">
-                        <% } %>
-                    </div>
-                <% } %>
+				<% if(note.image){ %>
+					<div class="card-image">
+						<% if(showImages){ %>
+							<% var src = '{{APP_IMAGE_PATH}}/' + note.image %>
+							<% if(typeof apretaste.showImage != 'undefined'){ %>
+								<img class="responsive-img" style="width: 100%; object-fit: cover;"
+									 src="<%= src %>" onclick="apretaste.showImage('<%= src %>')">
+							<% } else { %>
+								<img class="responsive-img materialboxed" style="width: 100%; object-fit: cover;"
+									 src="<%= src %>">
+							<% } %>
+						<% } else { %>
+							<img class="responsive-img" style="width: 100%"
+								 src="{{APP_SERVICE_PATH}}/images/img-prev.png"
+								 onclick="openNote('<%= note.id %>');">
+						<% } %>
+					</div>
+				<% } %>
 
-                <% if(note.text.length > 0 || note.linkText || note.article || note.topics.length > 0){ %>
-                    <div class="card-content">
-                        <% if(note.text.length > 0){ %>
-                            <p><b><%- linkify(note.text) %></b></p>
-                        <% } %>
+				<% if(note.text.length > 0 || note.linkText || (note.article && note.article.length > 0) || note.topics.length > 0){ %>
+					<div class="card-content">
+						<% if(note.text.length > 0){ %>
+							<p><b><%- linkify(note.text) %></b></p>
+						<% } %>
 
-                        <% if(note.linkText){ %>
-                            <ul class="collection one-line preview" onclick="apretaste.send(<%= atob(note.linkCommand) %>)">
-                                <li class="collection-item avatar">
-                                    <i class="fas fa-<%= note.linkIcon %> material-icons circle"></i>
-                                    <span class="title"><%= note.linkText %></span>
-                                </li>
-                            </ul>
-                        <% } %>
+						<% if(note.linkText){ %>
+							<ul class="collection one-line preview" onclick="apretaste.send(<%= atob(note.linkCommand) %>)">
+								<li class="collection-item avatar">
+									<i class="fas fa-<%= note.linkIcon %> material-icons circle"></i>
+									<span class="title"><%= note.linkText %></span>
+								</li>
+							</ul>
+						<% } %>
 
-                        <% if(note.article){ %>
-                            <ul class="collection one-line preview" onclick="apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'<%= note.id %>'}})">
-                                <li class="collection-item avatar">
-                                    <i class="fas fa-file-word material-icons circle"></i>
-                                    <span class="title">Esta nota viene con un texto adjunto</span>
-                                </li>
-                            </ul>
-                        <% } %>
+						<% if(note.article && note.article.length > 0){ %>
+							<ul class="collection one-line preview" onclick="apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'<%= note.id %>'}})">
+								<li class="collection-item avatar">
+									<i class="fas fa-file-word material-icons circle"></i>
+									<span class="title">Esta nota viene con un texto adjunto</span>
+								</li>
+							</ul>
+						<% } %>
 
-                        <% if(note.topics.length > 0){ %>
-                            <div class="tags">
-                                <% note.topics.forEach(function(topic){ %>
-                                    <div class="chip small" onclick="searchTopic('<%= topic %>')">
-                                        <i class="fa fa-hashtag"></i> <%= topic %>
-                                    </div>
-                                <% }) %>
-                            </div>
-                        <% } %>
-                    </div>
-                <% } %>
+						<% if(note.topics.length > 0){ %>
+							<div class="tags" style="margin-top: 24px;">
+								<% note.topics.forEach(function(topic){ %>
+									<div class="chip small" onclick="searchTopic('<%= topic %>')">
+										<i class="fa fa-hashtag"></i> <%= topic %>
+									</div>
+								<% }) %>
+							</div>
+						<% } %>
+					</div>
+				<% } %>
 
-                <div class="card-action grey lighten-4">
-                    <span class="chip like" style="background-color: transparent; padding-left: 0;"
-                    <% if(!note.liked){ %> onclick="like('<%= note.id %>','like', 'note');"
-                            <% } %>
-                    >
-                        <i class="material-icons icon">thumb_up</i>
-                        <span><%= note.likes %></span>
-                    </span>
+				<div class="card-action grey lighten-4">
+					<span class="chip like" style="background-color: transparent; padding-left: 0;"
+					<% if(!note.liked){ %> onclick="like('<%= note.id %>','like', 'note');"
+							<% } %>
+					>
+						<i class="material-icons icon">thumb_up</i>
+						<span><%= note.likes %></span>
+					</span>
 
-                    <span class="chip unlike" style="background-color: transparent;"
-                    <% if(!note.unliked){ %> onclick="like('<%= note.id %>','unlike', 'note')"
-                            <% } %>
-                    >
-                        <i class="material-icons icon">thumb_down</i>
-                        <span><%= note.unlikes %></span>
-                    </span>
+					<span class="chip unlike" style="background-color: transparent;"
+					<% if(!note.unliked){ %> onclick="like('<%= note.id %>','unlike', 'note')"
+							<% } %>
+					>
+						<i class="material-icons icon">thumb_down</i>
+						<span><%= note.unlikes %></span>
+					</span>
 
-                    <span class="chip" style="background-color: transparent;"
-                          onclick="apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'<%= note.id %>'}});">
-                        <i class="material-icons icon">comment</i>
-                        <span><%= note.comments %></span>
-                    </span>
-                </div>
-            </div>
+					<span class="chip" style="background-color: transparent;"
+						  onclick="apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'<%= note.id %>'}});">
+						<i class="material-icons icon">comment</i>
+						<span><%= note.comments %></span>
+					</span>
+				</div>
+			</div>
 
-            <div class="hide">
-                <div class="card-action">
-                    <% if(note.canmodify){ %>
-                        <a class="modal-trigger" href="#deleteConfirmModal"
-                           onclick="activeNote = '<%= note.id %>';">
-                            <i class="material-icons tiny">cancel</i>
-                        </a>
-                    <% } %>
-                </div>
-            </div>
-        <% }); %>
-    </div>
+			<div class="hide">
+				<div class="card-action">
+					<% if(note.canmodify){ %>
+						<a class="modal-trigger" href="#deleteConfirmModal"
+						   onclick="activeNote = '<%= note.id %>';">
+							<i class="material-icons tiny">cancel</i>
+						</a>
+					<% } %>
+				</div>
+			</div>
+		<% }); %>
+	</div>
 </div>
 
 <!-- PAGINATION -->
 <% if(pages > 1){ %>
-    <div class="row">
-        <div class="col s12 center-align">
-            <ul class="pagination">
-                <% if(page > 1){ %>
-                    <li class="waves-effect">
-                        <a href="#!" onclick="previousPage()">
-                            <i class="material-icons">chevron_left</i>
-                        </a>
-                    </li>
-                <% } %>
-                <li class="waves-effect"><%= page %> / <%= pages %></li>
-                <% if(page < pages){ %>
-                    <li class="waves-effect">
-                        <a href="#!" onclick="nextPage()">
-                            <i class="material-icons">chevron_right</i>
-                        </a>
-                    </li>
-                <% } %>
-            </ul>
-        </div>
-    </div>
+	<div class="row">
+		<div class="col s12 center-align">
+			<ul class="pagination">
+				<% if(page > 1){ %>
+					<li class="waves-effect">
+						<a href="#!" onclick="previousPage()">
+							<i class="material-icons">chevron_left</i>
+						</a>
+					</li>
+				<% } %>
+				<li class="waves-effect"><%= page %> / <%= pages %></li>
+				<% if(page < pages){ %>
+					<li class="waves-effect">
+						<a href="#!" onclick="nextPage()">
+							<i class="material-icons">chevron_right</i>
+						</a>
+					</li>
+				<% } %>
+			</ul>
+		</div>
+	</div>
 <% } %>
 
 <!-- SEARCH MODAL -->
 <div id="searchModal" class="modal bottom-sheet">
-    <div class="modal-content">
-        <p>Inserte @username, #tema o un texto a buscar</p>
-        <div class="input-field">
-            <input type="text" id="search" class="validate">
-            <label for="search">Busqueda</label>
-        </div>
-    </div>
-    <div class="modal-footer">
-        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
-        <a onclick="searchText()" class="waves-effect waves-green btn-flat green-text modal-close">Enviar</a>
-    </div>
+	<div class="modal-content">
+		<p>Inserte @username, #tema o un texto a buscar</p>
+		<div class="input-field">
+			<input type="text" id="search" class="validate">
+			<label for="search">Busqueda</label>
+		</div>
+	</div>
+	<div class="modal-footer">
+		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
+		<a onclick="searchText()" class="waves-effect waves-green btn-flat green-text modal-close">Enviar</a>
+	</div>
 </div>
 
 <% if(title != 'Global'){ %>
-    <div class="fixed-action-btn">
-        <a onclick="apretaste.send({command: 'PIZARRA REDACTAR'});" class="btn-floating btn-large green">
-            <i class="large material-icons">add</i>
-        </a>
-    </div>
+	<div class="fixed-action-btn">
+		<a onclick="apretaste.send({command: 'PIZARRA REDACTAR'});" class="btn-floating btn-large green">
+			<i class="large material-icons">add</i>
+		</a>
+	</div>
 <% } else { %>
-    <!-- SEARCH -->
-    <div class="fixed-action-btn">
-        <a class="btn-floating btn-large waves-effect waves-light green" href="#!" onclick="openSearchModal()">
-            <i class="material-icons">search</i>
-        </a>
-    </div>
+	<!-- SEARCH -->
+	<div class="fixed-action-btn">
+		<a class="btn-floating btn-large waves-effect waves-light green" href="#!" onclick="openSearchModal()">
+			<i class="material-icons">search</i>
+		</a>
+	</div>
 <% } %>

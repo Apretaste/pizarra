@@ -1,223 +1,224 @@
 <div class="row">
-    <div class="col s12">
-        <div class="card note <%= note.ad === '1' ? 'ad' : '' %>" id="<%= note.id %>" liked="<%= note.liked %>"
-             unliked="<%= note.unliked %>">
-            <div class="card-person grey lighten-5">
+	<div class="col s12">
+		<div class="card note <%= note.ad === '1' ? 'ad' : '' %>" id="<%= note.id %>" liked="<%= note.liked %>"
+			 unliked="<%= note.unliked %>">
+			<div class="card-person grey lighten-5">
 
-                <div class="person-avatar circle left"
-                <% if(note.isInfluencer){ %>
-                     creator_image="{{APP_SERVICE_PATH}}/images/<%= note.username %>.png"
-                     state="gold"
-                        <% } %>
-                     face="<%= note.avatar %>"
-                     color="<%= note.avatarColor %>"
-                     size="30" online="<%= note.online %>">
-                </div>
+				<div class="person-avatar circle left"
+				<% if(note.isInfluencer){ %>
+					 creator_image="{{APP_SERVICE_PATH}}/images/<%= note.username %>.png"
+					 state="gold"
+						<% } %>
+					 face="<%= note.avatar %>"
+					 color="<%= note.avatarColor %>"
+					 size="30" online="<%= note.online %>">
+				</div>
 
-                <a href="#!" class="<%= note.gender %>"
-                   onclick="apretaste.send({'command': 'PERFIL', 'data': {'username':'@<%= note.username %>'}})">
-                    @<%= note.username %>
-                </a>
-                <span class="chip tiny clear right">
-                        <i class="material-icons icon">perm_contact_calendar</i>
-                        <%= moment(note.inserted).format('MMM D, h:mm A') %>
-                    </span>
-            </div>
+				<a href="#!" class="<%= note.gender %>"
+				   onclick="apretaste.send({'command': 'PERFIL', 'data': {'username':'@<%= note.username %>'}})">
+					@<%= note.username %>
+				</a>
+				<span class="chip tiny clear right">
+						<i class="material-icons icon">perm_contact_calendar</i>
+						<%= moment(note.inserted).format('MMM D, h:mm A') %>
+					</span>
+			</div>
 
-            <% if(note.image){ %>
-                <% var src = '{{APP_IMAGE_PATH}}/' + note.image %>
-                <% if(typeof apretaste.showImage != 'undefined'){ %>
-                    <img class="responsive-img" style="width: 100%; object-fit: cover;"
-                         src="<%= src %>" onclick="apretaste.showImage('<%= src %>')">
-                <% } else { %>
-                    <img class="responsive-img materialboxed" style="width: 100%; object-fit: cover;"
-                         src="<%= src %>">
-                <% } %>
-            <% } %>
+			<% if(note.image){ %>
+				<% var src = '{{APP_IMAGE_PATH}}/' + note.image %>
+				<% if(typeof apretaste.showImage != 'undefined'){ %>
+					<img class="responsive-img" style="width: 100%; object-fit: cover;"
+						 src="<%= src %>" onclick="apretaste.showImage('<%= src %>')">
+				<% } else { %>
+					<img class="responsive-img materialboxed" style="width: 100%; object-fit: cover;"
+						 src="<%= src %>">
+				<% } %>
+			<% } %>
 
-            <div class="card-content">
-                <% if(note.text.length > 0){ %>
-                    <p style="margin-bottom:10px;"><b><%- linkify(note.text) %></b></p>
-                <% } %>
+			<% if(note.text.length > 0 || note.linkText || (note.article && note.article.length > 0) || note.topics.length > 0){ %>
+				<div class="card-content">
+					<% if(note.text.length > 0){ %>
+						<p style="margin-bottom:10px;"><b><%- linkify(note.text) %></b></p>
+					<% } %>
 
-                <% if(note.article) { %>
-                    <div class = "articleAera">
-                        <%- note.article %>
-                    </div>
-                <% } %>
+					<% if(note.article && note.article.length > 0) { %>
+						<div class = "articleAera">
+							<%- note.article %>
+						</div>
+					<% } %>
 
-                <br/>
+					<% if(note.linkText){ %>
+						<ul class="collection one-line preview" onclick="apretaste.send(<%= atob(note.linkCommand) %>)">
+							<li class="collection-item avatar">
+								<i class="fas fa-<%= note.linkIcon %> material-icons circle"></i>
+								<span class="title"><%= note.linkText %></span>
+							</li>
+						</ul>
+					<% } %>
 
-                <% if(note.linkText){ %>
-                    <ul class="collection one-line preview" onclick="apretaste.send(<%= atob(note.linkCommand) %>)">
-                        <li class="collection-item avatar">
-                            <i class="fas fa-<%= note.linkIcon %> material-icons circle"></i>
-                            <span class="title"><%= note.linkText %></span>
-                        </li>
-                    </ul>
-                <% } %>
+					<% if(note.topics.length > 0){ %>
+						<div class="tags" style="margin-top: 24px;">
+							<% note.topics.forEach(function(topic){ %>
+								<div class="chip small" onclick="searchTopic('<%= topic %>')">
+									<i class="fa fa-hashtag"></i> <%= topic %>
+								</div>
+							<% }) %>
+						</div>
+					<% } %>
+				</div>
+			<%}%>
 
-                <% if(note.topics.length > 0){ %>
-                    <div class="tags">
-                        <% note.topics.forEach(function(topic){ %>
-                            <div class="chip small" onclick="searchTopic('<%= topic %>')">
-                                <i class="fa fa-hashtag"></i> <%= topic %>
-                            </div>
-                        <% }) %>
-                    </div>
-                <% } %>
-            </div>
-            <div class="card-action grey lighten-4">
-                <span class="chip like" style="background-color: transparent; padding-left: 0;"
-                <% if(!note.liked){ %> onclick="like('<%= note.id %>','like', 'note');"
-                        <% } %>
-                >
-                    <i class="material-icons icon">thumb_up</i>
-                    <span><%= note.likes %></span>
-                </span>
+			<div class="card-action grey lighten-4">
+				<span class="chip like" style="background-color: transparent; padding-left: 0;"
+				<% if(!note.liked){ %> onclick="like('<%= note.id %>','like', 'note');"
+						<% } %>
+				>
+					<i class="material-icons icon">thumb_up</i>
+					<span><%= note.likes %></span>
+				</span>
 
-                <span class="chip unlike" style="background-color: transparent;"
-                <% if(!note.unliked){ %> onclick="like('<%= note.id %>','unlike', 'note')"
-                        <% } %>
-                >
-                    <i class="material-icons icon">thumb_down</i>
-                    <span><%= note.unlikes %></span>
-                </span>
+				<span class="chip unlike" style="background-color: transparent;"
+				<% if(!note.unliked){ %> onclick="like('<%= note.id %>','unlike', 'note')"
+						<% } %>
+				>
+					<i class="material-icons icon">thumb_down</i>
+					<span><%= note.unlikes %></span>
+				</span>
 
-                <span class="chip" style="background-color: transparent;">
-                        <i class="material-icons icon">comment</i>
-                        <span id="commentsCounter"><%= note.comments.length %></span>
-                    </span>
+				<span class="chip" style="background-color: transparent;">
+						<i class="material-icons icon">comment</i>
+						<span id="commentsCounter"><%= note.comments.length %></span>
+					</span>
 
-                <% if(note.id_person != myUser.id){ %>
-                    <span class="chip" onclick="openReportModal()" style="background-color: transparent;">
-                        <i class="material-icons icon">cancel</i>&nbsp;
-                    </span>
-                <% } else {%>
-                    <span class="chip" onclick="openDeleteModal()" style="background-color: transparent;">
-                        <i class="material-icons icon red-text">delete</i>&nbsp;
-                    </span>
-                <% } %>
-            </div>
-        </div>
+				<% if(note.id_person != myUser.id){ %>
+					<span class="chip" onclick="openReportModal()" style="background-color: transparent;">
+						<i class="material-icons icon">cancel</i>&nbsp;
+					</span>
+				<% } else {%>
+					<span class="chip" onclick="openDeleteModal()" style="background-color: transparent;">
+						<i class="material-icons icon red-text">delete</i>&nbsp;
+					</span>
+				<% } %>
+			</div>
+		</div>
 
-        <ul class="chat" id="comments">
-            <% note.comments.forEach(function(comment) { %>
-                <li class="<%= comment.username == myUser.username ? "right" : "left" %> comment"
-                    id="<%= comment.id %>"
-                    liked="<%= comment.liked %>"
-                    unliked="<%= comment.unliked %>"
-                >
-                    <div class="person-avatar circle"
-                    <% if(comment.isInfluencer){ %>
-                         creator_image="{{APP_SERVICE_PATH}}/images/<%= comment.username %>.png"
-                         state="gold"
-                            <% } %>
-                         face="<%= comment.avatar %>"
-                         color="<%= comment.avatarColor %>"
-                         size="30" onclick="openProfile('<%= comment.username %>')"></div>
-                    <div class="head">
-                        <a onclick="openProfile('<%= comment.username %>')"
-                           class="<%= comment.gender %>">@<%= comment.username %></a>
-                        <span class="date"><%= moment(comment.inserted).format('MMM D, YYYY h:mm A') %></span>
-                    </div>
-                    <span class="text" style="word-break: break-word;"><%- linkify(comment.text) %></span>
-                    <br>
+		<ul class="chat" id="comments">
+			<% note.comments.forEach(function(comment) { %>
+				<li class="<%= comment.username == myUser.username ? "right" : "left" %> comment"
+					id="<%= comment.id %>"
+					liked="<%= comment.liked %>"
+					unliked="<%= comment.unliked %>"
+				>
+					<div class="person-avatar circle"
+					<% if(comment.isInfluencer){ %>
+						 creator_image="{{APP_SERVICE_PATH}}/images/<%= comment.username %>.png"
+						 state="gold"
+							<% } %>
+						 face="<%= comment.avatar %>"
+						 color="<%= comment.avatarColor %>"
+						 size="30" onclick="openProfile('<%= comment.username %>')"></div>
+					<div class="head">
+						<a onclick="openProfile('<%= comment.username %>')"
+						   class="<%= comment.gender %>">@<%= comment.username %></a>
+						<span class="date"><%= moment(comment.inserted).format('MMM D, YYYY h:mm A') %></span>
+					</div>
+					<span class="text" style="word-break: break-word;"><%- linkify(comment.text) %></span>
+					<br>
 
-                    <div class="actions">
-                        <span class="chip clear like"
-                        <% if(!comment.liked){ %> onclick="like('<%= comment.id %>','like', 'comment');"
-                                <% } %>
-                        >
-                            <i class="fas fa-thumbs-up"></i>
-                            <span><%= comment.likes %></span>
-                        </span>
+					<div class="actions">
+						<span class="chip clear like"
+						<% if(!comment.liked){ %> onclick="like('<%= comment.id %>','like', 'comment');"
+								<% } %>
+						>
+							<i class="fas fa-thumbs-up"></i>
+							<span><%= comment.likes %></span>
+						</span>
 
-                        <span class="chip clear unlike"
-                        <% if(!comment.unliked){ %> onclick="like('<%= comment.id %>','unlike', 'comment')"
-                                <% } %>
-                        >
-                            <i class="fas fa-thumbs-down"></i>
-                            <span><%= comment.unlikes %></span>
-                        </span>
+						<span class="chip clear unlike"
+						<% if(!comment.unliked){ %> onclick="like('<%= comment.id %>','unlike', 'comment')"
+								<% } %>
+						>
+							<i class="fas fa-thumbs-down"></i>
+							<span><%= comment.unlikes %></span>
+						</span>
 
-                        <% if(comment.username != myUser.username){ %>
-                            <span class="chip clear" onclick="replyUser('<%= comment.username %>')">
-                                <i class="fas fa-reply"></i>
-                            </span>
-                        <% } %>
-                    </div>
-                </li>
-            <% }) %>
-        </ul>
-    </div>
+						<% if(comment.username != myUser.username){ %>
+							<span class="chip clear" onclick="replyUser('<%= comment.username %>')">
+								<i class="fas fa-reply"></i>
+							</span>
+						<% } %>
+					</div>
+				</li>
+			<% }) %>
+		</ul>
+	</div>
 </div>
 
 
 <% if (note.accept_comments || note.id_person == person_id || note.canmodify) { %>
-    <div class="fixed-action-btn">
-        <a class="btn-floating waves-effect waves-light grey second" onclick="apretaste.back()">
-            <i class="material-icons">arrow_back</i>
-        </a>
-        <a href="#newCommentModal" class="btn-floating btn-large waves-effect waves-light modal-trigger green">
-            <i class="material-icons">add</i>
-        </a>
-    </div>
+	<div class="fixed-action-btn">
+		<a class="btn-floating waves-effect waves-light grey second" onclick="apretaste.back()">
+			<i class="material-icons">arrow_back</i>
+		</a>
+		<a href="#newCommentModal" class="btn-floating btn-large waves-effect waves-light modal-trigger green">
+			<i class="material-icons">add</i>
+		</a>
+	</div>
 
-    <div id="newCommentModal" class="modal bottom-sheet">
-        <div class="modal-content">
-            <div class="input-field">
-                <textarea id="comment" class="materialize-textarea" oninput="remainder()"></textarea>
-                <label for="comment">Escriba su comentario (<span id="remainder">0</span>/250)</label>
-            </div>
+	<div id="newCommentModal" class="modal bottom-sheet">
+		<div class="modal-content">
+			<div class="input-field">
+				<textarea id="comment" class="materialize-textarea" oninput="remainder()"></textarea>
+				<label for="comment">Escriba su comentario (<span id="remainder">0</span>/250)</label>
+			</div>
 
-            <div class="tags" style="margin-bottom: 10px">
-                <% var uniqueUsernames = [myUser.username]; %>
-                <% note.comments.forEach(function(comment) { %>
-                    <% if(uniqueUsernames.indexOf(comment.username) === -1){ %>
-                        <% uniqueUsernames.push(comment.username) %>
-                        <span class="chip tiny" onclick="replyUser('<%= comment.username %>')">
-                        @<%= comment.username %>
-                    </span>
-                    <% } %>
-                <% }) %>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <a onclick="hideKeyboard()" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
-            <a onclick="sendComment()" class="modal-close waves-effect waves-green btn-flat green-text">Enviar</a>
-        </div>
-    </div>
+			<div class="tags" style="margin-bottom: 10px">
+				<% var uniqueUsernames = [myUser.username]; %>
+				<% note.comments.forEach(function(comment) { %>
+					<% if(uniqueUsernames.indexOf(comment.username) === -1){ %>
+						<% uniqueUsernames.push(comment.username) %>
+						<span class="chip tiny" onclick="replyUser('<%= comment.username %>')">
+						@<%= comment.username %>
+					</span>
+					<% } %>
+				<% }) %>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<a onclick="hideKeyboard()" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
+			<a onclick="sendComment()" class="modal-close waves-effect waves-green btn-flat green-text">Enviar</a>
+		</div>
+	</div>
 <% } else { %>
-    <div class="fixed-action-btn">
-        <a class="btn-floating btn-large green" onclick="apretaste.back()">
-            <i class="material-icons">arrow_back</i>
-        </a>
-    </div>
+	<div class="fixed-action-btn">
+		<a class="btn-floating btn-large green" onclick="apretaste.back()">
+			<i class="material-icons">arrow_back</i>
+		</a>
+	</div>
 <% } %>
 
 <div id="reportModal" class="modal">
-    <div class="modal-content">
-        <div class="input-field">
-            <textarea id="reportMessage" class="materialize-textarea" oninput="reportLengthValidate()"></textarea>
-            <label for="reportMessage">¿Qué hay de malo con esta nota?</label>
-            <span class="helper-text">0/250</span>
-        </div>
-    </div>
-    <div class="modal-footer">
-        <a onclick="hideKeyboard()" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
-        <a onclick="reportNote()" class="modal-close waves-effect waves-green btn-flat green-text">Enviar</a>
-    </div>
+	<div class="modal-content">
+		<div class="input-field">
+			<textarea id="reportMessage" class="materialize-textarea" oninput="reportLengthValidate()"></textarea>
+			<label for="reportMessage">¿Qué hay de malo con esta nota?</label>
+			<span class="helper-text">0/250</span>
+		</div>
+	</div>
+	<div class="modal-footer">
+		<a onclick="hideKeyboard()" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
+		<a onclick="reportNote()" class="modal-close waves-effect waves-green btn-flat green-text">Enviar</a>
+	</div>
 </div>
 
 <div id="deleteModal" class="modal">
-    <div class="modal-content">
-        ¿Est&aacute;s seguro de eliminar esta nota?
-    </div>
-    <div class="modal-footer">
-        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
-        <a onclick="deleteNote(<%= note.id %>);" class="modal-close waves-effect waves-green btn-flat green-text">Eliminar</a>
-    </div>
+	<div class="modal-content">
+		¿Est&aacute;s seguro de eliminar esta nota?
+	</div>
+	<div class="modal-footer">
+		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
+		<a onclick="deleteNote(<%= note.id %>);" class="modal-close waves-effect waves-green btn-flat green-text">Eliminar</a>
+	</div>
 </div>
 
 <%- '<serviceImgPath data="{{APP_SERVICE_PATH}}/images/"></serviceImgPath>' %>
