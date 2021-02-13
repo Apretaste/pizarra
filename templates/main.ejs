@@ -99,7 +99,7 @@
 							</ul>
 						<% } %>
 
-						<% if(note.article && note.article.length > 0){ %>
+						<% if(note.article){ %>
 							<ul class="collection one-line preview" onclick="apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'<%= note.id %>'}})">
 								<li class="collection-item avatar">
 									<i class="fas fa-file-word material-icons circle"></i>
