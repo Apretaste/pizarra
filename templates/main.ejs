@@ -84,7 +84,7 @@
 					</div>
 				<% } %>
 
-				<% if(note.text.length > 0 || note.linkText || (note.article && note.article.length > 0) || note.topics.length > 0){ %>
+				<% if(note.text.length > 0 || note.linkText || note.article || note.topics.length > 0) { %>
 					<div class="card-content">
 						<% if(note.text.length > 0){ %>
 							<p><b><%- linkify(note.text) %></b></p>
