@@ -1731,16 +1731,17 @@ function initShare(note) {
 				command: 'PIZARRA PUBLICAR',
 				redirect: false,
 				callback: {
-					name: 'showToast',
-					data: 'Has reposteado una nota'
+					name: 'shareNoteCallback',
+					data: note.id
 				},
 				data: {
 					text: $('#shareMessage').val(),
 					image: '',
+					action: 'pizarra-share',
 					link: {
 						command: btoa(JSON.stringify({
 							command: 'PIZARRA NOTA',
-							data: {id: note.id}
+							data: {note: note.id}
 						})),
 						icon: share.icon,
 						text: share.text
@@ -1749,6 +1750,11 @@ function initShare(note) {
 			})
 		}
 	};
+}
+
+function shareNoteCallback(noteId){
+	showToast('Has reposteado una nota');
+	$('#shareMessage').val('')
 }
 
 function openReportModal() {

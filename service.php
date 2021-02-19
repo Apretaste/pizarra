@@ -498,6 +498,13 @@ class Service
 		$link_text = Database::escape($request->input->data->link->text ?? '', 600);
 		$article = strip_tags($request->input->data->article ?? '', '<b><strong><u><i><h1><h2><h3><h4><h5><font><p><br><hr><ul><ol><li><span><div><a><table><tr><th><td><thead><tbody>');
 
+		if ($link_command != '') {
+			$action = $request->input->data->action ?? false;
+			if ($action == 'pizarra-share') {
+				$this->addRepostsCount($link_command);
+			}
+		}
+
 		if (trim(strip_tags($article)) == '') $article = '';
 		else $article = utf8_decode(Database::escape($this->truncate($article, 5000, '', true, true), 5000));
 
@@ -553,6 +560,20 @@ class Service
 
 			Notifications::alert($m->id, "@{$request->person->username} le ha mencionado", 'comment', "{'command':'PIZARRA NOTA', 'data':{'note':'{$this->insertedNoteId}'}}");
 			$this->addReputation($m->id, $request->person->id, $this->insertedNoteId, 1);
+		}
+	}
+
+	public function addRepostsCount($link)
+	{
+		try {
+			$data = json_decode(base64_decode($link));
+			$noteId = $data->data->note ?? false;
+
+			if ($noteId) {
+				Database::query("UPDATE _pizarra_notes SET reposts=reposts+1 WHERE id='$noteId'");
+			}
+		} catch (Exception $e) {
+			
 		}
 	}
 
@@ -1334,7 +1355,7 @@ class Service
 
 		$note->image ??= false;
 		$note->active ??= true;
-		$note->active = (bool) $note->active;
+		$note->active = (bool)$note->active;
 
 		// If the img doesn't have extension
 		if ($note->image && !str_contains($note->image, '.')) {
