@@ -4,7 +4,7 @@ var menu = [
     {link: 'GLOBAL', caption: 'Global'},
     {link: 'POPULARES', caption: 'Tendencia'},
     {link: 'INFLUENCERS', caption: 'Influencers'}
-    ];
+];
 %>
 
 <!-- TABS -->
@@ -30,14 +30,22 @@ var menu = [
     {{APP_TEMPLATE_CODE}}
 </div>
 
-<div id="deleteConfirmModal" class="modal">
+<div id="shareModal" class="modal">
     <div class="modal-content">
-        <p>¿Desea borrar esta nota de pizarra?</p>
+        <div class="input-field">
+            <textarea id="shareMessage" class="materialize-textarea"></textarea>
+            <label for="shareMessage">Escriba un texto para compartir</label>
+        </div>
+        <ul class="collection one-line preview">
+            <li class="collection-item avatar">
+                <i class="fas material-icons circle" id="shareIcon"></i>
+                <span class="title" id="shareText"></span>
+            </li>
+        </ul>
     </div>
     <div class="modal-footer">
-        <a href="#!" class="modal-close waves-effect waves-light btn-flat grey-text text-darken-2">Cancelar</a>
-        <a onclick="deleteNote()" class="modal-close waves-effect waves-green btn-flat"
-           style="font-weight: 500">Aceptar</a>
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
+        <a onclick="share.send()" class="modal-close waves-effect waves-green green-text btn-flat">Enviar</a>
     </div>
 </div>
 

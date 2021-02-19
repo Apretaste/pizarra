@@ -355,7 +355,7 @@ class Service
 		// get the records from the db
 		$result = Database::query("
 			SELECT
-				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.inserted, A.ad, A.topic1, A.topic2, A.topic3, A.article,  
+				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.reposts, A.inserted, A.ad, A.topic1, A.topic2, A.topic3, A.article,  
 				A.accept_comments, A.link_text, A.link_icon, A.link_command, B.reputation, C.avatar, C.avatarColor, 
 				C.username, C.first_name, C.last_name, C.province, C.picture, C.gender, C.country, C.online, C.is_influencer,
 				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
@@ -790,6 +790,16 @@ class Service
 	 */
 	public function _eliminar(Request $request, Response $response): void
 	{
+		$comment = $request->input->data->comment ?? false;
+		if ($comment) {
+			Database::query(
+				"UPDATE _pizarra_comments SET active=0 
+				WHERE id='$comment' AND id_person='{$request->person->id}'"
+			);
+
+			return;
+		}
+
 		$noteId = $request->input->data->note;
 
 		Database::query(
@@ -1323,6 +1333,8 @@ class Service
 		}
 
 		$note->image ??= false;
+		$note->active ??= true;
+		$note->active = (bool) $note->active;
 
 		// If the img doesn't have extension
 		if ($note->image && !str_contains($note->image, '.')) {
@@ -1335,17 +1347,22 @@ class Service
 		$country = empty(trim($note->country)) ? 'cu' : strtolower($note->country);
 		$province = !empty($note->province) ? \Framework\Core::$provincesShort[$note->province] : null;
 
-		// remove \" and \' from the note
-		$note->text = strip_tags($note->text);
-		$note->text = str_replace('\"', '"', $note->text);
-		$note->text = str_replace("\'", "'", $note->text);
-		$note->text = nl2br($note->text);
+		// for the deleted comments
+		if ($note->active) {
+			// remove \" and \' from the note
+			$note->text = strip_tags($note->text);
+			$note->text = str_replace('\"', '"', $note->text);
+			$note->text = str_replace("\'", "'", $note->text);
+			$note->text = nl2br($note->text);
 
-		while (json_encode($note->text, JSON_THROW_ON_ERROR, 512) === '') {
-			$note->text = substr($note->text, 0, -2);
-		}
+			while (json_encode($note->text, JSON_THROW_ON_ERROR, 512) === '') {
+				$note->text = substr($note->text, 0, -2);
+			}
 
-		$note->text = html_entity_decode($note->text);
+			$note->text = html_entity_decode($note->text);
+		} else $note->text = false;
+
+
 		$article = $note->article ?? '';
 		if (empty($article)) $article = false;
 
@@ -1363,6 +1380,7 @@ class Service
 			'likes' => $note->likes ?? 0,
 			'unlikes' => $note->unlikes ?? 0,
 			'comments' => $note->comments ?? 0,
+			'reposts' => $note->reposts ?? 0,
 			'liked' => isset($note->isliked) && $note->isliked,
 			'unliked' => isset($note->isunliked) && $note->isunliked,
 			'reputation' => $note->reputation ?? 0,
@@ -1379,7 +1397,8 @@ class Service
 			'linkCommand' => $note->link_command ?? false,
 			'linkIcon' => $note->link_icon ?? false,
 			'linkText' => $note->link_text ?? false,
-			'article' => $article
+			'article' => $article,
+			'active' => $note->active
 		];
 	}
 

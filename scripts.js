@@ -1608,7 +1608,19 @@ function openSearchModal() {
 	M.Modal.getInstance($('#searchModal')).open();
 }
 
-function openDeleteModal() {
+var commentToDelete = null;
+
+function openDeleteModal(commentId) {
+	var modalContent = $('#deleteModal > .modal-content');
+
+	if (commentId != null) {
+		commentToDelete = commentId;
+		modalContent.html('¿Est&aacute;s seguro de eliminar este comentario?');
+	} else {
+		commentId = null;
+		modalContent.html('¿Est&aacute;s seguro de eliminar esta nota?');
+	}
+
 	M.Modal.getInstance($('#deleteModal')).open();
 }
 
@@ -1695,9 +1707,65 @@ function sendComment() {
 	}
 }
 
+var share = {
+	send: null
+}
+
+function initShare(note) {
+	var hasImage = note.image !== null && note.image !== '';
+	var onlyImage = hasImage && note.text === '';
+	var icon = hasImage ? 'image' : 'clipboard-list';
+
+	var text = onlyImage ? 'Nota con imagen de @' + note.username : '@' + note.username + ': ' + note.text;
+
+	text = text.substr(0, 100);
+
+	$('#shareIcon').addClass('fa-' + icon);
+	$('#shareText').html(text);
+
+	share = {
+		text: text,
+		icon: icon,
+		send: function () {
+			apretaste.send({
+				command: 'PIZARRA PUBLICAR',
+				redirect: false,
+				callback: {
+					name: 'toast',
+					data: 'Has reposteado una nota'
+				},
+				data: {
+					text: $('#shareMessage').val(),
+					image: '',
+					link: {
+						command: btoa(JSON.stringify({
+							command: 'PIZARRA NOTA',
+							data: {id: note.id}
+						})),
+						icon: share.icon,
+						text: share.text
+					}
+				}
+			})
+		}
+	};
+}
+
 function openReportModal() {
 	M.Modal.getInstance($('#reportModal')).open();
 	$('#reportMessage').focus();
+}
+
+function openShareModal(noteId) {
+	if (typeof note === 'undefined') {
+		var note = notes.filter(function (n) {
+			return n.id === noteId
+		})[0];
+	}
+
+	initShare(note)
+	M.Modal.getInstance($('#shareModal')).open();
+	$('#shareMessage').focus();
 }
 
 function reportNote() {
@@ -1759,10 +1827,26 @@ function searchUsername(username) {
 }
 
 function deleteNote(id) {
+	if(commentToDelete != null){
+		apretaste.send({
+			'command': 'PIZARRA ELIMINAR',
+			'data': {
+				'comment': commentToDelete
+			},
+			'redirect': false,
+			callback: {
+				'name': 'deleteCommentCallback',
+				'data': commentToDelete
+			}
+		});
+
+		return;
+	}
+
 	apretaste.send({
 		'command': 'PIZARRA ELIMINAR',
 		'data': {
-			'note': id
+			'note': id,
 		},
 		'redirect': false,
 		callback: {
@@ -1806,6 +1890,10 @@ function previousPage() {
 
 function deleteCallback(id) {
 	apretaste.send({command: 'PIZARRA'});
+}
+
+function deleteCommentCallback(id) {
+	$('#comments #' + id + ' .text').html('Comentario eliminado');
 }
 
 function deleteNotification(id) {

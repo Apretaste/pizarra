@@ -29,7 +29,7 @@
 					>
 					</div>
 
-					<a href="#!" class="<%= note.gender %>"
+					<a class="<%= note.gender %>"
 					   onclick="apretaste.send({'command': 'PERFIL', 'data': {'username':'@<%= note.username %>'}})">
 						@<%= note.username %>
 					</a>
@@ -142,17 +142,11 @@
 						<i class="material-icons icon">comment</i>
 						<span><%= note.comments %></span>
 					</span>
-				</div>
-			</div>
 
-			<div class="hide">
-				<div class="card-action">
-					<% if(note.canmodify){ %>
-						<a class="modal-trigger" href="#deleteConfirmModal"
-						   onclick="activeNote = '<%= note.id %>';">
-							<i class="material-icons tiny">cancel</i>
-						</a>
-					<% } %>
+					<span class="chip" style="background-color: transparent;" onclick="openShareModal('<%=note.id%>')">
+						<i class="material-icons icon">repeat</i>
+						<span><%= note.reposts %></span>
+					</span>
 				</div>
 			</div>
 		<% }); %>
@@ -166,7 +160,7 @@
 			<ul class="pagination">
 				<% if(page > 1){ %>
 					<li class="waves-effect">
-						<a href="#!" onclick="previousPage()">
+						<a onclick="previousPage()">
 							<i class="material-icons">chevron_left</i>
 						</a>
 					</li>
@@ -174,7 +168,7 @@
 				<li class="waves-effect"><%= page %> / <%= pages %></li>
 				<% if(page < pages){ %>
 					<li class="waves-effect">
-						<a href="#!" onclick="nextPage()">
+						<a onclick="nextPage()">
 							<i class="material-icons">chevron_right</i>
 						</a>
 					</li>
@@ -194,22 +188,20 @@
 		</div>
 	</div>
 	<div class="modal-footer">
-		<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
+		<a class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
 		<a onclick="searchText()" class="waves-effect waves-green btn-flat green-text modal-close">Enviar</a>
 	</div>
 </div>
 
-<% if(title != 'Global'){ %>
-	<div class="fixed-action-btn">
-		<a onclick="apretaste.send({command: 'PIZARRA REDACTAR'});" class="btn-floating btn-large green">
-			<i class="large material-icons">add</i>
-		</a>
-	</div>
-<% } else { %>
-	<!-- SEARCH -->
-	<div class="fixed-action-btn">
-		<a class="btn-floating btn-large waves-effect waves-light green" href="#!" onclick="openSearchModal()">
+<!-- WRITE AND SEARCH -->
+<div class="fixed-action-btn">
+	<% if(title === 'Global'){ %>
+		<a class="btn-floating waves-effect waves-light grey second" onclick="openSearchModal()">
 			<i class="material-icons">search</i>
 		</a>
-	</div>
-<% } %>
+	<% } %>
+
+	<a class="btn-floating btn-large waves-effect waves-light modal-trigger green" onclick="apretaste.send({command: 'PIZARRA REDACTAR'});">
+		<i class="material-icons">add</i>
+	</a>
+</div>
