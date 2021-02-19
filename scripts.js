@@ -1731,7 +1731,7 @@ function initShare(note) {
 				command: 'PIZARRA PUBLICAR',
 				redirect: false,
 				callback: {
-					name: 'toast',
+					name: 'showToast',
 					data: 'Has reposteado una nota'
 				},
 				data: {
@@ -1757,8 +1757,10 @@ function openReportModal() {
 }
 
 function openShareModal(noteId) {
-	if (typeof note === 'undefined') {
-		var note = notes.filter(function (n) {
+	var note = this.note;
+
+	if (typeof note == 'undefined') {
+		note = notes.filter(function (n) {
 			return n.id === noteId
 		})[0];
 	}
@@ -2585,10 +2587,26 @@ window.linkify = (function () {
 		}
 
 		// In case of catastrophic failure, return the original text;
-		return html || txt;
+		return themify(html || txt);
 	};
 
 })();
+
+function themify(text){
+	var topics = text.match(/(^|\B)#(?![0-9_]+\b)([a-zA-Z0-9_]{1,30})(\b|\r)/g);
+
+	if(topics !== null){
+		topics.forEach(function (topic) {
+			text = text.replace(topic,
+				'<a onclick="apretaste.send({\'command\': \'PIZARRA GLOBAL\',\'data\':{\'search\':\'' + topic + '\'}})">' +
+				topic +
+				'</a>'
+			);
+		});
+	}
+
+	return text;
+}
 
 function encode_utf8(s) {
 	return unescape(encodeURIComponent(s));

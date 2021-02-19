@@ -35,7 +35,7 @@
                 <% } %>
             <% } %>
 
-            <% if(note.text.length > 0 || note.linkText || (note.article && note.article.length > 0) || note.topics.length > 0){ %>
+            <% if(note.text.length > 0 || note.linkText || (note.article && note.article.length > 0)){ %>
                 <div class="card-content">
                     <% if(note.text.length > 0){ %>
                         <p style="margin-bottom:10px;"><b><%- linkify(note.text) %></b></p>
@@ -54,16 +54,6 @@
                                 <span class="title"><%= note.linkText %></span>
                             </li>
                         </ul>
-                    <% } %>
-
-                    <% if(note.topics.length > 0){ %>
-                        <div class="tags" style="margin-top: 24px;">
-                            <% note.topics.forEach(function(topic){ %>
-                                <div class="chip small" onclick="searchTopic('<%= topic %>')">
-                                    <i class="fa fa-hashtag"></i> <%= topic %>
-                                </div>
-                            <% }) %>
-                        </div>
                     <% } %>
                 </div>
             <% } %>
@@ -85,12 +75,11 @@
 					<span><%= note.unlikes %></span>
 				</span>
 
-                <% if(note.id_person !== myUser.id){ %>
-                <span class="chip" style="background-color: transparent;"
-                      onclick="openShareModal('<%= note.text %>', '<%= note.id %>')">
-						<i class="material-icons icon">repeat</i>
-						<span><%= note.reposts %></span>
-					</span>
+                <% if(note.id_person != myUser.id){ %>
+                    <span class="chip" style="background-color: transparent;" onclick="openShareModal('<%= note.id %>')">
+                        <i class="material-icons icon">repeat</i>
+                        <span><%= note.reposts %></span>
+                    </span>
                 <% } %>
 
                 <span class="chip" style="background-color: transparent;">
@@ -98,7 +87,7 @@
 					<span id="commentsCounter"><%= note.comments.length %></span>
 				</span>
 
-                <% if(note.id_person !== myUser.id){ %>
+                <% if(note.id_person != myUser.id){ %>
                     <span class="chip" onclick="openReportModal()" style="background-color: transparent;">
 						<i class="material-icons icon">cancel</i>&nbsp;
 					</span>
@@ -112,7 +101,7 @@
 
         <ul class="chat" id="comments">
             <% note.comments.forEach(function(comment) { %>
-                <li class="<%= comment.username == myUser.username ? "right" : "left" %> comment"
+                <li class="<%= comment.username === myUser.username ? "right" : "left" %> comment"
                     id="<%= comment.id %>"
                     liked="<%= comment.liked %>"
                     unliked="<%= comment.unliked %>"
@@ -238,6 +227,25 @@
     <div class="modal-footer">
         <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
         <a onclick="deleteNote(<%= note.id %>);" class="modal-close waves-effect waves-green btn-flat green-text">Eliminar</a>
+    </div>
+</div>
+
+<div id="shareModal" class="modal">
+    <div class="modal-content">
+        <div class="input-field">
+            <textarea id="shareMessage" class="materialize-textarea"></textarea>
+            <label for="shareMessage">Escriba un texto para compartir</label>
+        </div>
+        <ul class="collection one-line preview">
+            <li class="collection-item avatar">
+                <i class="fas material-icons circle" id="shareIcon"></i>
+                <span class="title" id="shareText"></span>
+            </li>
+        </ul>
+    </div>
+    <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
+        <a onclick="share.send()" class="modal-close waves-effect waves-green green-text btn-flat">Enviar</a>
     </div>
 </div>
 

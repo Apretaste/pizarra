@@ -30,23 +30,4 @@ var menu = [
     {{APP_TEMPLATE_CODE}}
 </div>
 
-<div id="shareModal" class="modal">
-    <div class="modal-content">
-        <div class="input-field">
-            <textarea id="shareMessage" class="materialize-textarea"></textarea>
-            <label for="shareMessage">Escriba un texto para compartir</label>
-        </div>
-        <ul class="collection one-line preview">
-            <li class="collection-item avatar">
-                <i class="fas material-icons circle" id="shareIcon"></i>
-                <span class="title" id="shareText"></span>
-            </li>
-        </ul>
-    </div>
-    <div class="modal-footer">
-        <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
-        <a onclick="share.send()" class="modal-close waves-effect waves-green green-text btn-flat">Enviar</a>
-    </div>
-</div>
-
 <%- '<serviceImgPath data="{{APP_SERVICE_PATH}}/images/"></serviceImgPath>' %>
