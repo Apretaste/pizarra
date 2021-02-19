@@ -2602,7 +2602,14 @@ function themify(text){
 	var topics = text.match(/(^|\B)#(?![0-9_]+\b)([a-zA-Z0-9_]{1,30})(\b|\r)/g);
 
 	if(topics !== null){
+		var topicsUnique = [];
 		topics.forEach(function (topic) {
+			if(topicsUnique.indexOf(topic) === -1){
+				topicsUnique.push(topic);
+			}
+		});
+
+		topicsUnique.forEach(function(topic){
 			text = text.replaceAll(topic,
 				'<a onclick="apretaste.send({\'command\': \'PIZARRA GLOBAL\',\'data\':{\'search\':\'' + topic + '\'}})">' +
 				topic +
