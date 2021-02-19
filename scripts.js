@@ -2603,7 +2603,7 @@ function themify(text){
 
 	if(topics !== null){
 		topics.forEach(function (topic) {
-			text = text.replace(topic,
+			text = text.replaceAll(topic,
 				'<a onclick="apretaste.send({\'command\': \'PIZARRA GLOBAL\',\'data\':{\'search\':\'' + topic + '\'}})">' +
 				topic +
 				'</a>'
