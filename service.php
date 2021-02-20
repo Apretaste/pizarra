@@ -186,7 +186,7 @@ class Service
 	public function _like(Request $request, Response $response)
 	{
 		$type = isset($request->input->data->note) ? 'note' : 'comment';
-		$actionsTable = $type === 'note' ? '_pizarra_actions' : '_pizarra_comments_actions';
+		$actionsTable = $type === 'note' ? '_pizarra_reactions' : '_pizarra_comments_actions';
 		$rowsTable = $type === 'note' ? '_pizarra_notes' : '_pizarra_comments';
 		$noteId = $type === 'note' ? $request->input->data->note : $request->input->data->comment;
 
@@ -267,7 +267,7 @@ class Service
 	public function _unlike(Request $request, Response $response): void
 	{
 		$type = isset($request->input->data->note) ? 'note' : 'comment';
-		$actionsTable = $type === 'note' ? '_pizarra_actions' : '_pizarra_comments_actions';
+		$actionsTable = $type === 'note' ? '_pizarra_reactions' : '_pizarra_comments_actions';
 		$rowsTable = $type === 'note' ? '_pizarra_notes' : '_pizarra_comments';
 		$noteId = $type === 'note' ? $request->input->data->note : $request->input->data->comment;
 
@@ -355,11 +355,11 @@ class Service
 		// get the records from the db
 		$result = Database::query("
 			SELECT
-				A.id, A.id_person, A.text, A.image, A.likes, A.unlikes, A.comments, A.reposts, A.inserted, A.ad, A.topic1, A.topic2, A.topic3, A.article,  
+				A.id, A.id_person, A.text, A.image, A.reactions, A.comments, A.reposts, A.inserted, A.ad, A.topic1, A.topic2, A.topic3, A.article,  
 				A.accept_comments, A.link_text, A.link_icon, A.link_command, B.reputation, C.avatar, C.avatarColor, 
 				C.username, C.first_name, C.last_name, C.province, C.picture, C.gender, C.country, C.online, C.is_influencer,
-				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
-				(SELECT COUNT(note) FROM _pizarra_actions WHERE note=A.id AND id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
+				(SELECT reaction FROM _pizarra_reactions 
+				WHERE _pizarra_reactions.note = A.id AND id_person = {$request->person->id}) AS reaction
 			FROM _pizarra_notes A LEFT JOIN _pizarra_users B ON A.id_person = B.id_person LEFT JOIN person C ON C.id = B.id_person
 			WHERE A.id = '$noteId' AND A.active=1");
 
@@ -393,8 +393,8 @@ class Service
 		// get note comments
 		$cmts = Database::query("
 			SELECT A.*, B.username, B.province, B.picture, B.gender, B.country, B.online, B.avatar, B.avatarColor, B.is_influencer, 
-			(SELECT COUNT(comment) FROM _pizarra_comments_actions WHERE comment=A.id AND id_person='{$request->person->id}' AND action='like') > 0 AS isliked,
-			(SELECT COUNT(comment) FROM _pizarra_comments_actions WHERE comment=A.id AND id_person='{$request->person->id}' AND action='unlike') > 0 AS isunliked
+			(SELECT reaction FROM _pizarra_reactions 
+				WHERE _pizarra_reactions.note = A.id AND id_person = {$request->person->id}) AS reaction
 			FROM _pizarra_comments A
 			LEFT JOIN person B
 			ON A.id_person = B.id
@@ -956,12 +956,8 @@ class Service
 			    B.country, B.online, B.avatar, B.avatarColor, B.is_influencer, C.reputation,
 			    TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
 				TIMESTAMPDIFF(DAY,A.inserted,CURRENT_DATE) as days,
-				(SELECT COUNT(_pizarra_actions.note) FROM _pizarra_actions 
-					WHERE _pizarra_actions.note = A.id AND id_person = {$profile->id} 
-					  AND _pizarra_actions.action = 'like') > 0 AS isliked,
-				(SELECT COUNT(_pizarra_actions.note) FROM _pizarra_actions 
-					WHERE _pizarra_actions.note = A.id AND id_person = {$profile->id} 
-					  AND _pizarra_actions.action = 'unlike') > 0 AS isunliked
+				(SELECT reaction FROM _pizarra_reactions 
+				WHERE _pizarra_reactions.note = A.id AND id_person = {$profile->id}) AS reaction
 			FROM (SELECT subq3.* 
 					FROM (SELECT DISTINCT id, id_person 
 						  FROM _pizarra_notes $where AND ad = 0 AND silenced = 0
@@ -984,9 +980,7 @@ class Service
 				B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, 
 			    B.country, B.online, B.avatar, B.avatarColor, B.is_influencer, C.reputation,
 				TIMESTAMPDIFF(HOUR,A.inserted,CURRENT_DATE) as hours,
-			    TIMESTAMPDIFF(DAY,A.inserted,CURRENT_DATE) as days,
-				1 AS isliked,
-				0 as isunliked
+			    TIMESTAMPDIFF(DAY,A.inserted,CURRENT_DATE) as days
 			FROM (SELECT subq3.* 
 					FROM (SELECT id, id_person
 						  FROM _pizarra_notes WHERE ad=1 and active=1
@@ -1002,13 +996,6 @@ class Service
 			) B ON A.id_person = B.id 
 			JOIN _pizarra_users C ON A.id_person = C.id_person ORDER BY RAND() LIMIT 1") : [];
 
-		// sort results by weight. Too complex and slow in MySQL
-		/*		usort($listOfNotes, function ($a, $b) {
-					$a->score = (pow($a->hours, 0.5) * -1) * 0.4 + max($a->commentsUnique, 20) * 0.2 + ((($a->likes - intval($a->ownlike)) - $a->unlikes * 2) * 0.4) + $a->ad * 1000;
-					$b->score = (pow($b->hours, 0.5) * -1) * 0.4 + max($b->commentsUnique, 20) * 0.2 + ((($b->likes - intval($a->ownlike)) - $b->unlikes * 2) * 0.4) + $b->ad * 1000;
-					return ($b->score - $a->score) ? ($b->score - $a->score) / abs($b->score - $a->score) : 0;
-				});
-		*/
 		// format the array of notes
 		$notes = [];
 		if (is_array($listOfNotes)) {
@@ -1100,8 +1087,7 @@ class Service
 		// get the last 50 records from the db
 		$listOfNotes = Database::query("
 			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, B.is_influencer,
-			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$profile->id}' AND `action` = 'like') > 0 AS isliked,
-			(SELECT COUNT(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) AS comments
+			(SELECT reaction FROM _pizarra_reactions WHERE _pizarra_reactions.note = A.id AND _pizarra_reactions.id_person = '{$profile->id}') AS reaction
 			FROM _pizarra_notes A
 			LEFT JOIN person B
 			ON A.id_person = B.id
@@ -1171,8 +1157,7 @@ class Service
 		// get the last 50 records from the db
 		$listOfNotes = Database::query("
 			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.online, B.avatar, B.avatarColor, B.is_influencer,
-			(SELECT COUNT(note) FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person= '{$profile->id}' AND `action` = 'like') > 0 AS isliked,
-			(SELECT count(id) FROM _pizarra_comments WHERE _pizarra_comments.note = A.id) as comments
+			(SELECT reaction FROM _pizarra_reactions WHERE _pizarra_reactions.note = A.id AND _pizarra_reactions.id_person= '{$profile->id}') AS reaction
 			FROM _pizarra_notes A
 			LEFT JOIN (
 			    SELECT P.id, P.username, P.first_name, P.last_name, P.province, P.picture, 
@@ -1249,7 +1234,7 @@ class Service
 
 		$listOfNotes = Database::query("
 			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, B.is_influencer, B.online,   
-				EXISTS(SELECT id FROM _pizarra_actions WHERE _pizarra_actions.note = A.id AND _pizarra_actions.id_person = '{$person->id}' AND `action` = 'like') AS isliked
+				EXISTS(SELECT reaction FROM _pizarra_reactions WHERE _pizarra_reactions.note = A.id AND _pizarra_reactions.id_person = '{$person->id}') AS reaction
 			FROM _pizarra_muro muro INNER JOIN _pizarra_notes A ON muro.note = A.id  
 			    INNER JOIN person B ON A.id_person = B.id
 			WHERE muro.person_id = {$person->id} AND A.active = 1 AND A.silenced = 0
@@ -1398,12 +1383,10 @@ class Service
 			'text' => $note->text,
 			'image' => $note->image,
 			'inserted' => $note->inserted,
-			'likes' => $note->likes ?? 0,
-			'unlikes' => $note->unlikes ?? 0,
+			'reactions' => $note->reactions ?? 0,
 			'comments' => $note->comments ?? 0,
 			'reposts' => $note->reposts ?? 0,
-			'liked' => isset($note->isliked) && $note->isliked,
-			'unliked' => isset($note->isunliked) && $note->isunliked,
+			'reaction' => $note->reaction ?? false,
 			'reputation' => $note->reputation ?? 0,
 			'ad' => $note->ad ?? false,
 			'silenced' => $note->silenced ?? false,

@@ -59,24 +59,57 @@
             <% } %>
 
             <div class="card-action grey lighten-4">
-				<span class="chip like" style="background-color: transparent; padding-left: 0;"
-                <% if(!note.liked){ %> onclick="like('<%= note.id %>','like', 'note');"
+                <span class="chip reactions"
+                <% if(!note.reaction){ %>
+                      onclick="like('<%= note.id %>','like', 'note');"
                         <% } %>
                 >
-					<i class="material-icons icon">thumb_up</i>
-					<span><%= note.likes %></span>
-				</span>
+                    <div class="reaction-box">
+                        <div class="reaction">
+                            <div class="reaction-name">
+                                <span>Sirvió</span>
+                            </div>
+                            <i class="fa fa-thumbs-up"></i>
+                        </div>
+                        <div class="reaction">
+                            <div class="reaction-name">
+                                <span>Está fula</span>
+                            </div>
+                            <i class="fa fa-thumbs-down"></i>
+                        </div>
+                        <div class="reaction">
+                            <div class="reaction-name">
+                                <span>¡Apretaste!</span>
+                            </div>
+                            <i class="fa fa-exclamation"></i>
+                        </div>
+                        <div class="reaction">
+                            <div class="reaction-name">
+                                <span>La partiste</span>
+                            </div>
+                            <i class="fa fa-laugh"></i>
+                        </div>
+                        <div class="reaction">
+                            <div class="reaction-name">
+                                <span>Estoy botao</span>
+                            </div>
+                            <i class="fa fa-surprise"></i>
+                        </div>
+                        <div class="reaction">
+                            <div class="reaction-name">
+                                <span>Apesta</span>
+                            </div>
+                            <i class="fa fa-poo"></i>
+                        </div>
+                    </div>
 
-                <span class="chip unlike" style="background-color: transparent;"
-                <% if(!note.unliked){ %> onclick="like('<%= note.id %>','unlike', 'note')"
-                        <% } %>
-                >
-					<i class="material-icons icon">thumb_down</i>
-					<span><%= note.unlikes %></span>
+					<i class="material-icons icon">thumb_up</i>
+					<span><%= note.reactions %></span>
 				</span>
 
                 <% if(note.id_person != myUser.id){ %>
-                    <span class="chip" style="background-color: transparent;" onclick="openShareModal('<%= note.id %>')">
+                    <span class="chip" style="background-color: transparent;"
+                          onclick="openShareModal('<%= note.id %>')">
                         <i class="material-icons icon">repeat</i>
                         <span><%= note.reposts %></span>
                     </span>
