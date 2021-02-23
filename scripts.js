@@ -1469,6 +1469,15 @@ var occupation = {
 	'DESEMPLEADO': 'Desempleado'
 };
 
+var reactions = {
+	'SIRVIO': {caption: 'Sirvió', icon: 'thumbs-up'},
+	'FULA': {caption: 'Está fula', icon: 'thumbs-down'},
+	'APRETASTE': {caption: '¡Apretaste!', icon: 'grin-stars'},
+	'PARTISTE': {caption: 'La partiste', icon: 'laugh'},
+	'BOTAO': {caption: 'Estoy botao', icon: 'surprise'},
+	'APESTA': {caption: 'Apesta', icon: 'poo'}
+}
+
 $(document).ready(function () {
 	$('.fixed-action-btn').floatingActionButton();
 	$('.modal').modal();
@@ -1752,7 +1761,7 @@ function initShare(note) {
 	};
 }
 
-function shareNoteCallback(noteId){
+function shareNoteCallback(noteId) {
 	showToast('Has reposteado una nota');
 	$('#shareMessage').val('')
 }
@@ -1835,7 +1844,7 @@ function searchUsername(username) {
 }
 
 function deleteNote(id) {
-	if(commentToDelete != null){
+	if (commentToDelete != null) {
 		apretaste.send({
 			'command': 'PIZARRA ELIMINAR',
 			'data': {
@@ -1997,59 +2006,46 @@ function reportLengthValidate() {
 	}
 }
 
-function like(id, type, pubType) {
-	if (pubType === undefined || typeof pubType == 'undefined') {
+function currentReaction(reaction) {
+	var icon = reactions['SIRVIO'].icon;
+	if(reaction) icon = reactions[reaction].icon;
+
+	return '<i class="fa fa-' + icon + '"></i>';
+}
+
+function react(id, reaction, pubType) {
+	if (typeof pubType == 'undefined') {
 		pubType = 'note';
 	}
 
 	var element = pubType == 'note' ? $('#' + id) : $('#comments #' + id);
-	if (type == "like" && element.attr('liked') == 'true' || type == "unlike" && element.attr('unliked') == 'true') return;
-	var data = pubType == 'note' ? {
-		'note': id
-	} : {
-		'comment': id
-	};
+	var data = pubType == 'note' ? {'note': id} : {'comment': id};
+	data['reaction'] = reaction;
+
 	apretaste.send({
-		'command': 'PIZARRA ' + type,
+		'command': 'PIZARRA REACT',
 		'data': data,
 		'showLoading': false,
 		'redirect': false
 	});
 
-	likeCallback({
+	reactCallback({
 		'id': id,
-		'type': type,
+		'reaction': reaction,
 		'pubType': pubType
 	});
 }
 
-function likeCallback(data) {
+function reactCallback(data) {
 	var id = data.id;
-	var type = data.type;
+	var reaction = data.reaction;
 	var pubType = data.pubType;
-	var note = pubType == 'note' ? $('#' + id) : $('#comments #' + id);
 
-	if (type == "like") {
-		note.attr('liked', 'true');
-		note.attr('unliked', 'false');
-	} else {
-		note.attr('unliked', 'true');
-		note.attr('liked', 'false');
-	}
-
-	var counter = type == 'like' ? 'unlike' : 'like';
-	var span = $('#' + id + ' span.' + type + ' span');
+	var span = $('#' + id + ' span.reactions span.counter');
 	var count = parseInt(span.html());
+	
+	$('#' + id + ' .currentReaction').html(currentReaction(reaction));
 	span.html(count + 1);
-
-	if ($('#' + id + ' span.' + counter).attr('onclick') == null) {
-		span = $('#' + id + ' span.' + counter + ' span');
-		count = parseInt(span.html());
-		span.html(count - 1);
-		$('#' + id + ' span.' + counter).attr('onclick', "like('" + id + "','" + counter + "', '" + pubType + "')");
-	}
-
-	$('#' + id + ' span.' + type).removeAttr('onclick');
 }
 
 function openProfile(username) {
@@ -2598,18 +2594,18 @@ window.linkify = (function () {
 
 })();
 
-function themify(text){
+function themify(text) {
 	var topics = text.match(/(^|\B)#(?![0-9_]+\b)([a-zA-Z0-9_]{1,30})(\b|\r)/g);
 
-	if(topics !== null){
+	if (topics !== null) {
 		var topicsUnique = [];
 		topics.forEach(function (topic) {
-			if(topicsUnique.indexOf(topic) === -1){
+			if (topicsUnique.indexOf(topic) === -1) {
 				topicsUnique.push(topic);
 			}
 		});
 
-		topicsUnique.forEach(function(topic){
+		topicsUnique.forEach(function (topic) {
 			text = text.replaceAll(topic,
 				'<a onclick="apretaste.send({\'command\': \'PIZARRA GLOBAL\',\'data\':{\'search\':\'' + topic + '\'}})">' +
 				topic +

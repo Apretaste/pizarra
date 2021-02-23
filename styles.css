@@ -1308,3 +1308,7 @@ ul.chat li {
 .reaction:hover, .reaction:focus {
 	background: white;
 }
+
+.currentReaction {
+	vertical-align: sub;
+}

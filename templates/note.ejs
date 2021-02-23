@@ -1,9 +1,8 @@
 <div class="row">
     <div class="col s12">
-        <div class="card note <%= note.ad === '1' ? 'ad' : '' %>" id="<%= note.id %>" liked="<%= note.liked %>"
-             unliked="<%= note.unliked %>">
+        <div class="card note <%= note.ad === '1' ? 'ad' : '' %>" id="<%= note.id %>"
+             reacted="<%= note.reaction != null %>">
             <div class="card-person grey lighten-5">
-
                 <div class="person-avatar circle left"
                 <% if(note.isInfluencer){ %>
                      creator_image="{{APP_SERVICE_PATH}}/images/<%= note.username %>.png"
@@ -59,52 +58,24 @@
             <% } %>
 
             <div class="card-action grey lighten-4">
-                <span class="chip reactions"
-                <% if(!note.reaction){ %>
-                      onclick="like('<%= note.id %>','like', 'note');"
-                        <% } %>
-                >
+                <span class="chip reactions">
                     <div class="reaction-box">
-                        <div class="reaction">
-                            <div class="reaction-name">
-                                <span>Sirvió</span>
+                        <% for(var reactionKey in reactions){ %>
+                            <% var reaction = reactions[reactionKey]; %>
+
+                            <div class="reaction" onclick="react('<%= note.id %>', '<%= reactionKey %>')">
+                                <div class="reaction-name">
+                                    <span><%= reaction.caption %></span>
+                                </div>
+                                <i class="fa fa-<%= reaction.icon %>"></i>
                             </div>
-                            <i class="fa fa-thumbs-up"></i>
-                        </div>
-                        <div class="reaction">
-                            <div class="reaction-name">
-                                <span>Está fula</span>
-                            </div>
-                            <i class="fa fa-thumbs-down"></i>
-                        </div>
-                        <div class="reaction">
-                            <div class="reaction-name">
-                                <span>¡Apretaste!</span>
-                            </div>
-                            <i class="fa fa-exclamation"></i>
-                        </div>
-                        <div class="reaction">
-                            <div class="reaction-name">
-                                <span>La partiste</span>
-                            </div>
-                            <i class="fa fa-laugh"></i>
-                        </div>
-                        <div class="reaction">
-                            <div class="reaction-name">
-                                <span>Estoy botao</span>
-                            </div>
-                            <i class="fa fa-surprise"></i>
-                        </div>
-                        <div class="reaction">
-                            <div class="reaction-name">
-                                <span>Apesta</span>
-                            </div>
-                            <i class="fa fa-poo"></i>
-                        </div>
+                        <% } %>
                     </div>
 
-					<i class="material-icons icon">thumb_up</i>
-					<span><%= note.reactions %></span>
+                    <span class="currentReaction">
+                        <%- currentReaction(note.reaction) %>
+                    </span>
+					<span class="counter"><%= note.reactions %></span>
 				</span>
 
                 <% if(note.id_person != myUser.id){ %>

@@ -77,7 +77,7 @@ class Service
 		];
 
 		// create the response
-		//$response->setCache(60);
+		$response->setCache(5);
 		$response->setLayout('pizarra.ejs');
 		$response->SetTemplate('main.ejs', $content, $images);
 	}
@@ -167,39 +167,45 @@ class Service
 		];
 
 		// create the response
-		/*if (!$search) {
-			$response->setCache(60);
+		if (!$search) {
+			$response->setCache(5);
 		} else {
-			$response->setCache(30);
-		}*/
+			$response->setCache(3);
+		}
+
 		$response->setLayout('pizarra.ejs');
 		$response->SetTemplate('main.ejs', $content, $images);
 	}
 
 	/**
-	 * The user likes a note
+	 * The user reacts to a note or a comment
 	 *
 	 * @param Request $request
 	 * @param Response $response
-	 * @author salvipascual
+	 * @throws Alert
+	 * @throws \Apretaste\Alert
+	 * @author ricardo
 	 */
-	public function _like(Request $request, Response $response)
+	public function _react(Request $request, Response $response)
 	{
 		$type = isset($request->input->data->note) ? 'note' : 'comment';
-		$actionsTable = $type === 'note' ? '_pizarra_reactions' : '_pizarra_comments_actions';
-		$rowsTable = $type === 'note' ? '_pizarra_notes' : '_pizarra_comments';
-		$noteId = $type === 'note' ? $request->input->data->note : $request->input->data->comment;
+		$isNote = $type === 'note';
+
+		$actionsTable = $isNote ? '_pizarra_reactions' : '_pizarra_comments_reactions';
+		$rowsTable = $isNote ? '_pizarra_notes' : '_pizarra_comments';
+		$noteId = $isNote ? $request->input->data->note : $request->input->data->comment;
+
+		$reaction = $request->input->data->reaction;
 
 		if ($noteId === 'last') {
 			$noteId = Database::query("SELECT MAX(id) AS id FROM $rowsTable WHERE id_person = '{$request->person->id}'")[0]->id;
 		}
 
 		// check if the user already liked this note
-		$res = Database::query("SELECT * FROM $actionsTable WHERE id_person={$request->person->id} AND $type='{$noteId}'");
-		$note = Database::query("SELECT id_person, `text`, likes FROM $rowsTable WHERE id='{$noteId}'");
+		$currentReaction = Database::queryFirst("SELECT id, reaction FROM $actionsTable WHERE id_person={$request->person->id} AND $type='$noteId'");
+		$note = Database::queryFirst("SELECT id_person, `text`, reactions FROM $rowsTable WHERE id='{$noteId}'");
 
-		if (!empty($note)) {
-			$note = $note[0];
+		if ($note) {
 			$liked = false;
 
 			$ownlike = 0;
@@ -207,121 +213,50 @@ class Service
 				$ownlike = 1;
 			}
 
-			if (!empty($res)) {
-				if ($res[0]->action === 'unlike') {
-					// delete previous vote and add new vote
+			if ($currentReaction) {
+				if ($currentReaction->reaction == $reaction) {
+					// delete previous reaction
 					Database::query("
-						UPDATE $actionsTable SET `action`='like' WHERE id_person='{$request->person->id}' AND $type='{$noteId}';
-						UPDATE $rowsTable SET likes=likes+1, unlikes=unlikes-1,ownlike=$ownlike WHERE id='{$noteId}'");
+						DELETE FROM $actionsTable WHERE id='{$currentReaction->id}';
+						UPDATE $rowsTable SET reactions=reactions-1 WHERE id='{$noteId}';");
 
 					// update influencers stats
-					Influencers::incStat($note->id_person, 'likes');
-					Influencers::decStat($note->id_person, 'unlikes');
-
-					// create notification for the creator
-					if ($request->person->id != $note->id_person) {
-						Notifications::alert($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
-					}
-
-					$liked = true;
-				}
-			}
-
-			if (!$liked) {
-				// add new vote
-				$id = Database::query("
-					INSERT INTO $actionsTable (id_person,$type,action) VALUES ('{$request->person->id}','{$noteId}','like');    
-					UPDATE $rowsTable SET likes=likes+1, ownlike = $ownlike WHERE id='{$noteId}'");
-
-				$note->text = substr($note->text, 0, 30) . '...';
-
-				// update influencers stats
-				Influencers::incStat($note->id_person, 'likes');
-
-				$this->addReputation($note->id_person, $request->person->id, $noteId, 0.3);
-
-				// create notification for the creator
-				if ($request->person->id != $note->id_person) {
-					Notifications::alert($note->id_person, "El usuario @{$request->person->username} le dio like a tu nota en la Pizarra: {$note->text}", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
+					Influencers::decStat($note->id_person, 'reactions');
+					die($currentReaction);
+				} else {
+					// update the reaction
+					Database::query("UPDATE $actionsTable SET reaction='$reaction' WHERE id_person='{$request->person->id}' AND id='{$currentReaction->id}'");
 				}
 
-				// submit to Google Analytics 
-				if ($type === 'note') {
-					GoogleAnalytics::event('note_like', $noteId);
-				}
-
-				// complete the challenge
-				Challenges::complete('like-pizarra-note', $request->person->id);
-
+				return;
 			}
-		}
-	}
 
-	/**
-	 * The user unlikes a note
-	 *
-	 * @param Request $request
-	 * @param Response $response
-	 * @author salvipascual
-	 */
-	public function _unlike(Request $request, Response $response): void
-	{
-		$type = isset($request->input->data->note) ? 'note' : 'comment';
-		$actionsTable = $type === 'note' ? '_pizarra_reactions' : '_pizarra_comments_actions';
-		$rowsTable = $type === 'note' ? '_pizarra_notes' : '_pizarra_comments';
-		$noteId = $type === 'note' ? $request->input->data->note : $request->input->data->comment;
+			// add new vote
+			$id = Database::query("
+					INSERT INTO $actionsTable (id_person, $type, reaction) VALUES ('{$request->person->id}','{$noteId}', '$reaction');    
+					UPDATE $rowsTable SET reactions=reactions+1, ownlike = $ownlike WHERE id='{$noteId}';");
 
-		if ($noteId === 'last') {
-			$noteId = Database::query("SELECT MAX(id) AS id FROM $rowsTable WHERE id_person = '{$request->person->id}'")[0]->id;
-		}
+			$note->text = substr($note->text, 0, 30) . '...';
 
-		// check if the user already liked this note
-		$res = Database::query("SELECT * FROM $actionsTable WHERE id_person={$request->person->id} AND $type='{$noteId}'");
-		$note = Database::query("SELECT id_person, `text` FROM $rowsTable WHERE id='{$noteId}'");
+			// update influencers stats
+			Influencers::incStat($note->id_person, 'reactions');
 
-		// do not continue if note do not exist
-		if (empty($note)) {
-			return;
-		}
+			$this->addReputation($note->id_person, $request->person->id, $noteId, 0.3);
 
-		$note = $note[0];
-
-		// delete previos upvote and add new vote
-		if (!empty($res)) {
-			if ($res[0]->action === 'like') {
-				Database::query("
-				UPDATE $actionsTable SET `action`='unlike' WHERE id_person='{$request->person->id}' AND $type='{$noteId}';
-				UPDATE $rowsTable SET likes=likes-1, unlikes=unlikes+1 WHERE id='{$noteId}'");
-
-				// update influencers stats
-				Influencers::incStat($note->id_person, 'unlikes');
-				Influencers::decStat($note->id_person, 'likes');
+			// create notification for the creator
+			if ($request->person->id != $note->id_person) {
+				Notifications::alert($note->id_person, "El usuario @{$request->person->username} reacciono a tu nota en la Pizarra: {$note->text}", 'thumb_up', "{'command':'PIZARRA NOTA', 'data':{'note':'{$noteId}'}}");
 			}
-			return;
-		}
 
-		// delete previos vote and add new vote
-		Database::query("
-			INSERT INTO $actionsTable (id_person,$type,action) VALUES ('{$request->person->id}','{$noteId}','unlike');
-			UPDATE $rowsTable SET unlikes=unlikes+1 WHERE id='{$noteId}'");
+			// submit to Google Analytics 
+			if ($type === 'note') {
+				GoogleAnalytics::event('note_reacted', $noteId);
+			}
 
-		$this->addReputation($note->id_person, $request->person->id, $noteId, -0.3);
+			// complete the challenge
+			Challenges::complete('react-pizarra-note', $request->person->id);
 
-		// update influencers stats
-		Influencers::incStat($note->id_person, 'unlikes');
 
-		// submit to Google Analytics 
-		if ($type === 'note') {
-			GoogleAnalytics::event('note_dislike', $noteId);
-		}
-
-		// decrease the author's reputation
-		Database::query("UPDATE _pizarra_users SET reputation=reputation-1 WHERE id_person='{$note->id_person}'");
-
-		// run powers for amulet VIDENTE
-		if (Amulets::isActive(Amulets::VIDENTE, $note->id_person) && $type === 'note') {
-			$msg = "Los poderes del amuleto del Druida te avisan: A @{$request->person->username} le disgustó tu nota en Pizarra";
-			Notifications::alert($note->id_person, $msg, 'remove_red_eye', "{'command':'PIZARRA NOTA', 'data':{'note':'{$request->input->data->note}'}}");
 		}
 	}
 
@@ -573,7 +508,7 @@ class Service
 				Database::query("UPDATE _pizarra_notes SET reposts=reposts+1 WHERE id='$noteId'");
 			}
 		} catch (Exception $e) {
-			
+
 		}
 	}
 
