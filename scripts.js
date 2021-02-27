@@ -1735,6 +1735,13 @@ function initShare(note) {
 		text: text,
 		icon: icon,
 		send: function () {
+			var shareMessage = $('#shareMessage').val();
+
+			if (shareMessage.length < 10) {
+				showToast('Mínimo 10 tres caracteres');
+				return;
+			}
+
 			apretaste.send({
 				command: 'PIZARRA PUBLICAR',
 				redirect: false,
@@ -1743,7 +1750,7 @@ function initShare(note) {
 					data: note.id
 				},
 				data: {
-					text: $('#shareMessage').val(),
+					text: shareMessage,
 					image: '',
 					action: 'pizarra-share',
 					link: {
@@ -2007,7 +2014,7 @@ function reportLengthValidate() {
 
 function currentReaction(reaction) {
 	var icon = reactions['SIRVIO'].icon;
-	if(reaction) icon = reactions[reaction].icon;
+	if (reaction) icon = reactions[reaction].icon;
 
 	return '<i class="fa fa-' + icon + '"></i>';
 }
@@ -2046,12 +2053,12 @@ function reactCallback(data) {
 	var count = parseInt(counter.html());
 	var attReaction = reactionsElement.attr('reaction');
 
-	if(attReaction !== 'false' && attReaction === reaction){
+	if (attReaction !== 'false' && attReaction === reaction) {
 		counter.html(count - 1);
 		reactionsElement.attr('reaction', 'false');
 		$('#' + id + ' .currentReaction').html(currentReaction(false));
-	} else{
-		if(attReaction === 'false'){
+	} else {
+		if (attReaction === 'false') {
 			counter.html(count + 1);
 		}
 

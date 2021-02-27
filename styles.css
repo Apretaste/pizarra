@@ -1311,4 +1311,5 @@ ul.chat li {
 
 .currentReaction {
 	vertical-align: sub;
+	margin-right: 2px;
 }
