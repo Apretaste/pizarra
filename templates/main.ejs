@@ -111,20 +111,24 @@
 				<% } %>
 
 				<div class="card-action grey lighten-4">
-					<span class="chip like" style="background-color: transparent; padding-left: 0;"
-					<% if(!note.liked){ %> onclick="like('<%= note.id %>','like', 'note');"
-							<% } %>
-					>
-						<i class="material-icons icon">thumb_up</i>
-						<span><%= note.likes %></span>
-					</span>
+					<span class="chip reactions" reaction="<%= note.reaction %>">
+						<div class="reaction-box">
+							<% for(var reactionKey in reactions){ %>
+								<% var reaction = reactions[reactionKey]; %>
 
-					<span class="chip unlike" style="background-color: transparent;"
-					<% if(!note.unliked){ %> onclick="like('<%= note.id %>','unlike', 'note')"
+								<div class="reaction" onclick="react('<%= note.id %>', '<%= reactionKey %>')">
+									<div class="reaction-name">
+										<span><%= reaction.caption %></span>
+									</div>
+									<i class="fa fa-<%= reaction.icon %>"></i>
+								</div>
 							<% } %>
-					>
-						<i class="material-icons icon">thumb_down</i>
-						<span><%= note.unlikes %></span>
+						</div>
+
+						<span class="currentReaction">
+							<%- currentReaction(note.reaction) %>
+						</span>
+						<span class="counter"><%= note.reactions %></span>
 					</span>
 
 					<% if(note.id_person != myUser.id){ %>

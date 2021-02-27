@@ -222,7 +222,6 @@ class Service
 
 					// update influencers stats
 					Influencers::decStat($note->id_person, 'reactions');
-					die($currentReaction);
 				} else {
 					// update the reaction
 					Database::query("UPDATE $actionsTable SET reaction='$reaction' WHERE id_person='{$request->person->id}' AND id='{$currentReaction->id}'");
@@ -1169,7 +1168,7 @@ class Service
 
 		$listOfNotes = Database::query("
 			SELECT A.*, B.username, B.first_name, B.last_name, B.province, B.picture, B.gender, B.gender, B.country, B.avatar, B.avatarColor, B.is_influencer, B.online,   
-				EXISTS(SELECT reaction FROM _pizarra_reactions WHERE _pizarra_reactions.note = A.id AND _pizarra_reactions.id_person = '{$person->id}') AS reaction
+				(SELECT reaction FROM _pizarra_reactions WHERE _pizarra_reactions.note = A.id AND _pizarra_reactions.id_person = '{$person->id}') AS reaction
 			FROM _pizarra_muro muro INNER JOIN _pizarra_notes A ON muro.note = A.id  
 			    INNER JOIN person B ON A.id_person = B.id
 			WHERE muro.person_id = {$person->id} AND A.active = 1 AND A.silenced = 0

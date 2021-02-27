@@ -58,7 +58,7 @@
             <% } %>
 
             <div class="card-action grey lighten-4">
-                <span class="chip reactions">
+                <span class="chip reactions" reaction="<%= note.reaction %>">
                     <div class="reaction-box">
                         <% for(var reactionKey in reactions){ %>
                             <% var reaction = reactions[reactionKey]; %>

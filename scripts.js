@@ -919,7 +919,7 @@
 				pasteHTMLAtCaret("<" + option + ">" + getSelectedText() + "</" + option + ">")
 			} else if (command === "fontSize" && parseInt(option) > 0) {
 				var selection = getSelectedText();
-				selection = (selection + "").replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, "$1" + "<br>" + "$2");
+				selection = (selection + "").replace(/([^>\r]?)(\r|\r|\r|)/g, "$1" + "<br>" + "$2");
 				var html = settings.useSingleQuotes ? "<span style='font-size:" + option + "px;'>" + selection + "</span>" : '<span style="font-size:' + option + 'px;">' + selection + "</span>";
 				pasteHTMLAtCaret(html)
 			} else {
@@ -1685,8 +1685,7 @@ function sendNote() {
 			'files': files,
 			'redirect': false,
 			'callback': {
-				'name': 'sendNoteCallback',
-				'data': note
+				'name': 'sendNoteCallback'
 			}
 		});
 	} else {
@@ -1931,7 +1930,7 @@ function deleteNotification(id) {
 		if (count <= 0) {
 			var parent = $('#noti-list').parent();
 			$('ul.collection').remove();
-			parent.append("\n\t\t\t\t<div class=\"col s12 center\">\n\t\t\t\t<h1 class=\"black-text\">Nada por leer</h1>\n\t\t\t\t<i class=\"material-icons large\">notifications_off</i>\n\t\t\t\t<p>Por ahora usted no tiene ninguna notificaci\xF3n por leer.</p>\n\t\t\t\t</div>\n\t\t\t\t");
+			parent.append("\t\t\t\t<div class=\"col s12 center\">\t\t\t\t<h1 class=\"black-text\">Nada por leer</h1>\t\t\t\t<i class=\"material-icons large\">notifications_off</i>\t\t\t\t<p>Por ahora usted no tiene ninguna notificaci\xF3n por leer.</p>\t\t\t\t</div>\t\t\t\t");
 		}
 	});
 }
@@ -2041,11 +2040,24 @@ function reactCallback(data) {
 	var reaction = data.reaction;
 	var pubType = data.pubType;
 
-	var span = $('#' + id + ' span.reactions span.counter');
-	var count = parseInt(span.html());
-	
-	$('#' + id + ' .currentReaction').html(currentReaction(reaction));
-	span.html(count + 1);
+	var reactionsElement = $('#' + id + ' span.reactions');
+
+	var counter = reactionsElement.children('span.counter');
+	var count = parseInt(counter.html());
+	var attReaction = reactionsElement.attr('reaction');
+
+	if(attReaction !== 'false' && attReaction === reaction){
+		counter.html(count - 1);
+		reactionsElement.attr('reaction', 'false');
+		$('#' + id + ' .currentReaction').html(currentReaction(false));
+	} else{
+		if(attReaction === 'false'){
+			counter.html(count + 1);
+		}
+
+		reactionsElement.attr('reaction', reaction);
+		$('#' + id + ' .currentReaction').html(currentReaction(reaction));
+	}
 }
 
 function openProfile(username) {
@@ -2141,15 +2153,15 @@ function sendCommentCallback(comment) {
 	}
 
 	var element =
-		"<li class=\"right\" id=\"last\">\n" +
-		"    <div class=\"person-avatar circle\" " + avatar + " color=\"" + myUser.avatarColor + "\"\n" +
-		"         size=\"30\" onclick=\"openProfile('" + myUser.username + "')\"></div>\n" +
-		"    <div class=\"head\">\n" +
-		"        <a onclick=\"openProfile('" + myUser.username + "')\"\n" +
-		"           class=\"" + myUser.gender + "\">@" + myUser.username + "</a>\n" +
-		"        <span class=\"date\">" + moment().format('MMM D, YYYY h:mm A') + "</span>\n" +
-		"    </div>\n" +
-		"    <span class=\"text\" style=\"word-break: break-word;\">" + comment + "</span>\n" +
+		"<li class=\"right\" id=\"last\">" +
+		"    <div class=\"person-avatar circle\" " + avatar + " color=\"" + myUser.avatarColor + "\"" +
+		"         size=\"30\" onclick=\"openProfile('" + myUser.username + "')\"></div>" +
+		"    <div class=\"head\">" +
+		"        <a onclick=\"openProfile('" + myUser.username + "')\"" +
+		"           class=\"" + myUser.gender + "\">@" + myUser.username + "</a>" +
+		"        <span class=\"date\">" + moment().format('MMM D, YYYY h:mm A') + "</span>" +
+		"    </div>" +
+		"    <span class=\"text\" style=\"word-break: break-word;\">" + comment + "</span>" +
 		"</li>"
 
 	$('#no-comments').remove();
@@ -2170,119 +2182,13 @@ function sendCommentCallback(comment) {
 	toggleWriteModal();
 }
 
-function sendNoteCallback(note) {
-
+function sendNoteCallback() {
 	apretaste.send({
 		command: 'PIZARRA NOTA',
 		data: {
 			note: 'last'
 		}
 	});
-	return;
-	var serviceImgPath = $('serviceImgPath').attr('data');
-	var topics = note.match(/(^|\B)#(?![0-9_]+\b)([a-zA-Z0-9_]{1,30})(\b|\r)/g);
-	var htmlTopics = "";
-	topics = topics != null ? topics.splice(0, 3) : [myUser.topic];
-
-	var hasImage = "";
-	if (notePicture != null || notePicturePath != null) {
-		var src = "data:image/jpg;base64," + notePicture;
-		if (notePicturePath != null) src = "file://" + notePicturePath;
-
-		if (typeof apretaste.showImage != 'undefined' && notePicturePath != null) {
-			hasImage = "<img class=\"responsive-img\" style=\"width: 100%\" src=\"" + src + "\" onclick=\"apretaste.showImage('" + src + "')\">";
-		} else {
-			hasImage = "<img class=\"responsive-img\" style=\"width: 100%\" src=\"" + src + "\" onclick=\"apretaste.send({'command': 'PIZARRA NOTA','data':{'note':'last'}});\">";
-		}
-
-		// clean the image
-		$('#notePicture').remove();
-		notePicture = null;
-		notePicturePath = null;
-	}
-
-	var avatar = 'face="' + myUser.avatar + '"';
-	if (myUser.isInfluencer) {
-		avatar += ' creator_image="' + serviceImgPath + myUser.username + '.png" state="gold"'
-	}
-
-	topics.forEach(function (topic) {
-		topic = topic.replace('#', '');
-		htmlTopics +=
-			'<div class="chip small" onclick="apretaste.send({\'command\': \'PIZARRA GLOBAL\',\'data\':{\'search\':\'#' + topic + '\'}})">' +
-			'    <i class="fa fa-hashtag"></i>' + topic +
-			'</div>';
-	});
-	note = note.escapeHTML();
-
-	var article = ($($('#article').val()).text()) ?
-		'<ul class="collection one-line preview">\n' +
-		'                    <li class="collection-item avatar">\n' +
-		'                        <i class="fas fa-file-word material-icons circle"></i>\n' +
-		'                        <span class="title">Esta nota viene con un texto adjunto</span>\n' +
-		'                    </li>\n' +
-		'                </ul>\n' : '';
-
-	// clean the article
-	$('#article').val('').trigger('change');
-	$('#articleTarget').html('').addClass('hide');
-
-	var element =
-		'<div class="card note" id="last" liked="false"\n' +
-		'                 unliked="false">\n' +
-		'                <div class="card-person grey lighten-5">\n' +
-		'                        <div class="person-avatar circle left"\n' + avatar +
-		'                             color="' + myUser.avatarColor + '"\n' +
-		'                             size="30" online="1">\n' +
-		'                        </div>\n' +
-		'                        <a href="#!" class="' + myUser.gender + '"\n' +
-		'                           onclick="apretaste.send({\'command\': \'PERFIL\', \'data\': {\'username\':\'' + myUser.username + '\'}})">\n' +
-		'                            @' + myUser.username + '\n' +
-		'                        </a>\n' +
-		'                    <span class="chip tiny clear right">\n' +
-		'                        <i class="material-icons icon">perm_contact_calendar</i>\n' +
-		moment().format('MMM D, h:mm A') + '\n' +
-		'                    </span>\n' +
-		'                </div>\n' +
-		'                <div class="card-content">\n' +
-		hasImage +
-		'                    <p><b>' + note + '</b></p>\n' +
-		article +
-		'                    <div class="tags">\n' +
-		htmlTopics +
-		'                    </div>\n' +
-		'                </div>\n' +
-		'                <div class="card-action grey lighten-4">\n' +
-		'                        <span class="chip like" style="background-color: transparent; padding-left: 0;"\n' +
-		'                        onclick="like(\'last\',\'like\');">' +
-		'                            <i class="material-icons icon">thumb_up</i>\n' +
-		'                            <span>0</span>\n' +
-		'                        </span>\n' +
-		'                        <span class="chip unlike" style="background-color: transparent;"\n' +
-		'                        onclick="like(\'last\',\'unlike\')">' +
-		'                            <i class="material-icons icon">thumb_down</i>\n' +
-		'                            <span>0</span>\n' +
-		'                        </span>\n' +
-		'                    <span class="chip" style="background-color: transparent;"\n' +
-		'                          onclick="apretaste.send({\'command\': \'PIZARRA NOTA\',\'data\':{\'note\':\'last\'}});">\n' +
-		'                        <i class="material-icons icon">comment</i>\n' +
-		'                        <span>0</span>\n' +
-		'                    </span>\n' +
-		'                </div>\n' +
-		'            </div>';
-
-	$('.notes > .col').prepend(element);
-	showToast('Nota publicada');
-	$('#note').val('');
-	toggleWriteModal();
-
-	var avatarElement = $('#last .person-avatar');
-	avatarElement.innerHTML = '';
-	setElementAsAvatar(avatarElement);
-
-	$('html, body').animate({
-		scrollTop: $("#last").offset().top
-	}, 1000);
 }
 
 function togglePopularsMenu() {
