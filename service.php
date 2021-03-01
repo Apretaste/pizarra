@@ -432,7 +432,7 @@ class Service
 		// update influencers stats
 		Influencers::incStat($note['id_person'], 'views');
 
-		$response->setCache(60);
+		// NO PONGA CACHE AQUI PINGA!!!
 		$response->SetTemplate('note.ejs', $content, $images);
 	}
 
