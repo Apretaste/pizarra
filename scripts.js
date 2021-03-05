@@ -2054,7 +2054,7 @@ function react(id, reaction, pubType) {
 }
 
 function reactCallback(data) {
-	$('.reactions, .reaction-box').blur();
+	hideKeyboard();
 
 	var id = data.id;
 	var reaction = data.reaction;
