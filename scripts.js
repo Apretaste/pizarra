@@ -1618,15 +1618,20 @@ function openSearchModal() {
 }
 
 var commentToDelete = null;
+var noteToDelete = null;
 
-function openDeleteModal(commentId) {
+function openDeleteModal(pubId, pubType) {
 	var modalContent = $('#deleteModal > .modal-content');
 
-	if (commentId != null) {
-		commentToDelete = commentId;
+	if (pubType == null) pubType = 'note';
+
+	if (pubType === 'comment') {
+		commentToDelete = pubId;
+		noteToDelete = null;
 		modalContent.html('¿Est&aacute;s seguro de eliminar este comentario?');
 	} else {
-		commentId = null;
+		noteToDelete = pubId;
+		commentToDelete = null;
 		modalContent.html('¿Est&aacute;s seguro de eliminar esta nota?');
 	}
 
@@ -1738,7 +1743,7 @@ function initShare(note) {
 			var shareMessage = $('#shareMessage').val();
 
 			if (shareMessage.length < 10) {
-				showToast('Mínimo 10 tres caracteres');
+				showToast('Mínimo diez caracteres');
 				return;
 			}
 
@@ -1849,7 +1854,7 @@ function searchUsername(username) {
 	});
 }
 
-function deleteNote(id) {
+function deleteNote() {
 	if (commentToDelete != null) {
 		apretaste.send({
 			'command': 'PIZARRA ELIMINAR',
@@ -1869,12 +1874,12 @@ function deleteNote(id) {
 	apretaste.send({
 		'command': 'PIZARRA ELIMINAR',
 		'data': {
-			'note': id,
+			'note': noteToDelete,
 		},
 		'redirect': false,
 		callback: {
 			'name': 'deleteCallback',
-			'data': id
+			'data': noteToDelete
 		}
 	});
 }
@@ -1911,12 +1916,18 @@ function previousPage() {
 	});
 }
 
-function deleteCallback(id) {
-	apretaste.send({command: 'PIZARRA'});
+function deleteCallback() {
+	if (typeof title !== "undefined") {
+		$('#' + noteToDelete).remove();
+	} else {
+		apretaste.send({command: 'PIZARRA', useCache: false});
+	}
 }
 
 function deleteCommentCallback(id) {
-	$('#comments #' + id + ' .text').html('Comentario eliminado');
+	var comment = $('#comments #' + id);
+	comment.children('.text').html('Comentario eliminado');
+	comment.children('.actions').remove();
 }
 
 function deleteNotification(id) {
@@ -2043,6 +2054,8 @@ function react(id, reaction, pubType) {
 }
 
 function reactCallback(data) {
+	$('.reactions, .reaction-box').blur();
+
 	var id = data.id;
 	var reaction = data.reaction;
 	var pubType = data.pubType;
@@ -2159,6 +2172,19 @@ function sendCommentCallback(comment) {
 		avatar += ' creator_image="' + serviceImgPath + myUser.username + '.png" state="gold"'
 	}
 
+	var reactionsBox = '';
+
+	for (var reactionKey in reactions) {
+		var reaction = reactions[reactionKey];
+
+		reactionsBox += "<div class=\"reaction\" onclick=\"react('last', '" + reactionKey + "', 'comment')\">" +
+			"    <div class=\"reaction-name\">" +
+			"        <span>" + reaction.caption + "</span>" +
+			"    </div>" +
+			"    <i class=\"fa fa-" + reaction.icon + "\"></i>" +
+			"</div>";
+	}
+
 	var element =
 		"<li class=\"right\" id=\"last\">" +
 		"    <div class=\"person-avatar circle\" " + avatar + " color=\"" + myUser.avatarColor + "\"" +
@@ -2169,6 +2195,20 @@ function sendCommentCallback(comment) {
 		"        <span class=\"date\">" + moment().format('MMM D, YYYY h:mm A') + "</span>" +
 		"    </div>" +
 		"    <span class=\"text\" style=\"word-break: break-word;\">" + comment + "</span>" +
+		"    <div class=\"actions\">" +
+		"        <span class=\"chip reactions\" reaction=\"0\">" +
+		"            <div class=\"reaction-box\">" +
+		reactionsBox +
+		"            </div>" +
+		"            <span class=\"currentReaction\">" +
+		currentReaction(null) +
+		"            </span>" +
+		"            <span class=\"counter\">0</span>" +
+		"        </span>" +
+		"        <span class=\"chip clear red-text\" onclick=\"openDeleteModal('last')\">" +
+		"            <i class=\"fas fa-trash\"></i>" +
+		"        </span>" +
+		"    </div>" +
 		"</li>"
 
 	$('#no-comments').remove();
@@ -2520,7 +2560,7 @@ function themify(text) {
 
 		topicsUnique.forEach(function (topic) {
 			text = text.replaceAll(topic,
-				'<a onclick="apretaste.send({\'command\': \'PIZARRA GLOBAL\',\'data\':{\'search\':\'' + topic + '\'}})">' +
+				'<a onclick="searchTopic(event, \'' + topic + '\')">' +
 				topic +
 				'</a>'
 			);
@@ -2528,6 +2568,16 @@ function themify(text) {
 	}
 
 	return text;
+}
+
+function searchTopic(event, topic) {
+	event.stopPropagation()
+	apretaste.send({
+		command: 'PIZARRA GLOBAL',
+		data: {
+			search: topic
+		}
+	});
 }
 
 function encode_utf8(s) {

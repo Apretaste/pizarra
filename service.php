@@ -327,8 +327,8 @@ class Service
 		// get note comments
 		$cmts = Database::query("
 			SELECT A.*, B.username, B.province, B.picture, B.gender, B.country, B.online, B.avatar, B.avatarColor, B.is_influencer, 
-			(SELECT reaction FROM _pizarra_reactions 
-				WHERE _pizarra_reactions.note = A.id AND id_person = {$request->person->id}) AS reaction
+			(SELECT reaction FROM _pizarra_comments_reactions 
+				WHERE _pizarra_comments_reactions.comment = A.id AND id_person = {$request->person->id}) AS reaction
 			FROM _pizarra_comments A
 			LEFT JOIN person B
 			ON A.id_person = B.id

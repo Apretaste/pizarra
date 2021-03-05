@@ -1,9 +1,9 @@
 <%
 var menu = [
-    {link: '', caption: 'Muro'},
-    {link: 'GLOBAL', caption: 'Global'},
-    {link: 'POPULARES', caption: 'Tendencia'},
-    {link: 'INFLUENCERS', caption: 'Influencers'}
+    {link: 'PIZARRA', caption: 'Muro'},
+    {link: 'PIZARRA GLOBAL', caption: 'Global'},
+    {link: 'PIZARRA POPULARES', caption: 'Tendencia'},
+    {link: 'PIZARRA INFLUENCERS', caption: 'Influencers'}
 ];
 %>
 
@@ -15,7 +15,7 @@ var menu = [
                 <% var active = typeof title != "undefined" && title == e.caption ? 'active' : '' %>
                 <li class="tab">
                     <a href="#" class="green-text <%= active %>"
-                       onclick="apretaste.send({'command':'PIZARRA <%= e.link %>'})"
+                       onclick="apretaste.send({'command':'<%= e.link %>'})"
                     >
                         <%= e.caption %>
                     </a>

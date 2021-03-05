@@ -82,13 +82,13 @@
                     <span class="chip" style="background-color: transparent;"
                           onclick="openShareModal('<%= note.id %>')">
                         <i class="material-icons icon">repeat</i>
-                        <span><%= note.reposts %></span>
+                        <span class="counter"><%= note.reposts %></span>
                     </span>
                 <% } %>
 
                 <span class="chip" style="background-color: transparent;">
 					<i class="material-icons icon">comment</i>
-					<span id="commentsCounter"><%= note.comments.length %></span>
+					<span id="commentsCounter" class="counter"><%= note.comments.length %></span>
 				</span>
 
                 <% if(note.id_person != myUser.id){ %>
@@ -96,7 +96,7 @@
 						<i class="material-icons icon">cancel</i>&nbsp;
 					</span>
                 <% } else { %>
-                    <span class="chip" onclick="openDeleteModal()" style="background-color: transparent;">
+                    <span class="chip" onclick="openDeleteModal('<%= note.id %>')" style="background-color: transparent;">
 						<i class="material-icons icon red-text">delete</i>&nbsp;
 					</span>
                 <% } %>
@@ -134,20 +134,24 @@
 
                     <% if(comment.active){ %>
                         <div class="actions">
-                            <span class="chip clear like"
-                            <% if(!comment.liked){ %> onclick="like('<%= comment.id %>','like', 'comment');"
-                                    <% } %>
-                            >
-                                <i class="fas fa-thumbs-up"></i>
-                                <span style="margin-left: 2px"><%= comment.likes %></span>
-                            </span>
+                            <span class="chip reactions" reaction="<%= comment.reaction %>">
+                                <div class="reaction-box">
+                                    <% for(var reactionKey in reactions){ %>
+                                        <% var reaction = reactions[reactionKey]; %>
 
-                            <span class="chip clear unlike"
-                            <% if(!comment.unliked){ %> onclick="like('<%= comment.id %>','unlike', 'comment')"
+                                        <div class="reaction" onclick="react('<%= comment.id %>', '<%= reactionKey %>', 'comment')">
+                                            <div class="reaction-name">
+                                                <span><%= reaction.caption %></span>
+                                            </div>
+                                            <i class="fa fa-<%= reaction.icon %>"></i>
+                                        </div>
                                     <% } %>
-                            >
-                                <i class="fas fa-thumbs-down"></i>
-                                <span style="margin-left: 2px"><%= comment.unlikes %></span>
+                                </div>
+
+                                <span class="currentReaction">
+                                    <%- currentReaction(comment.reaction) %>
+                                </span>
+                                <span class="counter"><%= comment.reactions %></span>
                             </span>
 
                             <% if(comment.username != myUser.username){ %>
@@ -230,7 +234,7 @@
     </div>
     <div class="modal-footer">
         <a href="#!" class="modal-close waves-effect waves-light btn-flat">Cerrar</a>
-        <a onclick="deleteNote(<%= note.id %>);" class="modal-close waves-effect waves-green btn-flat green-text">Eliminar</a>
+        <a onclick="deleteNote()" class="modal-close waves-effect waves-green btn-flat green-text">Eliminar</a>
     </div>
 </div>
 

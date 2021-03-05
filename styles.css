@@ -1095,15 +1095,15 @@ ul.chat li {
 	margin-bottom: -5px;
 }
 
-.chat .actions .chip {
+.chat .actions .reactions {
 	margin-right: 30px;
 }
 
-.chat .left .actions .chip {
+.chat .left .actions .reactions > *:not(.reaction-box) {
 	color: #546e7a;
 }
 
-.chat .right .actions .chip {
+.chat .right .actions .reactions > *:not(.reaction-box) {
 	color: #eceff1;
 }
 
@@ -1280,6 +1280,8 @@ ul.chat li {
 	position: relative;
 	width: 30px;
 	text-align: center;
+	font-size: 1.3rem;
+	color: rgba(0, 0, 0, 0.6);
 }
 
 .reaction > .reaction-name {
@@ -1305,11 +1307,19 @@ ul.chat li {
 	top: -35px;
 }
 
-.reaction:hover, .reaction:focus {
-	background: white;
+.reaction:hover > i, .reaction:focus > i{
+	color: #52a43f;
 }
 
 .currentReaction {
 	vertical-align: sub;
-	margin-right: 2px;
+}
+
+.currentReaction > i{
+	font-size: 1.2rem !important;
+}
+
+.counter{
+	margin-left: 5px;
+	font-size: 1rem;
 }
