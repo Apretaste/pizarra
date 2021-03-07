@@ -133,19 +133,19 @@
 
 					<% if(note.id_person != myUser.id){ %>
 						<span class="chip" style="background-color: transparent;" onclick="openShareModal('<%=note.id%>')">
-							<i class="material-icons icon">repeat</i>
+							<i class="fa fa-sync-alt icon">repeat</i>
 							<span class="counter"><%= note.reposts %></span>
 						</span>
 					<% } %>
 
 					<span class="chip" style="background-color: transparent;" onclick="openNote('<%= note.id %>')">
-						<i class="material-icons icon">comment</i>
+						<i class="fa fa-comment icon"></i>
 						<span class="counter"><%= note.comments %></span>
 					</span>
 
 					<% if(note.id_person == myUser.id){ %>
 						<span class="chip" onclick="openDeleteModal('<%= note.id %>')" style="background-color: transparent;">
-							<i class="material-icons icon red-text">delete</i>&nbsp;
+							<i class="fa fa-trash icon red-text"></i>&nbsp;
 						</span>
 					<% } %>
 				</div>

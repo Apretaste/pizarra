@@ -2027,7 +2027,7 @@ function currentReaction(reaction) {
 	var icon = reactions['SIRVIO'].icon;
 	if (reaction) icon = reactions[reaction].icon;
 
-	return '<i class="fa fa-' + icon + '"></i>';
+	return '<i class="icon fa fa-' + icon + '"></i>';
 }
 
 function react(id, reaction, pubType) {

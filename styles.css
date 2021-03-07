@@ -1188,7 +1188,7 @@ ul.chat li {
 
 /* New styles */
 .note .card-action i, .open-note .card-action i {
-	font-size: 1.3rem;
+	font-size: 1.1rem;
 }
 
 .note .card-action {
@@ -1262,7 +1262,7 @@ ul.chat li {
 	display: none;
 	position: absolute;
 	height: 40px;
-	background-color: #eee;
+	background-color: #ccc;
 	border-radius: 20px;
 	top: -40px;
 	left: -20px;
@@ -1280,7 +1280,6 @@ ul.chat li {
 	position: relative;
 	width: 30px;
 	text-align: center;
-	font-size: 1.3rem;
 	color: rgba(0, 0, 0, 0.6);
 }
 
@@ -1311,15 +1310,6 @@ ul.chat li {
 	color: #52a43f;
 }
 
-.currentReaction {
-	vertical-align: sub;
-}
-
-.currentReaction > i{
-	font-size: 1.2rem !important;
-}
-
 .counter{
-	margin-left: 5px;
-	font-size: 1rem;
+	font-size: 1.1rem;
 }
