@@ -1222,7 +1222,8 @@ class Service
 			FROM _pizarra_muro muro INNER JOIN _pizarra_notes A ON muro.note = A.id  
 			    INNER JOIN person B ON A.id_person = B.id
 			WHERE muro.person_id = {$person->id} AND A.active = 1 AND A.silenced = 0
-			ORDER BY date(muro.created) DESC, hour(muro.created) DESC, A.weight DESC
+			-- ORDER BY date(muro.created) DESC, hour(muro.created) DESC, A.weight DESC
+			ORDER BY muro.created DESC
 			LIMIT 20 OFFSET $offset");
 
 		// format the array of notes
